@@ -21,3 +21,13 @@ node_modules
 
 # cli
 dist
+sfe.txt
+backend.md
+frontend.md
+smart-contracts.md
+impl.md
+
+# foundry
+packages/foundry/out
+packages/foundry/cache
+packages/foundry/broadcast
