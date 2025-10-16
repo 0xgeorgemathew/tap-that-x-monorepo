@@ -61,7 +61,7 @@ export function useHaloChip() {
       });
       return {
         address: result.etherAddress,
-        signature: result.signature.raw, // Use .raw for EIP-712 typed data
+        signature: result.signature.ether, // Ethereum-formatted signature string
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : "NFC read failed";
