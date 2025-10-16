@@ -20,19 +20,85 @@ interface tempVm {
     function tryFfi(string[] calldata) external returns (FfiResult memory);
 }
 
+/**
+ * @notice Universal verification script - works with any deployment
+ * @dev Automatically finds broadcast file from DEPLOY_SCRIPT env var or defaults to Deploy.s.sol
+ *
+ * Usage:
+ *   yarn verify --network sepolia
+ *   yarn verify --network base
+ */
 contract VerifyAll is Script {
     uint96 currTransactionIdx;
 
     function run() external {
         string memory root = vm.projectRoot();
-        string memory path =
-            string.concat(root, "/broadcast/Deploy.s.sol/", vm.toString(block.chainid), "/run-latest.json");
-        string memory content = vm.readFile(path);
 
-        while (nextTransaction(content)) {
-            _verifyIfContractDeployment(content);
-            currTransactionIdx++;
+        // Get deploy script name from env or default to Deploy.s.sol
+        string memory deployScript = "Deploy.s.sol";
+        try vm.envString("DEPLOY_SCRIPT") returns (string memory envScript) {
+            // Extract filename from path (e.g., "script/Deploy.s.sol" -> "Deploy.s.sol")
+            deployScript = _extractFilename(envScript);
+            console.log("Using deployment script:", deployScript);
+        } catch {
+            console.log("DEPLOY_SCRIPT not set, using default:", deployScript);
         }
+
+        string memory path = string.concat(
+            root,
+            "/broadcast/",
+            deployScript,
+            "/",
+            vm.toString(block.chainid),
+            "/run-latest.json"
+        );
+
+        console.log("Reading broadcast file:", path);
+
+        try vm.readFile(path) returns (string memory content) {
+            console.log("Found deployment broadcast file");
+
+            uint256 verifiedCount = 0;
+            while (nextTransaction(content)) {
+                _verifyIfContractDeployment(content);
+                currTransactionIdx++;
+                verifiedCount++;
+            }
+
+            if (verifiedCount == 0) {
+                console.log("No contract deployments found to verify");
+            } else {
+                console.log("Verified", verifiedCount, "contract(s)");
+            }
+        } catch {
+            console.log("\nError: Could not find broadcast file at:", path);
+            console.log("\nPossible solutions:");
+            console.log("1. Deploy contracts first: yarn deploy --network <network>");
+            console.log("2. Ensure DEPLOY_SCRIPT matches the script you deployed with");
+            revert("Broadcast file not found");
+        }
+    }
+
+    function _extractFilename(string memory path) internal pure returns (string memory) {
+        bytes memory pathBytes = bytes(path);
+        uint256 lastSlash = 0;
+
+        for (uint256 i = 0; i < pathBytes.length; i++) {
+            if (pathBytes[i] == "/") {
+                lastSlash = i + 1;
+            }
+        }
+
+        if (lastSlash == 0) {
+            return path; // No slash found, return as-is
+        }
+
+        bytes memory filename = new bytes(pathBytes.length - lastSlash);
+        for (uint256 i = 0; i < filename.length; i++) {
+            filename[i] = pathBytes[lastSlash + i];
+        }
+
+        return string(filename);
     }
 
     function _verifyIfContractDeployment(string memory content) internal {

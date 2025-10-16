@@ -2,25 +2,23 @@
 pragma solidity ^0.8.19;
 
 import "./DeployHelpers.s.sol";
-import { DeployYourContract } from "./DeployYourContract.s.sol";
 import { DeployChipPayment } from "./DeployChipPayment.s.sol";
 
 /**
- * @notice Main deployment script for all contracts
- * @dev Run this when you want to deploy multiple contracts at once
+ * @notice Main deployment script - works on all chains
+ * @dev Automatically detects chain and deploys appropriate contracts
  *
- * Example: yarn deploy # runs this script(without`--file` flag)
+ * Usage:
+ *   yarn deploy                         # localhost
+ *   yarn deploy --network sepolia       # Sepolia testnet
+ *   yarn deploy --network base          # Base mainnet
+ *   yarn deploy --network arbitrum      # Arbitrum mainnet
+ *   yarn deploy --network optimism      # Optimism mainnet
  */
 contract DeployScript is ScaffoldETHDeploy {
     function run() external {
-        // Deploys all your contracts sequentially
-        // Add new deployments here when needed
-
-        // Deploy Chip Payment System
+        // Deploy Chip Payment System (works on all chains)
         DeployChipPayment deployChipPayment = new DeployChipPayment();
         deployChipPayment.run();
-
-        // DeployYourContract deployYourContract = new DeployYourContract();
-        // deployYourContract.run();
     }
 }
