@@ -110,11 +110,11 @@ export default function RegisterPage() {
   const allComplete = isTxSuccess && steps.every(s => s.status === "complete");
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-base-200">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-base-200 to-base-300">
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4 transition-transform hover:scale-105">
             <Nfc className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-base-content mb-2">Register Your Chip</h1>
@@ -122,10 +122,10 @@ export default function RegisterPage() {
         </div>
 
         {/* Main Card */}
-        <div className="bg-base-100 rounded-xl shadow-lg border border-base-300 p-6 space-y-6">
+        <div className="bg-base-100 rounded-xl shadow-xl border border-base-300 p-6 space-y-6 transition-shadow hover:shadow-2xl">
           {/* Wallet Alert */}
           {!address && (
-            <div className="alert alert-warning">
+            <div className="alert alert-warning shadow-md">
               <Wallet className="h-5 w-5" />
               <span className="text-sm">Connect your wallet to continue</span>
             </div>
@@ -133,7 +133,7 @@ export default function RegisterPage() {
 
           {/* Status Message */}
           {statusMessage && (
-            <div className={`alert ${showError ? "alert-error" : "alert-info"}`}>
+            <div className={`alert shadow-md ${showError ? "alert-error" : "alert-info"}`}>
               {showError ? <AlertCircle className="h-5 w-5" /> : <Loader2 className="h-5 w-5 animate-spin" />}
               <span className="text-sm">{statusMessage}</span>
             </div>
@@ -163,14 +163,17 @@ export default function RegisterPage() {
 
           {/* Action Button */}
           {allComplete ? (
-            <button onClick={resetFlow} className="btn btn-primary w-full h-12">
+            <button
+              onClick={resetFlow}
+              className="btn btn-primary w-full h-12 hover:scale-[1.01] active:scale-[0.99] transition-transform"
+            >
               Register Another Chip
             </button>
           ) : (
             <button
               onClick={handleRegister}
               disabled={isLoading || isTxPending || !address}
-              className="btn btn-primary w-full h-12"
+              className="btn btn-primary w-full h-12 hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:hover:scale-100"
             >
               {isLoading || isTxPending ? (
                 <>
