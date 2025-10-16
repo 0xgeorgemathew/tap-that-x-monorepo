@@ -20,23 +20,16 @@ contract USDCPaymentProcessor is EIP712, ReentrancyGuard {
 
     mapping(bytes32 => bool) public usedSignatures;
 
-    bytes32 private constant PAYMENT_TYPEHASH = keccak256(
-        "Payment(address from,address to,uint256 amount,uint256 timestamp,bytes32 nonce)"
-    );
+    bytes32 private constant PAYMENT_TYPEHASH =
+        keccak256("Payment(address from,address to,uint256 amount,uint256 timestamp,bytes32 nonce)");
 
     event PaymentAuthorized(
-        address indexed from,
-        address indexed to,
-        uint256 amount,
-        address indexed chip,
-        bytes32 nonce
+        address indexed from, address indexed to, uint256 amount, address indexed chip, bytes32 nonce
     );
 
     event SignatureUsed(bytes32 indexed signatureHash);
 
-    constructor(address _usdc, address _chipRegistry)
-        EIP712("USDCPaymentProcessor", "1")
-    {
+    constructor(address _usdc, address _chipRegistry) EIP712("USDCPaymentProcessor", "1") {
         require(_usdc != address(0), "Invalid USDC address");
         require(_chipRegistry != address(0), "Invalid ChipRegistry address");
 
@@ -126,30 +119,17 @@ contract USDCPaymentProcessor is EIP712, ReentrancyGuard {
         bytes memory signature
     ) internal view returns (address) {
         // Create payment auth struct
-        ChipAuthVerifier.PaymentAuth memory auth = ChipAuthVerifier.PaymentAuth({
-            from: from,
-            to: to,
-            amount: amount,
-            timestamp: timestamp,
-            nonce: nonce
-        });
+        ChipAuthVerifier.PaymentAuth memory auth =
+            ChipAuthVerifier.PaymentAuth({ from: from, to: to, amount: amount, timestamp: timestamp, nonce: nonce });
 
         // Validate timestamp
-        require(
-            ChipAuthVerifier.validateTimestamp(timestamp, MAX_DURATION_WINDOW),
-            "Signature expired"
-        );
+        require(ChipAuthVerifier.validateTimestamp(timestamp, MAX_DURATION_WINDOW), "Signature expired");
 
         // Recover chip address from signature
-        address chip = ChipAuthVerifier.recoverChipAddress(
-            _domainSeparatorV4(),
-            auth,
-            signature
-        );
+        address chip = ChipAuthVerifier.recoverChipAddress(_domainSeparatorV4(), auth, signature);
 
         require(chip != address(0), "Invalid chip signature");
 
         return chip;
     }
-
 }

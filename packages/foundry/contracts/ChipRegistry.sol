@@ -14,15 +14,12 @@ contract ChipRegistry is Ownable, ReentrancyGuard {
 
     event ChipRegistered(address indexed chip, address indexed owner);
 
-    constructor() Ownable(msg.sender) {}
+    constructor() Ownable(msg.sender) { }
 
     /// @notice Register a new chip with ownership proof
     /// @param chipAddress The address derived from the chip's private key
     /// @param chipSignature Signature proving ownership of the chip
-    function registerChip(
-        address chipAddress,
-        bytes memory chipSignature
-    ) external {
+    function registerChip(address chipAddress, bytes memory chipSignature) external {
         require(chipAddress != address(0), "Invalid chip address");
         require(chipToOwner[chipAddress] == address(0), "Chip already registered");
 

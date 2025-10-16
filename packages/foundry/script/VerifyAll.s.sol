@@ -44,14 +44,8 @@ contract VerifyAll is Script {
             console.log("DEPLOY_SCRIPT not set, using default:", deployScript);
         }
 
-        string memory path = string.concat(
-            root,
-            "/broadcast/",
-            deployScript,
-            "/",
-            vm.toString(block.chainid),
-            "/run-latest.json"
-        );
+        string memory path =
+            string.concat(root, "/broadcast/", deployScript, "/", vm.toString(block.chainid), "/run-latest.json");
 
         console.log("Reading broadcast file:", path);
 

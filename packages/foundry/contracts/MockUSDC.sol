@@ -10,7 +10,7 @@ contract MockUSDC is ERC20Permit, Ownable {
 
     constructor() ERC20("USD Coin", "USDC") ERC20Permit("USD Coin") Ownable(msg.sender) {
         // Mint 1 million USDC to deployer for testing
-        _mint(msg.sender, 1_000_000 * 10**DECIMALS);
+        _mint(msg.sender, 1_000_000 * 10 ** DECIMALS);
     }
 
     /// @notice Mint USDC tokens for testing
@@ -24,7 +24,7 @@ contract MockUSDC is ERC20Permit, Ownable {
     /// @param to Address to send USDC to
     function faucet(address to) external {
         require(to != address(0), "Invalid address");
-        _mint(to, 1000 * 10**DECIMALS);
+        _mint(to, 1000 * 10 ** DECIMALS);
     }
 
     /// @notice Override decimals to return 6 like real USDC

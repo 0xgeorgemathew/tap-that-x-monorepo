@@ -43,9 +43,7 @@ contract DeployChipPayment is ScaffoldETHDeploy {
             console.log("MockUSDC deployed at:", usdcAddress);
 
             // Register deployment for frontend
-            deployments.push(
-                Deployment({ name: "MockUSDC", addr: usdcAddress })
-            );
+            deployments.push(Deployment({ name: "MockUSDC", addr: usdcAddress }));
         } else {
             console.log("Using production USDC at:", usdcAddress);
         }
@@ -55,21 +53,14 @@ contract DeployChipPayment is ScaffoldETHDeploy {
         console.log("ChipRegistry deployed at:", address(chipRegistry));
 
         // Register deployment for frontend
-        deployments.push(
-            Deployment({ name: "ChipRegistry", addr: address(chipRegistry) })
-        );
+        deployments.push(Deployment({ name: "ChipRegistry", addr: address(chipRegistry) }));
 
         // Deploy USDCPaymentProcessor
-        USDCPaymentProcessor paymentProcessor = new USDCPaymentProcessor(
-            usdcAddress,
-            address(chipRegistry)
-        );
+        USDCPaymentProcessor paymentProcessor = new USDCPaymentProcessor(usdcAddress, address(chipRegistry));
         console.log("USDCPaymentProcessor deployed at:", address(paymentProcessor));
 
         // Register deployment for frontend
-        deployments.push(
-            Deployment({ name: "USDCPaymentProcessor", addr: address(paymentProcessor) })
-        );
+        deployments.push(Deployment({ name: "USDCPaymentProcessor", addr: address(paymentProcessor) }));
 
         console.log("\n=== Deployment Complete ===");
         console.log("Chain ID:", block.chainid);
