@@ -1,5 +1,6 @@
 {
-  "buildCommand": "corepack yarn build",
+  "installCommand": "cd ../.. && yarn install",
+  "buildCommand": "cd ../.. && cd packages/nextjs && corepack yarn build",
   "framework": "nextjs",
   "regions": ["iad1"],
   "functions": {
