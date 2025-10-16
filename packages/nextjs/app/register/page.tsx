@@ -66,7 +66,7 @@ export default function RegisterPage() {
       setStatus("Tap your chip again to authorize registration...");
 
       const messageToSign = keccak256(encodePacked(["address", "address"], [address, detectedChipAddress]));
-      const registrationSig = await signMessage({ digest: messageToSign.slice(2) });
+      const registrationSig = await signMessage({ message: messageToSign.slice(2), format: "hex" });
 
       updateStep(2, "complete");
       setStatus("Authorization signed. Preparing transaction...");
