@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
     config.externals.push("pino-pretty", "lokijs", "encoding");
     return config;
   },
+  // Suppress Yarn 3 lockfile patching warnings
+  experimental: {
+    swcTraceProfiling: false,
+  },
 };
 
 const isIpfs = process.env.NEXT_PUBLIC_IPFS_BUILD === "true";
