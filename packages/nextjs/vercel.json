@@ -1,5 +1,5 @@
 {
-  "installCommand": "cd ../.. && yarn install",
+  "installCommand": "yarn --cwd ../.. install",
   "buildCommand": "yarn build",
   "framework": "nextjs",
   "regions": ["iad1"],
