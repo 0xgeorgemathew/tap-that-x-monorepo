@@ -1,5 +1,4 @@
 {
-  "buildCommand": "SKIP_ENV_VALIDATION=true yarn build",
   "framework": "nextjs",
   "regions": ["iad1"],
   "build": {
