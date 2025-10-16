@@ -2092,15 +2092,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@multiformats/multiaddr-to-uri@npm:^10.0.1":
-  version: 10.1.2
-  resolution: "@multiformats/multiaddr-to-uri@npm:10.1.2"
-  dependencies:
-    "@multiformats/multiaddr": ^12.3.0
-  checksum: 01510c7241de059bab0af1008f6e54a2d282b586ea06a06ac5ab27196533bbc5c3905e8874cc0e2950521f3abbc59e54e512b6cf2ad6350bf7f70596761d0fcc
-  languageName: node
-  linkType: hard
-
 "@multiformats/multiaddr-to-uri@npm:^11.0.0":
   version: 11.0.2
   resolution: "@multiformats/multiaddr-to-uri@npm:11.0.2"
@@ -3197,7 +3188,6 @@ __metadata:
     eslint-config-next: ~15.2.3
     eslint-config-prettier: ~10.1.1
     eslint-plugin-prettier: ~5.2.4
-    kubo-rpc-client: ~5.0.2
     lucide-react: ^0.546.0
     next: ~15.2.3
     next-nprogress-bar: ~2.3.13
@@ -9691,47 +9681,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kubo-rpc-client@npm:~5.0.2":
-  version: 5.0.2
-  resolution: "kubo-rpc-client@npm:5.0.2"
-  dependencies:
-    "@ipld/dag-cbor": ^9.0.0
-    "@ipld/dag-json": ^10.0.0
-    "@ipld/dag-pb": ^4.0.0
-    "@libp2p/crypto": ^5.0.0
-    "@libp2p/interface": ^2.0.0
-    "@libp2p/logger": ^5.0.0
-    "@libp2p/peer-id": ^5.0.0
-    "@multiformats/multiaddr": ^12.2.1
-    "@multiformats/multiaddr-to-uri": ^10.0.1
-    any-signal: ^4.1.1
-    blob-to-it: ^2.0.5
-    browser-readablestream-to-it: ^2.0.5
-    dag-jose: ^5.0.0
-    electron-fetch: ^1.9.1
-    err-code: ^3.0.1
-    ipfs-unixfs: ^11.1.4
-    iso-url: ^1.2.1
-    it-all: ^3.0.4
-    it-first: ^3.0.4
-    it-glob: ^3.0.1
-    it-last: ^3.0.4
-    it-map: ^3.0.5
-    it-peekable: ^3.0.3
-    it-to-stream: ^1.0.0
-    merge-options: ^3.0.4
-    multiformats: ^13.1.0
-    nanoid: ^5.0.7
-    native-fetch: ^4.0.2
-    parse-duration: ^1.0.2
-    react-native-fetch-api: ^3.0.0
-    stream-to-it: ^1.0.1
-    uint8arrays: ^5.0.3
-    wherearewe: ^2.0.1
-  checksum: 1e5528bebca8ab665c54d270204b90080f26d236fd056f059c21a964287e405851ac81249d125b315c998a533d8cbdd917df24c1a8cb9d8e5d76520e25eddf08
-  languageName: node
-  linkType: hard
-
 "language-subtag-registry@npm:^0.3.20":
   version: 0.3.23
   resolution: "language-subtag-registry@npm:0.3.23"
@@ -11623,13 +11572,6 @@ __metadata:
     just-diff: ^6.0.0
     just-diff-apply: ^5.2.0
   checksum: ee4e1da52a54a127460713c82a12fffc1071dd2945350ebd9e203337b944901d086d515f7b15f42c6c5d9cf031de76eae0ebf5338fe8339d5695a7882d0aeba9
-  languageName: node
-  linkType: hard
-
-"parse-duration@npm:^1.0.2":
-  version: 1.1.2
-  resolution: "parse-duration@npm:1.1.2"
-  checksum: c31ebdee783935afe250fd79cdfab9d14e196ee2a810e6a7abbdef6d945a1b88797972437c9e5ed10e8e1cb5cd68b7cc13e9ac9721839f0cb1c2f5fe837d99d9
   languageName: node
   linkType: hard
 
