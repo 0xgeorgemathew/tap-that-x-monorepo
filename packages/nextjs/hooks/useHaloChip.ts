@@ -54,16 +54,39 @@ export function useHaloChip() {
     setIsLoading(true);
     setError(null);
     try {
+      // HaloTag EIP-712 requires specific structure with EIP712Domain type
+      const typedDataPayload = {
+        domain,
+        types: {
+          ...types,
+          // EIP712Domain must be explicitly defined
+          EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
+            { name: "chainId", type: "uint256" },
+            { name: "verifyingContract", type: "address" },
+          ],
+        },
+        primaryType,
+        message, // HaloTag uses 'message', not 'value'
+      };
+
+      console.log("📝 EIP-712 Typed Data Payload:", JSON.stringify(typedDataPayload, null, 2));
+
       const result = await execHaloCmdWeb({
         name: "sign",
         keyNo: 1,
-        typedData: { domain, types, primaryType, message },
+        typedData: typedDataPayload,
       });
+
+      console.log("✅ HaloTag signature result:", result);
+
       return {
         address: result.etherAddress,
-        signature: result.signature.ether, // Ethereum-formatted signature string
+        signature: result.signature.ether,
       };
     } catch (err) {
+      console.error("❌ HaloTag signTypedData error:", err);
       const msg = err instanceof Error ? err.message : "NFC read failed";
       setError(msg);
       throw err;
