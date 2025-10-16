@@ -42,10 +42,11 @@ export default function RegisterPage() {
       // 2. Tap to sign registration (chip signs: keccak256(owner, chipAddress))
       setStatus("Tap again to sign registration...");
       const messageToSign = keccak256(encodePacked(["address", "address"], [address, chipAddress]));
-      console.log("Message to sign:", messageToSign);
+      console.log("Hash to sign:", messageToSign);
 
-      const registrationSig = await signMessage({ message: messageToSign });
-      console.log("Registration signature:", registrationSig.signature);
+      // Use digest to sign raw hash (contract will add EIP-191 prefix)
+      const registrationSig = await signMessage({ digest: messageToSign });
+      console.log("Signature:", registrationSig.signature);
 
       setStatus("Sending transaction...");
 

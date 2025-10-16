@@ -7,19 +7,39 @@ export function useHaloChip() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const signMessage = async ({ message, format }: { message: string; format?: "text" | "hex" }) => {
+  const signMessage = async ({
+    message,
+    digest,
+    format,
+  }: {
+    message?: string;
+    digest?: string;
+    format?: "text" | "hex";
+  }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await execHaloCmdWeb({
+      const command: any = {
         name: "sign",
         keyNo: 1,
-        message,
-        ...(format && { format }),
-      });
+      };
+
+      // Use either message (with optional format) or digest (raw hash)
+      if (digest) {
+        command.digest = digest;
+      } else if (message) {
+        command.message = message;
+        if (format) {
+          command.format = format;
+        }
+      } else {
+        throw new Error("Either message or digest must be provided");
+      }
+
+      const result = await execHaloCmdWeb(command);
       return {
         address: result.etherAddress,
-        signature: result.signature.raw, // Use .raw for EIP-191 messages
+        signature: result.signature.ether, // Ethereum-formatted signature string
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : "NFC read failed";
