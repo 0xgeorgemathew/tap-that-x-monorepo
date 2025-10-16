@@ -1,10 +1,18 @@
 {
-  "buildCommand": "cd packages/nextjs && yarn build",
-  "outputDirectory": "packages/nextjs/.next",
+  "buildCommand": "SKIP_ENV_VALIDATION=true yarn build",
   "framework": "nextjs",
   "regions": ["iad1"],
+  "build": {
+    "env": {
+      "NEXT_TELEMETRY_DISABLED": "1",
+      "SKIP_ENV_VALIDATION": "true",
+      "YARN_ENABLE_IMMUTABLE_INSTALLS": "false",
+      "ENABLE_EXPERIMENTAL_COREPACK": "1",
+      "NEXT_IGNORE_INCORRECT_LOCKFILE": "1"
+    }
+  },
   "functions": {
-    "packages/nextjs/app/api/**/*.ts": {
+    "app/api/**/*.ts": {
       "maxDuration": 30
     }
   }
