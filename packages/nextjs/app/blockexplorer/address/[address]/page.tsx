@@ -83,10 +83,7 @@ const getContractData = async (address: Address) => {
   return { bytecode, assembly };
 };
 
-export function generateStaticParams() {
-  // An workaround to enable static exports in Next.js, generating single dummy page.
-  return [{ address: "0x0000000000000000000000000000000000000000" }];
-}
+// Removed generateStaticParams - using dynamic rendering for better build performance
 
 const AddressPage = async (props: PageProps) => {
   const params = await props.params;

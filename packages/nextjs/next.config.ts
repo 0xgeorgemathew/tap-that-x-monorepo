@@ -9,12 +9,23 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR === "true",
   },
+  outputFileTracingExcludes: {
+    "*": [
+      "node_modules/@swc/core-linux-x64-gnu",
+      "node_modules/@swc/core-linux-x64-musl",
+      "node_modules/@esbuild",
+      "node_modules/webpack",
+      "node_modules/rollup",
+      "node_modules/terser",
+      ".next/cache",
+    ],
+    "/blockexplorer/address/[address]": ["**/foundry/out/**"],
+  },
   webpack: config => {
     config.resolve.fallback = { fs: false, net: false, tls: false };
     config.externals.push("pino-pretty", "lokijs", "encoding");
     return config;
   },
-  // Suppress Yarn 3 lockfile patching warnings
   experimental: {
     swcTraceProfiling: false,
   },
