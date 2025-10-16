@@ -2,10 +2,5 @@
   "buildCommand": "cd packages/nextjs && yarn build",
   "outputDirectory": "packages/nextjs/.next",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "functions": {
-    "packages/nextjs/app/api/**/route.ts": {
-      "maxDuration": 30
-    }
-  }
+  "regions": ["iad1"]
 }

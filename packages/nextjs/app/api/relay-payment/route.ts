@@ -4,6 +4,8 @@ import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import deployedContracts from "~~/contracts/deployedContracts";
 
+export const maxDuration = 30;
+
 // IMPORTANT: Store this in environment variables
 // Generate a new account and fund it with Sepolia ETH from faucet
 const RELAYER_PRIVATE_KEY = process.env.RELAYER_PRIVATE_KEY;
