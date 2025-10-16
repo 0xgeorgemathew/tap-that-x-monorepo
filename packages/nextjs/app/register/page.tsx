@@ -29,7 +29,7 @@ export default function RegisterPage() {
 
     try {
       // 1. Tap to get chip address
-      const chipData = await signMessage({ message: "init" });
+      const chipData = await signMessage({ message: "init", format: "text" });
       const chipAddress = chipData.address as `0x${string}`;
 
       // 2. Tap to sign registration (chip signs: keccak256(owner, chipAddress))

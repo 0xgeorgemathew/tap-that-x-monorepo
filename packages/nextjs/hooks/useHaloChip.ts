@@ -7,7 +7,7 @@ export function useHaloChip() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const signMessage = async ({ message }: { message: string }) => {
+  const signMessage = async ({ message, format }: { message: string; format?: "text" | "hex" }) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -15,6 +15,7 @@ export function useHaloChip() {
         name: "sign",
         keyNo: 1,
         message,
+        ...(format && { format }),
       });
       return {
         address: result.etherAddress,
