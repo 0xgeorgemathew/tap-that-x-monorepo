@@ -1,7 +1,16 @@
 {
-  "buildCommand": "yarn workspace @se-2/nextjs build",
+  "buildCommand": "SKIP_ENV_VALIDATION=true yarn workspace @se-2/nextjs build",
   "installCommand": "yarn install",
   "outputDirectory": "packages/nextjs/.next",
   "framework": null,
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "build": {
+    "env": {
+      "NEXT_TELEMETRY_DISABLED": "1",
+      "SKIP_ENV_VALIDATION": "true",
+      "YARN_ENABLE_IMMUTABLE_INSTALLS": "false",
+      "ENABLE_EXPERIMENTAL_COREPACK": "1",
+      "NEXT_IGNORE_INCORRECT_LOCKFILE": "1"
+    }
+  }
 }

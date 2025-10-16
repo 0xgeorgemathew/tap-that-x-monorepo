@@ -38,6 +38,10 @@
     "wagmi": "2.16.4",
     "zustand": "~5.0.0"
   },
+  "optionalDependencies": {
+    "@next/swc-darwin-arm64": "~15.2.3",
+    "@next/swc-linux-x64-gnu": "~15.2.3"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "4.0.15",
     "@trivago/prettier-plugin-sort-imports": "~4.3.0",
