@@ -1,9 +1,15 @@
 import { NetworkOptions } from "./NetworkOptions";
-import { useDisconnect } from "wagmi";
-import { ArrowLeftOnRectangleIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { baseSepolia } from "viem/chains";
+import { useDisconnect, useSwitchChain } from "wagmi";
+import { ArrowLeftOnRectangleIcon, ArrowsRightLeftIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 
 export const WrongNetworkDropdown = () => {
   const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
+
+  const handleSwitchToBase = () => {
+    switchChain?.({ chainId: baseSepolia.id });
+  };
 
   return (
     <div className="dropdown dropdown-end mr-2">
@@ -15,7 +21,26 @@ export const WrongNetworkDropdown = () => {
         tabIndex={0}
         className="dropdown-content menu p-2 mt-1 shadow-center shadow-accent bg-base-200 rounded-box gap-1"
       >
+        {/* Primary action: Switch to Base */}
+        <li>
+          <button
+            className="menu-item btn-sm rounded-xl! flex gap-3 py-3 bg-primary text-primary-content hover:bg-primary-focus font-semibold"
+            type="button"
+            onClick={handleSwitchToBase}
+          >
+            <ArrowsRightLeftIcon className="h-6 w-4 ml-2 sm:ml-0" />
+            <span>Switch to Base Sepolia</span>
+          </button>
+        </li>
+
+        {/* Divider */}
+        <div className="divider my-0 h-px" />
+
+        {/* Other network options */}
         <NetworkOptions />
+
+        {/* Disconnect option */}
+        <div className="divider my-0 h-px" />
         <li>
           <button
             className="menu-item text-error btn-sm rounded-xl! flex gap-3 py-3"

@@ -15,17 +15,7 @@ export const PAYMENT_STEPS: Omit<PaymentStep, "status">[] = [
   },
   {
     id: 2,
-    title: "Authorize Payment",
-    description: "Tap chip again to authorize transaction",
-  },
-  {
-    id: 3,
-    title: "Sign Permit",
-    description: "Sign USDC permit in your wallet",
-  },
-  {
-    id: 4,
-    title: "Process Payment",
-    description: "Relaying transaction to blockchain",
+    title: "Complete Payment",
+    description: "Authorize and process the transaction",
   },
 ];

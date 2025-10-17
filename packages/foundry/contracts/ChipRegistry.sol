@@ -3,30 +3,32 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract ChipRegistry is Ownable, ReentrancyGuard {
+contract ChipRegistry is Ownable, ReentrancyGuard, EIP712 {
     using ECDSA for bytes32;
-    using MessageHashUtils for bytes32;
 
     mapping(address => address) public chipToOwner;
 
+    bytes32 private constant REGISTRATION_TYPEHASH =
+        keccak256("ChipRegistration(address owner,address chipAddress)");
+
     event ChipRegistered(address indexed chip, address indexed owner);
 
-    constructor() Ownable(msg.sender) { }
+    constructor() Ownable(msg.sender) EIP712("ChipRegistry", "1") { }
 
-    /// @notice Register a new chip with ownership proof
+    /// @notice Register a new chip with ownership proof using EIP-712
     /// @param chipAddress The address derived from the chip's private key
-    /// @param chipSignature Signature proving ownership of the chip
+    /// @param chipSignature EIP-712 signature from the chip proving ownership
     function registerChip(address chipAddress, bytes memory chipSignature) external {
         require(chipAddress != address(0), "Invalid chip address");
         require(chipToOwner[chipAddress] == address(0), "Chip already registered");
 
-        // Verify chip signature
-        bytes32 messageHash = keccak256(abi.encodePacked(msg.sender, chipAddress));
-        bytes32 ethSignedHash = messageHash.toEthSignedMessageHash();
-        address signer = ethSignedHash.recover(chipSignature);
+        // Verify EIP-712 chip signature
+        bytes32 structHash = keccak256(abi.encode(REGISTRATION_TYPEHASH, msg.sender, chipAddress));
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", _domainSeparatorV4(), structHash));
+        address signer = digest.recover(chipSignature);
 
         require(signer == chipAddress, "Invalid chip signature");
 

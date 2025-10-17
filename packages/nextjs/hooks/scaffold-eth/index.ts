@@ -1,4 +1,5 @@
 export * from "./useAnimationConfig";
+export * from "./useAutoSwitchNetwork";
 export * from "./useContractLogs";
 export * from "./useCopyToClipboard";
 export * from "./useDeployedContractInfo";

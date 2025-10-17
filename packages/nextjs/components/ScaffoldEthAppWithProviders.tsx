@@ -6,15 +6,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
+import { baseSepolia } from "viem/chains";
 import { WagmiProvider } from "wagmi";
 import { Footer } from "~~/components/Footer";
 import { Header } from "~~/components/Header";
 import { BlockieAvatar } from "~~/components/scaffold-eth";
-import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
+import { useAutoSwitchNetwork, useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
+  useAutoSwitchNetwork();
 
   return (
     <>
@@ -51,6 +53,12 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
         <RainbowKitProvider
           avatar={BlockieAvatar}
           theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
+          initialChain={baseSepolia}
+          showRecentTransactions={true}
+          appInfo={{
+            appName: "Tap That X",
+            learnMoreUrl: "https://github.com/your-repo",
+          }}
         >
           <ProgressBar height="3px" color="#2299dd" />
           <ScaffoldEthApp>{children}</ScaffoldEthApp>

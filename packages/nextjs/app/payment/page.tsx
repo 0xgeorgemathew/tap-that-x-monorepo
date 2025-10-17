@@ -6,7 +6,6 @@ import { parseUnits } from "viem";
 import { useAccount, useChainId, usePublicClient, useSignTypedData } from "wagmi";
 import { ChipOwnerDisplay } from "~~/components/payment/ChipOwnerDisplay";
 import { PaymentStep } from "~~/components/payment/PaymentStep";
-import { PaymentStepIndicator } from "~~/components/payment/PaymentStepIndicator";
 import { PAYMENT_STEPS, type PaymentStep as Step } from "~~/components/payment/types";
 import { Separator } from "~~/components/ui/separator";
 import deployedContracts from "~~/contracts/deployedContracts";
@@ -27,7 +26,6 @@ export default function PaymentPage() {
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("1");
   const [statusMessage, setStatusMessage] = useState<string>("");
-  const [transactionHash, setTransactionHash] = useState<string>("");
   const [steps, setSteps] = useState<Step[]>(PAYMENT_STEPS.map(step => ({ ...step, status: "idle" })));
 
   const { signMessage, signTypedData, isLoading, error } = useHaloChip();
@@ -36,11 +34,6 @@ export default function PaymentPage() {
 
   const updateStep = (stepId: number, status: Step["status"]) => {
     setSteps(prev => prev.map(step => (step.id === stepId ? { ...step, status } : step)));
-  };
-
-  const getCurrentStepNumber = () => {
-    const activeIndex = steps.findIndex(s => s.status === "loading" || s.status === "active");
-    return activeIndex >= 0 ? activeIndex + 1 : steps.filter(s => s.status === "complete").length + 1;
   };
 
   const handlePayment = async () => {
@@ -73,9 +66,21 @@ export default function PaymentPage() {
 
       if (!chipOwner || chipOwner === "0x0000000000000000000000000000000000000000") {
         updateStep(1, "error");
-        setStatusMessage("Error: Chip not registered. Please register the chip first.");
+        setStatusMessage(
+          `Error: Chip not registered (${detectedChipAddress.slice(0, 10)}...). Please register the chip first at /register page.`,
+        );
+        console.error("Chip not registered:", {
+          detectedChipAddress,
+          chipOwner,
+          registryAddress: CHIP_REGISTRY,
+        });
         return;
       }
+
+      console.log("✅ Chip registered:", {
+        chipAddress: detectedChipAddress,
+        owner: chipOwner,
+      });
 
       setRecipient(chipOwner);
       updateStep(1, "complete");
@@ -172,7 +177,7 @@ export default function PaymentPage() {
       updateStep(4, "loading");
       setStatusMessage("Processing payment on blockchain...");
 
-      const result = await relayPayment({
+      await relayPayment({
         owner: address,
         recipient: chipOwner,
         amount: amountWei.toString(),
@@ -184,7 +189,6 @@ export default function PaymentPage() {
       });
 
       updateStep(4, "complete");
-      setTransactionHash(result.transactionHash);
       setStatusMessage(`Success! Payment of ${amount} USDC sent.`);
     } catch (err) {
       console.error("Payment failed:", err);
@@ -201,7 +205,6 @@ export default function PaymentPage() {
     setStatusMessage("");
     setChipAddress("");
     setRecipient("");
-    setTransactionHash("");
     setAmount("1");
   };
 
@@ -212,16 +215,16 @@ export default function PaymentPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-base-200 to-base-300">
       <div className="w-full max-w-2xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4 transition-transform hover:scale-105">
-            <CreditCard className="h-8 w-8 text-primary" />
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary mb-4 transition-transform hover:scale-105 shadow-xl">
+            <CreditCard className="h-14 w-14 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-base-content mb-2">Tap to Pay</h1>
           <p className="text-base-content/60">Send USDC by tapping your NFC chip</p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-base-100 rounded-xl shadow-xl border border-base-300 p-6 space-y-6 transition-shadow hover:shadow-2xl">
+        <div className="bg-base-100 rounded-xl shadow-xl border border-base-300 p-6 space-y-4 transition-shadow hover:shadow-2xl">
           {/* Wallet Alert */}
           {!address && (
             <div className="alert alert-warning shadow-md">
@@ -246,14 +249,9 @@ export default function PaymentPage() {
             </div>
           )}
 
-          {/* Progress Indicator */}
-          <PaymentStepIndicator steps={steps} currentStep={getCurrentStepNumber()} />
-
-          <Separator />
-
-          {/* Steps List */}
-          <div className="space-y-3">
-            {steps.map(step => (
+          {/* Steps List - Only show first 2 */}
+          <div className="space-y-2">
+            {steps.slice(0, 2).map(step => (
               <PaymentStep key={step.id} step={step} />
             ))}
           </div>
@@ -266,45 +264,11 @@ export default function PaymentPage() {
             </>
           )}
 
-          {/* Amount Display */}
-          {chipAddress && (
-            <>
-              <Separator />
-              <div className="bg-base-200 rounded-lg p-4 border border-base-300">
-                <p className="text-xs font-medium text-base-content/60 mb-2">Payment Amount</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-primary">{amount}</span>
-                  <span className="text-base text-base-content/60">USDC</span>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Transaction Hash */}
-          {transactionHash && (
-            <>
-              <Separator />
-              <div className="bg-base-200 rounded-lg p-4 border border-base-300">
-                <p className="text-xs font-medium text-base-content/60 mb-2">Transaction Hash</p>
-                <a
-                  href={`https://sepolia.etherscan.io/tx/${transactionHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-sm text-primary hover:underline break-all"
-                >
-                  {transactionHash}
-                </a>
-              </div>
-            </>
-          )}
-
-          <Separator />
-
           {/* Action Button */}
           {allComplete ? (
             <button
               onClick={resetFlow}
-              className="btn btn-primary w-full h-12 hover:scale-[1.01] active:scale-[0.99] transition-transform"
+              className="btn btn-primary w-full h-16 rounded-full text-lg hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-lg"
             >
               Make Another Payment
             </button>
@@ -312,16 +276,16 @@ export default function PaymentPage() {
             <button
               onClick={handlePayment}
               disabled={isLoading || !address}
-              className="btn btn-primary w-full h-12 hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:hover:scale-100"
+              className="btn btn-primary w-full h-16 rounded-full text-lg hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:hover:scale-100 shadow-lg"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-6 w-6 animate-spin" />
                   <span>Processing...</span>
                 </>
               ) : (
                 <>
-                  <CreditCard className="h-5 w-5" />
+                  <CreditCard className="h-6 w-6" />
                   <span>Pay {amount} USDC</span>
                 </>
               )}
