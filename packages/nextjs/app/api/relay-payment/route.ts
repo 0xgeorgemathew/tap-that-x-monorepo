@@ -14,10 +14,10 @@ const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || process.env.A
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { owner, recipient, amount, deadline, permitSignature, chipSignature, timestamp, nonce } = body;
+    const { owner, recipient, amount, chipSignature, timestamp, nonce } = body;
 
     // Validate inputs
-    if (!owner || !recipient || !amount || !deadline || !permitSignature || !chipSignature || !timestamp || !nonce) {
+    if (!owner || !recipient || !amount || !chipSignature || !timestamp || !nonce) {
       return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
     }
 
@@ -45,19 +45,15 @@ export async function POST(req: NextRequest) {
       transport: http(rpcUrl),
     }).extend(publicActions);
 
-    // Call executePermitPayment on USDCPaymentProcessor
+    // Call executePayment on USDCPaymentProcessor
     const hash = await client.writeContract({
       address: contracts.USDCPaymentProcessor.address,
       abi: contracts.USDCPaymentProcessor.abi,
-      functionName: "executePermitPayment",
+      functionName: "executePayment",
       args: [
         owner as `0x${string}`,
         recipient as `0x${string}`,
         BigInt(amount),
-        BigInt(deadline),
-        permitSignature.v,
-        permitSignature.r as `0x${string}`,
-        permitSignature.s as `0x${string}`,
         chipSignature as `0x${string}`,
         BigInt(timestamp),
         nonce as `0x${string}`,

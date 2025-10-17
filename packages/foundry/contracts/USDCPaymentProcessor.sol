@@ -109,6 +109,52 @@ contract USDCPaymentProcessor is EIP712, ReentrancyGuard {
         return _verifyChipAuth(from, to, amount, timestamp, nonce, signature);
     }
 
+    /// @notice Execute payment using pre-approved allowance (no permit required)
+    /// @dev Requires user to have pre-approved this contract via standard ERC20 approve()
+    /// @param owner The USDC token owner (payer)
+    /// @param recipient The payment recipient
+    /// @param amount The amount of USDC to transfer (in USDC's smallest units)
+    /// @param chipSignature The chip's authorization signature
+    /// @param timestamp The timestamp when the chip signature was created
+    /// @param nonce A unique nonce to prevent replay attacks
+    function executePayment(
+        address owner,
+        address recipient,
+        uint256 amount,
+        bytes memory chipSignature,
+        uint256 timestamp,
+        bytes32 nonce
+    ) external nonReentrant {
+        require(owner != address(0), "Invalid owner");
+        require(recipient != address(0), "Invalid recipient");
+        require(amount > 0, "Amount must be > 0");
+
+        // Check signature hasn't been used
+        bytes32 signatureHash = keccak256(chipSignature);
+        require(!usedSignatures[signatureHash], "Signature already used");
+
+        // Verify chip authorization
+        address chip = _verifyChipAuth(owner, recipient, amount, timestamp, nonce, chipSignature);
+
+        // Validate chip is registered and owner matches
+        address chipOwner = chipRegistry.getOwner(chip);
+        require(chipOwner != address(0), "Chip not registered");
+        require(chipOwner == owner, "Chip owner mismatch");
+
+        // Check allowance
+        uint256 allowance = _usdcERC20.allowance(owner, address(this));
+        require(allowance >= amount, "Insufficient allowance");
+
+        // Mark signature as used
+        usedSignatures[signatureHash] = true;
+        emit SignatureUsed(signatureHash);
+
+        // Transfer USDC from owner to recipient
+        require(_usdcERC20.transferFrom(owner, recipient, amount), "Transfer failed");
+
+        emit PaymentAuthorized(owner, recipient, amount, chip, nonce);
+    }
+
     /// @notice Internal function to verify chip authorization
     function _verifyChipAuth(
         address from,

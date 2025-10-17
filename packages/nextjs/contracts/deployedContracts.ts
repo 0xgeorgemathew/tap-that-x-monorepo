@@ -1008,6 +1008,44 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "executePayment",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "recipient",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "chipSignature",
+              type: "bytes",
+              internalType: "bytes",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "nonce",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
           name: "executePermitPayment",
           inputs: [
             {
@@ -1251,7 +1289,7 @@ const deployedContracts = {
   },
   84532: {
     MockUSDC: {
-      address: "0x8e487463752c2996988994c3caf21b21b929e5b8",
+      address: "0x820fb15f2ea91600c6be331907dce575f9b82297",
       abi: [
         {
           type: "constructor",
@@ -1883,10 +1921,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32469806,
+      deployedOnBlock: 32474592,
     },
     ChipRegistry: {
-      address: "0xa7d1b9ad3401678177c5c67c842943d17d750f7d",
+      address: "0xc984534976a11c5b82973bf5683f5b26ef954230",
       abi: [
         {
           type: "constructor",
@@ -2160,10 +2198,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32469806,
+      deployedOnBlock: 32474592,
     },
     USDCPaymentProcessor: {
-      address: "0xc26019f380d049f54ed54d6173e97d69a928d872",
+      address: "0xfa0b688f3dc0497fb24e41aa1ec4a4cc6222190a",
       abi: [
         {
           type: "constructor",
@@ -2249,6 +2287,44 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "executePayment",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "recipient",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "chipSignature",
+              type: "bytes",
+              internalType: "bytes",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "nonce",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
         },
         {
           type: "function",
@@ -2490,7 +2566,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32469806,
+      deployedOnBlock: 32474592,
     },
   },
   11155111: {
@@ -3493,6 +3569,44 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "executePayment",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "recipient",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "chipSignature",
+              type: "bytes",
+              internalType: "bytes",
+            },
+            {
+              name: "timestamp",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "nonce",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
         },
         {
           type: "function",

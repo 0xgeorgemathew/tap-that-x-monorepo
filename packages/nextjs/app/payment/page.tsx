@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, CreditCard, Loader2, Wallet } from "lucide-react";
 import { parseUnits } from "viem";
-import { useAccount, useChainId, usePublicClient, useSignTypedData } from "wagmi";
+import { useAccount, useChainId, usePublicClient } from "wagmi";
 import { ChipOwnerDisplay } from "~~/components/payment/ChipOwnerDisplay";
 import { PaymentStep } from "~~/components/payment/PaymentStep";
 import { PAYMENT_STEPS, type PaymentStep as Step } from "~~/components/payment/types";
@@ -27,14 +27,42 @@ export default function PaymentPage() {
   const [amount, setAmount] = useState<string>("1");
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [steps, setSteps] = useState<Step[]>(PAYMENT_STEPS.map(step => ({ ...step, status: "idle" })));
+  const [allowance, setAllowance] = useState<bigint | null>(null);
+  const [checkingApproval, setCheckingApproval] = useState(true);
 
   const { signMessage, signTypedData, isLoading, error } = useHaloChip();
-  const { signTypedDataAsync } = useSignTypedData();
   const { relayPayment } = useGaslessRelay();
 
   const updateStep = (stepId: number, status: Step["status"]) => {
     setSteps(prev => prev.map(step => (step.id === stepId ? { ...step, status } : step)));
   };
+
+  // Check USDC allowance on mount
+  useEffect(() => {
+    const checkAllowance = async () => {
+      if (!address || !publicClient || !USDC || !PAYMENT_PROCESSOR) {
+        setCheckingApproval(false);
+        return;
+      }
+
+      try {
+        const currentAllowance = (await publicClient.readContract({
+          address: USDC,
+          abi: contracts.MockUSDC.abi,
+          functionName: "allowance",
+          args: [address, PAYMENT_PROCESSOR],
+        })) as bigint;
+
+        setAllowance(currentAllowance);
+      } catch (err) {
+        console.error("Failed to check allowance:", err);
+      } finally {
+        setCheckingApproval(false);
+      }
+    };
+
+    checkAllowance();
+  }, [address, publicClient, USDC, PAYMENT_PROCESSOR, contracts]);
 
   const handlePayment = async () => {
     if (!address || !publicClient) {
@@ -131,71 +159,16 @@ export default function PaymentPage() {
       });
 
       updateStep(2, "complete");
-      setStatusMessage("");
-
-      // Step 3: Sign USDC permit
-      await new Promise(resolve => setTimeout(resolve, 500));
-      updateStep(3, "loading");
-      setStatusMessage("Please sign USDC permit in your wallet...");
-
-      const deadline = Math.floor(Date.now() / 1000) + 3600;
-      const permitNonce = await publicClient.readContract({
-        address: USDC,
-        abi: contracts.MockUSDC.abi,
-        functionName: "nonces",
-        args: [address],
-      });
-
-      const permitSig = await signTypedDataAsync({
-        domain: {
-          name: "USD Coin",
-          version: "1",
-          chainId,
-          verifyingContract: USDC,
-        },
-        types: {
-          Permit: [
-            { name: "owner", type: "address" },
-            { name: "spender", type: "address" },
-            { name: "value", type: "uint256" },
-            { name: "nonce", type: "uint256" },
-            { name: "deadline", type: "uint256" },
-          ],
-        },
-        primaryType: "Permit",
-        message: {
-          owner: address,
-          spender: PAYMENT_PROCESSOR,
-          value: amountWei,
-          nonce: permitNonce as bigint,
-          deadline: BigInt(deadline),
-        },
-      });
-
-      const r = permitSig.slice(0, 66) as `0x${string}`;
-      const s = ("0x" + permitSig.slice(66, 130)) as `0x${string}`;
-      const v = parseInt(permitSig.slice(130, 132), 16);
-
-      updateStep(3, "complete");
-      setStatusMessage("");
-
-      // Step 4: Relay transaction
-      await new Promise(resolve => setTimeout(resolve, 500));
-      updateStep(4, "loading");
       setStatusMessage("Processing payment on blockchain...");
 
       await relayPayment({
         owner: address,
         recipient: chipOwner,
         amount: amountWei.toString(),
-        deadline,
-        permitSignature: { v, r, s },
         chipSignature: chipSig.signature,
         timestamp,
         nonce,
       });
-
-      updateStep(4, "complete");
       setStatusMessage(`Success! Payment of ${amount} USDC sent.`);
     } catch (err) {
       console.error("Payment failed:", err);
@@ -248,6 +221,25 @@ export default function PaymentPage() {
             </div>
           )}
 
+          {/* Approval Alert */}
+          {address &&
+            chainId === 84532 &&
+            !checkingApproval &&
+            allowance !== null &&
+            allowance < parseUnits(amount, 6) && (
+              <div className="alert alert-warning border-2">
+                <AlertCircle className="h-5 w-5" />
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-semibold">
+                    {allowance === 0n ? "USDC approval required" : "Insufficient USDC allowance"}
+                  </span>
+                  <a href="/approve" className="text-xs underline hover:text-primary">
+                    Go to approval page →
+                  </a>
+                </div>
+              </div>
+            )}
+
           {/* Status Message */}
           {statusMessage && (
             <div
@@ -290,7 +282,14 @@ export default function PaymentPage() {
           ) : (
             <button
               onClick={handlePayment}
-              disabled={isLoading || !address || chainId !== 84532}
+              disabled={
+                isLoading ||
+                !address ||
+                chainId !== 84532 ||
+                !allowance ||
+                allowance < parseUnits(amount, 6) ||
+                checkingApproval
+              }
               className="btn btn-primary w-full h-16 rounded-lg text-lg font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:hover:scale-100"
             >
               {isLoading ? (
