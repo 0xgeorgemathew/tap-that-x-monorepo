@@ -3,6 +3,14 @@
 import { useState } from "react";
 import { execHaloCmdWeb } from "@arx-research/libhalo/api/web";
 
+// Utility to recursively convert BigInt values to strings for JSON serialization
+const serializeBigInt = (obj: any): any => {
+  if (typeof obj === "bigint") return obj.toString();
+  if (obj === null || typeof obj !== "object") return obj;
+  if (Array.isArray(obj)) return obj.map(serializeBigInt);
+  return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, serializeBigInt(v)]));
+};
+
 export function useHaloChip() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,24 +62,18 @@ export function useHaloChip() {
     setIsLoading(true);
     setError(null);
     try {
-      // HaloTag EIP-712 requires specific structure with EIP712Domain type
+      // HaloTag EIP-712 structure per libhalo docs
       const typedDataPayload = {
         domain,
-        types: {
-          ...types,
-          // EIP712Domain must be explicitly defined
-          EIP712Domain: [
-            { name: "name", type: "string" },
-            { name: "version", type: "string" },
-            { name: "chainId", type: "uint256" },
-            { name: "verifyingContract", type: "address" },
-          ],
-        },
+        types,
         primaryType,
-        message, // HaloTag uses 'message', not 'value'
+        value: serializeBigInt(message), // libhalo uses 'value' not 'message'
       };
 
-      console.log("📝 EIP-712 Typed Data Payload:", JSON.stringify(typedDataPayload, null, 2));
+      console.log(
+        "📝 EIP-712 Typed Data Payload:",
+        JSON.stringify(typedDataPayload, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2),
+      );
 
       const result = await execHaloCmdWeb({
         name: "sign",

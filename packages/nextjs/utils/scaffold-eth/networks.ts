@@ -34,6 +34,8 @@ export const RPC_CHAIN_NAMES: Record<number, string> = {
   [chains.baseSepolia.id]: "base-sepolia",
   [chains.celo.id]: "celo-mainnet",
   [chains.celoSepolia.id]: "celo-sepolia",
+  [chains.scrollSepolia.id]: "scroll-sepolia",
+  [chains.scroll.id]: "scroll-mainnet",
 };
 
 export const getAlchemyHttpUrl = (chainId: number) => {
@@ -84,11 +86,24 @@ export const NETWORKS_EXTRA_DATA: Record<string, ChainAttributes> = {
   [chains.scrollSepolia.id]: {
     color: "#fbebd4",
   },
+  [chains.scroll.id]: {
+    color: "#fbebd4",
+  },
   [chains.celo.id]: {
     color: "#FCFF52",
   },
   [chains.celoSepolia.id]: {
     color: "#476520",
+  },
+  [chains.base.id]: {
+    color: "#0052ff",
+  },
+  [chains.baseSepolia.id]: {
+    color: "#0052ff",
+  },
+  [chains.polygonAmoy.id]: {
+    color: "#92D9FA",
+    nativeCurrencyTokenAddress: "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0",
   },
 };
 

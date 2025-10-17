@@ -1,0 +1,6 @@
+{
+  "0x3a6F4B8E3C5788907bC32e24Ce0bb5a60B7D25c3": "MockUSDC",
+  "0x7988F842a3FbEaC9A103062DA1F278a834f98A22": "ChipRegistry",
+  "0xd005B867aE7c9339cb8373a678964F6671647d17": "USDCPaymentProcessor",
+  "networkName": "base-sepolia"
+}
