@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AlertCircle, Loader2, Nfc, Wallet } from "lucide-react";
-import { encodePacked } from "viem";
+import { encodePacked, keccak256 } from "viem";
 import { useAccount, useChainId, useWriteContract } from "wagmi";
 import { ChipAddressDisplay } from "~~/components/register/ChipAddressDisplay";
 import { RegistrationStep } from "~~/components/register/RegistrationStep";
@@ -62,9 +62,8 @@ export default function RegisterPage() {
       updateStep(2, "loading");
       setStatusMessage("Tap your chip again to authorize registration...");
 
-      // Pack addresses - HaLo will hash and apply EIP-191 prefix to match contract verification
-      const packedData = encodePacked(["address", "address"], [address, detectedChipAddress]);
-      const registrationSig = await signMessage({ message: packedData.slice(2), format: "hex" });
+      const messageToSign = keccak256(encodePacked(["address", "address"], [address, detectedChipAddress]));
+      const registrationSig = await signMessage({ message: messageToSign.slice(2), format: "hex" });
 
       updateStep(2, "complete");
       setStatusMessage("");
