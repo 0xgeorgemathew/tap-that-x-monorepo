@@ -25,16 +25,16 @@ export function PaymentStep({ step }: PaymentStepProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-4 p-4 rounded-lg transition-all",
-        isActive && "bg-primary/5 border-2 border-primary/20",
-        step.status === "complete" && "opacity-60",
-        step.status === "idle" && "opacity-40",
+        "flex items-center gap-4 p-4 rounded-lg transition-all border-2",
+        isActive && "bg-primary/10 border-primary",
+        step.status === "complete" && "opacity-60 border-base-300",
+        step.status === "idle" && "opacity-40 border-base-300",
       )}
     >
       <div className="flex-shrink-0">{getIcon()}</div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-base text-base-content">{step.title}</h3>
-        <p className="text-xs text-base-content/60 mt-0.5">{step.description}</p>
+        <h3 className="font-bold text-base text-base-content">{step.title}</h3>
+        <p className="text-xs text-base-content/70 mt-0.5 font-medium">{step.description}</p>
       </div>
     </div>
   );

@@ -212,31 +212,31 @@ export default function PaymentPage() {
   const allComplete = steps.every(s => s.status === "complete");
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-base-200 to-base-300">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-base-200">
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary mb-4 transition-transform hover:scale-105 shadow-xl">
-            <CreditCard className="h-14 w-14 text-white" />
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-xl bg-primary mb-4 transition-transform hover:scale-105 border-4 border-primary">
+            <CreditCard className="h-14 w-14 text-primary-content" />
           </div>
           <h1 className="text-3xl font-bold text-base-content mb-2">Tap to Pay</h1>
-          <p className="text-base-content/60">Send USDC by tapping your NFC chip</p>
+          <p className="text-base-content/80 font-medium">Send USDC by tapping your NFC chip</p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-base-100 rounded-xl shadow-xl border border-base-300 p-6 space-y-4 transition-shadow hover:shadow-2xl">
+        <div className="bg-base-100 rounded-xl border-2 border-base-300 p-6 space-y-4 transition-all hover:border-primary">
           {/* Wallet Alert */}
           {!address && (
-            <div className="alert alert-warning shadow-md">
+            <div className="alert alert-warning border-2">
               <Wallet className="h-5 w-5" />
-              <span className="text-sm">Connect your wallet to make payments</span>
+              <span className="text-sm font-semibold">Connect your wallet to make payments</span>
             </div>
           )}
 
           {/* Status Message */}
           {statusMessage && (
             <div
-              className={`alert shadow-md ${showError ? "alert-error" : allComplete ? "alert-success" : "alert-info"}`}
+              className={`alert border-2 ${showError ? "alert-error" : allComplete ? "alert-success" : "alert-info"}`}
             >
               {showError ? (
                 <AlertCircle className="h-5 w-5" />
@@ -245,7 +245,7 @@ export default function PaymentPage() {
               ) : (
                 <Loader2 className="h-5 w-5 animate-spin" />
               )}
-              <span className="text-sm">{statusMessage}</span>
+              <span className="text-sm font-semibold">{statusMessage}</span>
             </div>
           )}
 
@@ -268,7 +268,7 @@ export default function PaymentPage() {
           {allComplete ? (
             <button
               onClick={resetFlow}
-              className="btn btn-primary w-full h-16 rounded-full text-lg hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-lg"
+              className="btn btn-primary w-full h-16 rounded-lg text-lg font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform"
             >
               Make Another Payment
             </button>
@@ -276,7 +276,7 @@ export default function PaymentPage() {
             <button
               onClick={handlePayment}
               disabled={isLoading || !address}
-              className="btn btn-primary w-full h-16 rounded-full text-lg hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:hover:scale-100 shadow-lg"
+              className="btn btn-primary w-full h-16 rounded-lg text-lg font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:hover:scale-100"
             >
               {isLoading ? (
                 <>

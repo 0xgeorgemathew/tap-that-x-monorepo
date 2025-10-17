@@ -15,11 +15,11 @@ export function ChipAddressDisplay({ address }: ChipAddressDisplayProps) {
   };
 
   return (
-    <div className="bg-base-200 rounded-lg p-4 border border-base-300">
+    <div className="bg-base-200 rounded-lg p-4 border-2 border-base-300">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-base-content/60 mb-2">Chip Address</p>
-          <p className="font-mono text-sm break-all text-base-content">{address}</p>
+          <p className="text-xs font-bold text-base-content/70 mb-2">Chip Address</p>
+          <p className="font-mono text-sm break-all text-base-content font-medium">{address}</p>
         </div>
         <button
           onClick={handleCopy}
