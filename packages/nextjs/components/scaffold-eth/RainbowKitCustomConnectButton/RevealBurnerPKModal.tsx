@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { rainbowkitBurnerWallet } from "burner-connector";
-import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
+import { ShieldAlert } from "lucide-react";
 import { useCopyToClipboard } from "~~/hooks/scaffold-eth";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
 
@@ -38,7 +38,7 @@ export const RevealBurnerPKModal = () => {
             <div>
               <p className="text-lg font-semibold m-0 p-0">Copy Burner Wallet Private Key</p>
               <div role="alert" className="alert alert-warning mt-4">
-                <ShieldExclamationIcon className="h-6 w-6" />
+                <ShieldAlert className="h-6 w-6" />
                 <span className="font-semibold">
                   Burner wallets are intended for local development only and are not safe for storing real funds.
                 </span>

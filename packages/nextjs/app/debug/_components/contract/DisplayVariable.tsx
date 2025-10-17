@@ -4,9 +4,9 @@ import { useEffect } from "react";
 import { InheritanceTooltip } from "./InheritanceTooltip";
 import { displayTxResult } from "./utilsDisplay";
 import { Abi, AbiFunction } from "abitype";
+import { RefreshCw } from "lucide-react";
 import { Address } from "viem";
 import { useReadContract } from "wagmi";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useAnimationConfig } from "~~/hooks/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { getParsedError, notification } from "~~/utils/scaffold-eth";
@@ -64,7 +64,7 @@ export const DisplayVariable = ({
           {isFetching ? (
             <span className="loading loading-spinner loading-xs"></span>
           ) : (
-            <ArrowPathIcon className="h-3 w-3 cursor-pointer" aria-hidden="true" />
+            <RefreshCw className="h-3 w-3 cursor-pointer" aria-hidden="true" />
           )}
         </button>
         <InheritanceTooltip inheritedFrom={inheritedFrom} />

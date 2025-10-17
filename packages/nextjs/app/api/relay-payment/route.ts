@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWalletClient, http, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { sepolia } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import deployedContracts from "~~/contracts/deployedContracts";
 
 export const maxDuration = 30;
@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Relayer not configured" }, { status: 500 });
     }
 
-    // Get chain config
-    const chainId = sepolia.id;
+    // Get chain config - MUST use Base Sepolia where chip is registered
+    const chainId = baseSepolia.id; // 84532
     const contracts = deployedContracts[chainId as keyof typeof deployedContracts];
 
     if (!contracts?.USDCPaymentProcessor) {
@@ -36,12 +36,12 @@ export async function POST(req: NextRequest) {
     // Setup wallet client
     const account = privateKeyToAccount(RELAYER_PRIVATE_KEY as `0x${string}`);
     const rpcUrl = ALCHEMY_API_KEY
-      ? `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-      : sepolia.rpcUrls.default.http[0];
+      ? `https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+      : baseSepolia.rpcUrls.default.http[0];
 
     const client = createWalletClient({
       account,
-      chain: sepolia,
+      chain: baseSepolia,
       transport: http(rpcUrl),
     }).extend(publicActions);
 

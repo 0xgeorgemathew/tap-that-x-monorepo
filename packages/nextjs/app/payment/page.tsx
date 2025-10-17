@@ -42,6 +42,13 @@ export default function PaymentPage() {
       return;
     }
 
+    // Network validation - must be Base Sepolia where chip is registered
+    const REQUIRED_CHAIN_ID = 84532; // Base Sepolia
+    if (chainId !== REQUIRED_CHAIN_ID) {
+      setStatusMessage(`Please switch to Base Sepolia network. Currently on chain ${chainId}`);
+      return;
+    }
+
     if (!PAYMENT_PROCESSOR || !USDC || !CHIP_REGISTRY) {
       setStatusMessage("Contracts not deployed on this network");
       return;
@@ -233,6 +240,14 @@ export default function PaymentPage() {
             </div>
           )}
 
+          {/* Network Alert */}
+          {address && chainId !== 84532 && (
+            <div className="alert alert-warning border-2">
+              <AlertCircle className="h-5 w-5" />
+              <span className="text-sm font-semibold">Please switch to Base Sepolia network</span>
+            </div>
+          )}
+
           {/* Status Message */}
           {statusMessage && (
             <div
@@ -275,7 +290,7 @@ export default function PaymentPage() {
           ) : (
             <button
               onClick={handlePayment}
-              disabled={isLoading || !address}
+              disabled={isLoading || !address || chainId !== 84532}
               className="btn btn-primary w-full h-16 rounded-lg text-lg font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:hover:scale-100"
             >
               {isLoading ? (

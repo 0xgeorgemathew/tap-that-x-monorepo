@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Banknote } from "lucide-react";
 import { createWalletClient, http, parseEther } from "viem";
 import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
-import { BanknotesIcon } from "@heroicons/react/24/outline";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { useWatchBalance } from "~~/hooks/scaffold-eth/useWatchBalance";
 
@@ -62,11 +62,7 @@ export const FaucetButton = () => {
       data-tip="Grab funds from faucet"
     >
       <button className="btn btn-secondary btn-sm px-2 rounded-full" onClick={sendETH} disabled={loading}>
-        {!loading ? (
-          <BanknotesIcon className="h-4 w-4" />
-        ) : (
-          <span className="loading loading-spinner loading-xs"></span>
-        )}
+        {!loading ? <Banknote className="h-4 w-4" /> : <span className="loading loading-spinner loading-xs"></span>}
       </button>
     </div>
   );

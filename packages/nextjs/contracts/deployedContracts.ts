@@ -1251,7 +1251,7 @@ const deployedContracts = {
   },
   84532: {
     MockUSDC: {
-      address: "0x7c4cd595f15fb86a724b6a46526bb78c4e23e71a",
+      address: "0x8e487463752c2996988994c3caf21b21b929e5b8",
       abi: [
         {
           type: "constructor",
@@ -1883,10 +1883,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32464776,
+      deployedOnBlock: 32469806,
     },
     ChipRegistry: {
-      address: "0x1fdcfc138768cf274a7bf6e0c7fd6d84eaba2afb",
+      address: "0xa7d1b9ad3401678177c5c67c842943d17d750f7d",
       abi: [
         {
           type: "constructor",
@@ -2160,10 +2160,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32464776,
+      deployedOnBlock: 32469806,
     },
     USDCPaymentProcessor: {
-      address: "0xd10c0db4c55f5fd4946f0c9204fd48488aa618fe",
+      address: "0xc26019f380d049f54ed54d6173e97d69a928d872",
       abi: [
         {
           type: "constructor",
@@ -2490,7 +2490,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32464776,
+      deployedOnBlock: 32469806,
     },
   },
   11155111: {

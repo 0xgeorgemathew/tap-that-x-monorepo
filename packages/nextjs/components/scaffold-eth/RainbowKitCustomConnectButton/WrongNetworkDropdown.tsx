@@ -1,7 +1,7 @@
 import { NetworkOptions } from "./NetworkOptions";
+import { ArrowLeftRight, ChevronDown, LogOut } from "lucide-react";
 import { baseSepolia } from "viem/chains";
 import { useDisconnect, useSwitchChain } from "wagmi";
-import { ArrowLeftOnRectangleIcon, ArrowsRightLeftIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 
 export const WrongNetworkDropdown = () => {
   const { disconnect } = useDisconnect();
@@ -15,7 +15,7 @@ export const WrongNetworkDropdown = () => {
     <div className="dropdown dropdown-end mr-2">
       <label tabIndex={0} className="btn btn-error btn-sm dropdown-toggle gap-1">
         <span>Wrong network</span>
-        <ChevronDownIcon className="h-6 w-4 ml-2 sm:ml-0" />
+        <ChevronDown className="h-6 w-4 ml-2 sm:ml-0" />
       </label>
       <ul
         tabIndex={0}
@@ -28,7 +28,7 @@ export const WrongNetworkDropdown = () => {
             type="button"
             onClick={handleSwitchToBase}
           >
-            <ArrowsRightLeftIcon className="h-6 w-4 ml-2 sm:ml-0" />
+            <ArrowLeftRight className="h-6 w-4 ml-2 sm:ml-0" />
             <span>Switch to Base Sepolia</span>
           </button>
         </li>
@@ -47,7 +47,7 @@ export const WrongNetworkDropdown = () => {
             type="button"
             onClick={() => disconnect()}
           >
-            <ArrowLeftOnRectangleIcon className="h-6 w-4 ml-2 sm:ml-0" />
+            <LogOut className="h-6 w-4 ml-2 sm:ml-0" />
             <span>Disconnect</span>
           </button>
         </li>

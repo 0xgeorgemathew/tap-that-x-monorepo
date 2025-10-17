@@ -1,12 +1,6 @@
 import React from "react";
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 import { Toast, ToastPosition, toast } from "react-hot-toast";
-import { XMarkIcon } from "@heroicons/react/20/solid";
-import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-} from "@heroicons/react/24/solid";
 
 type NotificationProps = {
   content: React.ReactNode;
@@ -23,11 +17,11 @@ type NotificationOptions = {
 };
 
 const ENUM_STATUSES = {
-  success: <CheckCircleIcon className="w-7 text-success" />,
+  success: <CheckCircle className="w-7 text-success" />,
   loading: <span className="w-6 loading loading-spinner"></span>,
-  error: <ExclamationCircleIcon className="w-7 text-error" />,
-  info: <InformationCircleIcon className="w-7 text-info" />,
-  warning: <ExclamationTriangleIcon className="w-7 text-warning" />,
+  error: <AlertCircle className="w-7 text-error" />,
+  info: <Info className="w-7 text-info" />,
+  warning: <AlertTriangle className="w-7 text-warning" />,
 };
 
 const DEFAULT_DURATION = 3000;
@@ -57,7 +51,7 @@ const Notification = ({
         <div className={`overflow-x-hidden break-words whitespace-pre-line ${icon ? "mt-1" : ""}`}>{content}</div>
 
         <div className={`cursor-pointer text-lg ${icon ? "mt-1" : ""}`} onClick={() => toast.dismiss(t.id)}>
-          <XMarkIcon className="w-6 cursor-pointer" onClick={() => toast.remove(t.id)} />
+          <X className="w-6 cursor-pointer" onClick={() => toast.remove(t.id)} />
         </div>
       </div>
     ),

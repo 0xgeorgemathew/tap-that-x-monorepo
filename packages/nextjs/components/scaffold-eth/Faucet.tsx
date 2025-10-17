@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Banknote } from "lucide-react";
 import { Address as AddressType, createWalletClient, http, parseEther } from "viem";
 import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
-import { BanknotesIcon } from "@heroicons/react/24/outline";
 import { Address, AddressInput, Balance, EtherInput } from "~~/components/scaffold-eth";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
@@ -82,7 +82,7 @@ export const Faucet = () => {
   return (
     <div>
       <label htmlFor="faucet-modal" className="btn btn-primary btn-sm font-normal gap-1">
-        <BanknotesIcon className="h-4 w-4" />
+        <Banknote className="h-4 w-4" />
         <span>Faucet</span>
       </label>
       <input type="checkbox" id="faucet-modal" className="modal-toggle" />
@@ -114,7 +114,7 @@ export const Faucet = () => {
               <EtherInput placeholder="Amount to send" value={sendValue} onChange={value => setSendValue(value)} />
               <button className="h-10 btn btn-primary btn-sm px-2 rounded-full" onClick={sendETH} disabled={loading}>
                 {!loading ? (
-                  <BanknotesIcon className="h-6 w-6" />
+                  <Banknote className="h-6 w-6" />
                 ) : (
                   <span className="loading loading-spinner loading-sm"></span>
                 )}

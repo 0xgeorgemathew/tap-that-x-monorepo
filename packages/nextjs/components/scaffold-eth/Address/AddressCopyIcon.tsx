@@ -1,4 +1,4 @@
-import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
+import { CheckCircle, Copy } from "lucide-react";
 import { useCopyToClipboard } from "~~/hooks/scaffold-eth/useCopyToClipboard";
 
 export const AddressCopyIcon = ({ className, address }: { className?: string; address: string }) => {
@@ -14,9 +14,9 @@ export const AddressCopyIcon = ({ className, address }: { className?: string; ad
       type="button"
     >
       {isAddressCopiedToClipboard ? (
-        <CheckCircleIcon className={className} aria-hidden="true" />
+        <CheckCircle className={className} aria-hidden="true" />
       ) : (
-        <DocumentDuplicateIcon className={className} aria-hidden="true" />
+        <Copy className={className} aria-hidden="true" />
       )}
     </button>
   );

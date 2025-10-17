@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 
 export const SwitchTheme = ({ className }: { className?: string }) => {
   const { setTheme, resolvedTheme } = useTheme();
@@ -34,8 +34,8 @@ export const SwitchTheme = ({ className }: { className?: string }) => {
         checked={isDarkMode}
       />
       <label htmlFor="theme-toggle" className={`swap swap-rotate ${!isDarkMode ? "swap-active" : ""}`}>
-        <SunIcon className="swap-on h-5 w-5" />
-        <MoonIcon className="swap-off h-5 w-5" />
+        <Sun className="swap-on h-5 w-5" />
+        <Moon className="swap-off h-5 w-5" />
       </label>
     </div>
   );

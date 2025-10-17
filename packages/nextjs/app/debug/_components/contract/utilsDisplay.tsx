@@ -1,6 +1,6 @@
 import { ReactElement, useState } from "react";
+import { ArrowLeftRight } from "lucide-react";
 import { TransactionBase, TransactionReceipt, formatEther, isAddress, isHex } from "viem";
-import { ArrowsRightLeftIcon } from "@heroicons/react/24/solid";
 import { Address } from "~~/components/scaffold-eth";
 import { replacer } from "~~/utils/scaffold-eth/common";
 
@@ -65,7 +65,7 @@ const NumberDisplay = ({ value }: { value: bigint }) => {
         data-tip={isEther ? "Multiply by 1e18" : "Divide by 1e18"}
       >
         <button className="btn btn-ghost btn-circle btn-xs" onClick={() => setIsEther(!isEther)}>
-          <ArrowsRightLeftIcon className="h-3 w-3 opacity-65" />
+          <ArrowLeftRight className="h-3 w-3 opacity-65" />
         </button>
       </span>
     </div>

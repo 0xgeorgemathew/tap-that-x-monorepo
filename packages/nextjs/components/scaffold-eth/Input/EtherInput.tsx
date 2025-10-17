@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowsRightLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftRight } from "lucide-react";
 import { CommonInputProps, InputBase, SIGNED_NUMBER_REGEX } from "~~/components/scaffold-eth";
 import { useDisplayUsdMode } from "~~/hooks/scaffold-eth/useDisplayUsdMode";
 import { useGlobalState } from "~~/services/store/store";
@@ -119,7 +119,7 @@ export const EtherInput = ({
             disabled={!displayUsdMode && !nativeCurrencyPrice}
             type="button"
           >
-            <ArrowsRightLeftIcon className="h-3 w-3 cursor-pointer" aria-hidden="true" />
+            <ArrowLeftRight className="h-3 w-3 cursor-pointer" aria-hidden="true" />
           </button>
         </div>
       }
