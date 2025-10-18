@@ -17,10 +17,10 @@ export default function PaymentPage() {
   const publicClient = usePublicClient();
   const chainId = useChainId();
 
-  const contracts = deployedContracts[chainId as keyof typeof deployedContracts];
-  const PAYMENT_PROCESSOR = contracts?.USDCPaymentProcessor?.address;
+  const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
+  const PROTOCOL_ADDRESS = contracts?.TapThatXProtocol?.address;
   const USDC = contracts?.MockUSDC?.address;
-  const CHIP_REGISTRY = contracts?.ChipRegistry?.address;
+  const REGISTRY_ADDRESS = contracts?.TapThatXRegistry?.address;
 
   const [chipAddress, setChipAddress] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
@@ -40,7 +40,7 @@ export default function PaymentPage() {
   // Check USDC allowance on mount
   useEffect(() => {
     const checkAllowance = async () => {
-      if (!address || !publicClient || !USDC || !PAYMENT_PROCESSOR) {
+      if (!address || !publicClient || !USDC || !PROTOCOL_ADDRESS) {
         setCheckingApproval(false);
         return;
       }
@@ -50,7 +50,7 @@ export default function PaymentPage() {
           address: USDC,
           abi: contracts.MockUSDC.abi,
           functionName: "allowance",
-          args: [address, PAYMENT_PROCESSOR],
+          args: [address, PROTOCOL_ADDRESS],
         })) as bigint;
 
         setAllowance(currentAllowance);
@@ -62,7 +62,7 @@ export default function PaymentPage() {
     };
 
     checkAllowance();
-  }, [address, publicClient, USDC, PAYMENT_PROCESSOR, contracts]);
+  }, [address, publicClient, USDC, PROTOCOL_ADDRESS, contracts]);
 
   const handlePayment = async () => {
     if (!address || !publicClient) {
@@ -70,15 +70,9 @@ export default function PaymentPage() {
       return;
     }
 
-    // Network validation - must be Base Sepolia where chip is registered
-    const REQUIRED_CHAIN_ID = 84532; // Base Sepolia
-    if (chainId !== REQUIRED_CHAIN_ID) {
-      setStatusMessage(`Please switch to Base Sepolia network. Currently on chain ${chainId}`);
-      return;
-    }
-
-    if (!PAYMENT_PROCESSOR || !USDC || !CHIP_REGISTRY) {
-      setStatusMessage("Contracts not deployed on this network");
+    // Network validation - check contracts are deployed
+    if (!contracts || !PROTOCOL_ADDRESS || !USDC || !REGISTRY_ADDRESS) {
+      setStatusMessage(`Contracts not deployed on this network (chain ${chainId}). Please switch networks.`);
       return;
     }
 
@@ -91,10 +85,13 @@ export default function PaymentPage() {
       const detectedChipAddress = chipData.address as `0x${string}`;
       setChipAddress(detectedChipAddress);
 
-      // Query ChipRegistry for owner
+      // Query TapThatXRegistry for owner
+      if (!contracts || !REGISTRY_ADDRESS) {
+        throw new Error("Contracts not available");
+      }
       const chipOwner = (await publicClient.readContract({
-        address: CHIP_REGISTRY,
-        abi: contracts.ChipRegistry.abi,
+        address: REGISTRY_ADDRESS,
+        abi: contracts.TapThatXRegistry.abi,
         functionName: "getOwner",
         args: [detectedChipAddress],
       })) as `0x${string}`;
@@ -107,7 +104,7 @@ export default function PaymentPage() {
         console.error("Chip not registered:", {
           detectedChipAddress,
           chipOwner,
-          registryAddress: CHIP_REGISTRY,
+          registryAddress: REGISTRY_ADDRESS,
         });
         return;
       }
@@ -132,27 +129,38 @@ export default function PaymentPage() {
         .map(b => b.toString(16).padStart(2, "0"))
         .join("")}` as `0x${string}`;
 
+      // Build USDC transfer calldata
+      const transferCallData = `0x${(
+        "23b872dd" + // transferFrom selector
+        address.slice(2).padStart(64, "0") + // from
+        chipOwner.slice(2).padStart(64, "0") + // to
+        amountWei.toString(16).padStart(64, "0")
+      ) // amount
+        .toLowerCase()}` as `0x${string}`;
+
       const chipSig = await signTypedData({
         domain: {
-          name: "USDCPaymentProcessor",
+          name: "TapThatXProtocol",
           version: "1",
           chainId,
-          verifyingContract: PAYMENT_PROCESSOR,
+          verifyingContract: PROTOCOL_ADDRESS,
         },
         types: {
-          PaymentAuth: [
-            { name: "from", type: "address" },
-            { name: "to", type: "address" },
-            { name: "amount", type: "uint256" },
+          CallAuthorization: [
+            { name: "owner", type: "address" },
+            { name: "target", type: "address" },
+            { name: "callData", type: "bytes" },
+            { name: "value", type: "uint256" },
             { name: "timestamp", type: "uint256" },
             { name: "nonce", type: "bytes32" },
           ],
         },
-        primaryType: "PaymentAuth",
+        primaryType: "CallAuthorization",
         message: {
-          from: address,
-          to: chipOwner,
-          amount: amountWei,
+          owner: address,
+          target: USDC,
+          callData: transferCallData,
+          value: BigInt(0),
           timestamp: BigInt(timestamp),
           nonce,
         },
@@ -214,31 +222,29 @@ export default function PaymentPage() {
           )}
 
           {/* Network Alert */}
-          {address && chainId !== 84532 && (
+          {address && !contracts && (
             <div className="alert alert-warning border-2">
               <AlertCircle className="h-5 w-5" />
-              <span className="text-sm font-semibold">Please switch to Base Sepolia network</span>
+              <span className="text-sm font-semibold">
+                Contracts not deployed on this network. Please switch networks.
+              </span>
             </div>
           )}
 
           {/* Approval Alert */}
-          {address &&
-            chainId === 84532 &&
-            !checkingApproval &&
-            allowance !== null &&
-            allowance < parseUnits(amount, 6) && (
-              <div className="alert alert-warning border-2">
-                <AlertCircle className="h-5 w-5" />
-                <div className="flex flex-col items-start">
-                  <span className="text-sm font-semibold">
-                    {allowance === 0n ? "USDC approval required" : "Insufficient USDC allowance"}
-                  </span>
-                  <a href="/approve" className="text-xs underline hover:text-primary">
-                    Go to approval page →
-                  </a>
-                </div>
+          {address && contracts && !checkingApproval && allowance !== null && allowance < parseUnits(amount, 6) && (
+            <div className="alert alert-warning border-2">
+              <AlertCircle className="h-5 w-5" />
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-semibold">
+                  {allowance === 0n ? "USDC approval required" : "Insufficient USDC allowance"}
+                </span>
+                <a href="/approve" className="text-xs underline hover:text-primary">
+                  Go to approval page →
+                </a>
               </div>
-            )}
+            </div>
+          )}
 
           {/* Status Message */}
           {statusMessage && (
@@ -285,7 +291,7 @@ export default function PaymentPage() {
               disabled={
                 isLoading ||
                 !address ||
-                chainId !== 84532 ||
+                !contracts ||
                 !allowance ||
                 allowance < parseUnits(amount, 6) ||
                 checkingApproval

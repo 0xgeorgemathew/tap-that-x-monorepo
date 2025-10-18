@@ -6,7 +6,10 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract ChipRegistry is Ownable, ReentrancyGuard, EIP712 {
+/// @title TapThatXRegistry
+/// @notice Core registry for Tap That X protocol - manages chip registration and ownership
+/// @dev Chips prove ownership via EIP-712 signatures
+contract TapThatXRegistry is Ownable, ReentrancyGuard, EIP712 {
     using ECDSA for bytes32;
 
     mapping(address => address) public chipToOwner;
@@ -16,14 +19,14 @@ contract ChipRegistry is Ownable, ReentrancyGuard, EIP712 {
 
     event ChipRegistered(address indexed chip, address indexed owner);
 
-    constructor() Ownable(msg.sender) EIP712("ChipRegistry", "1") { }
+    constructor() Ownable(msg.sender) EIP712("TapThatXRegistry", "1") { }
 
     /// @notice Register a new chip with ownership proof using EIP-712
     /// @param chipAddress The address derived from the chip's private key
     /// @param chipSignature EIP-712 signature from the chip proving ownership
     function registerChip(address chipAddress, bytes memory chipSignature) external {
         require(chipAddress != address(0), "Invalid chip address");
-        require(chipToOwner[chipAddress] == address(0), "Chip already registered");
+        // require(chipToOwner[chipAddress] == address(0), "Chip already registered");
 
         // Verify EIP-712 chip signature
         bytes32 structHash = keccak256(abi.encode(REGISTRATION_TYPEHASH, msg.sender, chipAddress));
@@ -49,5 +52,11 @@ contract ChipRegistry is Ownable, ReentrancyGuard, EIP712 {
     /// @return bool True if chip is registered
     function isChipRegistered(address chip) external view returns (bool) {
         return chipToOwner[chip] != address(0);
+    }
+
+    /// @notice Get the EIP-712 domain separator
+    /// @return bytes32 The domain separator
+    function getDomainSeparator() external view returns (bytes32) {
+        return _domainSeparatorV4();
     }
 }

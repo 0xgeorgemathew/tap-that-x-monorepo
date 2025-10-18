@@ -19,9 +19,9 @@ export default function RegisterPage() {
   const [chipAddress, setChipAddress] = useState<string>("");
   const [steps, setSteps] = useState<Step[]>(REGISTRATION_STEPS.map(step => ({ ...step, status: "idle" })));
 
-  const contracts = deployedContracts[chainId as keyof typeof deployedContracts];
-  const chipRegistryAddress = contracts?.ChipRegistry?.address;
-  const chipRegistryAbi = contracts?.ChipRegistry?.abi;
+  const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
+  const registryAddress = contracts?.TapThatXRegistry?.address;
+  const registryAbi = contracts?.TapThatXRegistry?.abi;
 
   const updateStep = (stepId: number, status: Step["status"]) => {
     setSteps(prev => prev.map(step => (step.id === stepId ? { ...step, status } : step)));
@@ -33,8 +33,8 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!chipRegistryAddress || !chipRegistryAbi) {
-      setStatusMessage("ChipRegistry not deployed on this network");
+    if (!registryAddress || !registryAbi) {
+      setStatusMessage("TapThatXRegistry not deployed on this network");
       return;
     }
 
@@ -57,10 +57,10 @@ export default function RegisterPage() {
 
       const registrationSig = await signTypedData({
         domain: {
-          name: "ChipRegistry",
+          name: "TapThatXRegistry",
           version: "1",
           chainId,
-          verifyingContract: chipRegistryAddress,
+          verifyingContract: registryAddress,
         },
         types: {
           ChipRegistration: [
@@ -85,8 +85,8 @@ export default function RegisterPage() {
 
       writeContract(
         {
-          address: chipRegistryAddress,
-          abi: chipRegistryAbi,
+          address: registryAddress,
+          abi: registryAbi,
           functionName: "registerChip",
           args: [detectedChipAddress, registrationSig.signature as `0x${string}`],
         },

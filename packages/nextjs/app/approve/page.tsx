@@ -18,14 +18,14 @@ export default function ApprovePage() {
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
 
-  const contracts = deployedContracts[chainId as keyof typeof deployedContracts];
-  const PAYMENT_PROCESSOR = contracts?.USDCPaymentProcessor?.address;
+  const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
+  const PROTOCOL_ADDRESS = contracts?.TapThatXProtocol?.address;
   const USDC = contracts?.MockUSDC?.address;
 
   // Check current allowance
   useEffect(() => {
     const checkAllowance = async () => {
-      if (!address || !publicClient || !USDC || !PAYMENT_PROCESSOR) return;
+      if (!address || !publicClient || !USDC || !PROTOCOL_ADDRESS) return;
 
       try {
         setIsLoading(true);
@@ -33,7 +33,7 @@ export default function ApprovePage() {
           address: USDC,
           abi: contracts.MockUSDC.abi,
           functionName: "allowance",
-          args: [address, PAYMENT_PROCESSOR],
+          args: [address, PROTOCOL_ADDRESS],
         })) as bigint;
 
         setAllowance(currentAllowance);
@@ -46,10 +46,10 @@ export default function ApprovePage() {
     };
 
     checkAllowance();
-  }, [address, publicClient, USDC, PAYMENT_PROCESSOR, contracts, isSuccess]);
+  }, [address, publicClient, USDC, PROTOCOL_ADDRESS, contracts, isSuccess]);
 
   const handleApprove = async () => {
-    if (!address || !USDC || !PAYMENT_PROCESSOR) {
+    if (!address || !USDC || !PROTOCOL_ADDRESS) {
       setError("Please connect your wallet first");
       return;
     }
@@ -63,7 +63,7 @@ export default function ApprovePage() {
           address: USDC,
           abi: contracts.MockUSDC.abi,
           functionName: "approve",
-          args: [PAYMENT_PROCESSOR, maxUint256],
+          args: [PROTOCOL_ADDRESS, maxUint256],
         },
         {
           onSuccess: () => {
@@ -82,7 +82,7 @@ export default function ApprovePage() {
   };
 
   const handleRevoke = async () => {
-    if (!address || !USDC || !PAYMENT_PROCESSOR) return;
+    if (!address || !USDC || !PROTOCOL_ADDRESS) return;
 
     try {
       setError("");
@@ -93,7 +93,7 @@ export default function ApprovePage() {
           address: USDC,
           abi: contracts.MockUSDC.abi,
           functionName: "approve",
-          args: [PAYMENT_PROCESSOR, 0n],
+          args: [PROTOCOL_ADDRESS, 0n],
         },
         {
           onSuccess: () => {
@@ -137,10 +137,12 @@ export default function ApprovePage() {
           )}
 
           {/* Network Alert */}
-          {address && chainId !== 84532 && (
+          {address && !contracts && (
             <div className="alert alert-warning border-2">
               <AlertCircle className="h-5 w-5" />
-              <span className="text-sm font-semibold">Please switch to Base Sepolia network</span>
+              <span className="text-sm font-semibold">
+                Contracts not deployed on this network. Please switch networks.
+              </span>
             </div>
           )}
 
@@ -236,7 +238,7 @@ export default function ApprovePage() {
             {!isApproved ? (
               <button
                 onClick={handleApprove}
-                disabled={isPending || !address || chainId !== 84532 || isLoading}
+                disabled={isPending || !address || !contracts || isLoading}
                 className="btn btn-primary w-full h-16 rounded-lg text-lg font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:hover:scale-100"
               >
                 {isPending ? (
