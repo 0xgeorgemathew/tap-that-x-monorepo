@@ -7,19 +7,44 @@
 - **Change:** Removed deleted `/blockexplorer` route reference
 - **Impact:** Cleaner output file tracing
 
-### 2. Added .dockerignore
+### 2. Added .dockerignore ✅ ACTIVE
 - **Impact:** Reduces build context size by ~1.8GB
 - **Excludes:**
   - Foundry workspace (not needed for deployment)
   - Build artifacts (.next/cache)
   - Development dependencies
   - Git and IDE files
+- **Result:** Major reduction in copy time (78s → ~30s estimated)
 
-### 3. Optimized Yarn Install
-- **File:** `railpack.json`
-- **Change:** `yarn workspaces focus @se-2/nextjs --production=false`
-- **Impact:** Only installs nextjs workspace dependencies
-- **Estimated savings:** 20-30% faster install
+### 3. ~~Optimized Yarn Install~~ ❌ REVERTED
+- **Attempted:** `yarn workspaces focus` command
+- **Status:** Failed - command not available in Yarn 3.2.3
+- **Lesson:** Requires `@yarnpkg/plugin-workspace-tools` plugin
+- **Decision:** Reverted to `yarn install --immutable` (proven stable)
+
+---
+
+## Lessons Learned: Production Safety
+
+### What Went Wrong
+1. **Assumed command availability** without verifying Yarn 3.2.3 capabilities
+2. **No plugin check** - `yarn workspaces focus` requires workspace-tools plugin
+3. **Production testing** - broke deployment without staging test
+4. **Optimization greed** - pursued 10s savings with risky change
+
+### Production Change Checklist
+Before modifying production configs:
+- [ ] Verify exact command/feature exists in deployed version
+- [ ] Check required plugins in `.yarnrc.yml`
+- [ ] Test changes in isolated environment first
+- [ ] Measure actual impact vs risk
+- [ ] Have instant rollback ready
+- [ ] **Prefer simple, proven solutions over clever ones**
+
+### The 90/10 Rule
+- `.dockerignore` alone = 90% of the win (low risk)
+- Workspace filtering = 10% additional gain (high risk)
+- **Ship the 90% first, iterate carefully on the 10%**
 
 ---
 
