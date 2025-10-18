@@ -1,10 +1,14 @@
 <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="120" rx="24" fill="#000000"/>
-  <!-- Hand/Touch icon base -->
-  <path d="M60 35V65M60 35L40 55L45 60L60 65M60 35L80 55L75 60L60 65" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- X mark -->
-  <path d="M45 75L75 95M75 75L45 95" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
-  <!-- Tap circles/radiating effect -->
-  <circle cx="60" cy="35" r="8" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.5"/>
-  <circle cx="60" cy="35" r="12" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <rect width="120" height="120" rx="24" fill="#6366F1"/>
+
+  <!-- NFC waves emanating from top-left -->
+  <path d="M 42 60 Q 42 42 60 42" stroke="white" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.4"/>
+  <path d="M 33 60 Q 33 33 60 33" stroke="white" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <path d="M 24 60 Q 24 24 60 24" stroke="white" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.8"/>
+
+  <!-- X symbol -->
+  <g transform="translate(60, 70)">
+    <line x1="-12" y1="-12" x2="12" y2="12" stroke="white" stroke-width="7" stroke-linecap="round"/>
+    <line x1="12" y1="-12" x2="-12" y2="12" stroke="white" stroke-width="7" stroke-linecap="round"/>
+  </g>
 </svg>
