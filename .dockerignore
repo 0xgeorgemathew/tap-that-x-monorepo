@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+.next
+.next/cache
+**/dist
+**/build
+
+# Dependencies (will be installed fresh)
+node_modules
+**/node_modules
+
+# Foundry workspace (not needed for deployment)
+packages/foundry
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files (use Railway secrets instead)
+.env
+.env*.local
+.env.development
+.env.test
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+*.tsbuildinfo

@@ -19,8 +19,8 @@ const nextConfig: NextConfig = {
       "node_modules/rollup",
       "node_modules/terser",
       ".next/cache",
+      "**/foundry/out/**",
     ],
-    "/blockexplorer/address/[address]": ["**/foundry/out/**"],
   },
   webpack: config => {
     config.resolve.fallback = { fs: false, net: false, tls: false };
