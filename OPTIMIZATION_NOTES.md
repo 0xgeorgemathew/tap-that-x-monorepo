@@ -7,14 +7,19 @@
 - **Change:** Removed deleted `/blockexplorer` route reference
 - **Impact:** Cleaner output file tracing
 
-### 2. Added .dockerignore ✅ ACTIVE
+### 2. Added .dockerignore ✅ ACTIVE (Fixed)
 - **Impact:** Reduces build context size by ~1.8GB
 - **Excludes:**
-  - Foundry workspace (not needed for deployment)
+  - Heavy foundry directories: `node_modules` (66MB), `out` (2.8MB), `cache`, `lib`, `broadcast`
   - Build artifacts (.next/cache)
   - Development dependencies
   - Git and IDE files
+- **Keeps:** Foundry package.json + source (~17MB) for workspace resolution
 - **Result:** Major reduction in copy time (78s → ~30s estimated)
+- **Fix Applied:** Initially excluded entire `packages/foundry`, broke workspace lockfile validation
+  - Error: `YN0028: The lockfile would have been modified by this install`
+  - Root cause: Missing workspace breaks Yarn resolution
+  - Solution: Surgical exclusion of heavy dirs only
 
 ### 3. ~~Optimized Yarn Install~~ ❌ REVERTED
 - **Attempted:** `yarn workspaces focus` command
@@ -26,25 +31,40 @@
 
 ## Lessons Learned: Production Safety
 
-### What Went Wrong
+### What Went Wrong (Twice!)
+
+#### Mistake #1: yarn workspaces focus
 1. **Assumed command availability** without verifying Yarn 3.2.3 capabilities
 2. **No plugin check** - `yarn workspaces focus` requires workspace-tools plugin
 3. **Production testing** - broke deployment without staging test
 4. **Optimization greed** - pursued 10s savings with risky change
 
+#### Mistake #2: Overzealous .dockerignore
+1. **Excluded entire workspace** - `packages/foundry` removal broke Yarn resolution
+2. **Didn't understand Yarn workspaces** - all workspaces in package.json must exist
+3. **Lockfile validation failed** - `YN0028: The lockfile would have been modified`
+4. **Root cause:** Missing workspace changes dependency tree → lockfile mismatch
+
 ### Production Change Checklist
 Before modifying production configs:
 - [ ] Verify exact command/feature exists in deployed version
 - [ ] Check required plugins in `.yarnrc.yml`
+- [ ] **Understand workspace dependencies** - all declared workspaces must exist
+- [ ] **Test lockfile validation** - `yarn install --immutable` must pass
 - [ ] Test changes in isolated environment first
 - [ ] Measure actual impact vs risk
 - [ ] Have instant rollback ready
 - [ ] **Prefer simple, proven solutions over clever ones**
 
 ### The 90/10 Rule
-- `.dockerignore` alone = 90% of the win (low risk)
-- Workspace filtering = 10% additional gain (high risk)
+- `.dockerignore` (surgical) = 90% of the win (medium risk, now fixed)
+- Workspace filtering = 10% additional gain (high risk, abandoned)
 - **Ship the 90% first, iterate carefully on the 10%**
+
+### Key Insight: Monorepo Gotchas
+- **Yarn workspaces require ALL packages** declared in package.json to exist
+- **Lockfile is workspace-aware** - changing workspace structure invalidates it
+- **Solution:** Exclude heavy subdirectories, not entire workspace packages
 
 ---
 

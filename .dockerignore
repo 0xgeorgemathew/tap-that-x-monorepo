@@ -12,8 +12,12 @@
 node_modules
 **/node_modules
 
-# Foundry workspace (not needed for deployment)
-packages/foundry
+# Foundry build artifacts (keep package.json for workspace resolution)
+packages/foundry/node_modules
+packages/foundry/out
+packages/foundry/cache
+packages/foundry/lib
+packages/foundry/broadcast
 
 # Logs
 *.log
