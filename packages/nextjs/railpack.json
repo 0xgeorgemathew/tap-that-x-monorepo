@@ -2,14 +2,14 @@
   "$schema": "https://schema.railpack.com",
   "steps": {
     "install": {
-      "commands": ["npm install --legacy-peer-deps"]
+      "commands": ["cd packages/nextjs && npm install --legacy-peer-deps"]
     },
     "build": {
       "inputs": [{ "step": "install" }],
-      "commands": ["npm run build"]
+      "commands": ["cd packages/nextjs && npm run build"]
     }
   },
   "deploy": {
-    "startCommand": "npm run serve"
+    "startCommand": "cd packages/nextjs && npm run serve"
   }
 }
