@@ -644,7 +644,7 @@ const deployedContracts = {
   },
   84532: {
     MockUSDC: {
-      address: "0xfe4f58a325fe8dc6952b2ee286910c439378ff27",
+      address: "0x419184067e0c40d3622717be5df4758dfd3d7242",
       abi: [
         {
           type: "constructor",
@@ -1276,10 +1276,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32531828,
+      deployedOnBlock: 32533364,
     },
     TapThatXRegistry: {
-      address: "0x449d66a5edebc2a835da3b8e945a304e903bdde7",
+      address: "0x91d05d5b8913bcda59f1923dc6831b108154df22",
       abi: [
         {
           type: "constructor",
@@ -1566,10 +1566,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32531828,
+      deployedOnBlock: 32533364,
     },
     TapThatXProtocol: {
-      address: "0x11bd6db34b86239ade32e74029d98b4d6064b754",
+      address: "0x0f917750db157d65c6c14e5ce5828a250569afe1",
       abi: [
         {
           type: "constructor",
@@ -1908,10 +1908,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32531828,
+      deployedOnBlock: 32533364,
     },
     USDCTapPayment: {
-      address: "0x31a792495ff1acebc22b449ebe9efbfeb7289eb8",
+      address: "0x4c39e327108808f0121c37110b8970752e2fc5de",
       abi: [
         {
           type: "constructor",
@@ -2087,7 +2087,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32531828,
+      deployedOnBlock: 32533364,
     },
   },
   11155111: {
