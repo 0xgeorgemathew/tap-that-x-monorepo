@@ -42,9 +42,6 @@ if (isIpfs) {
   nextConfig.images = {
     unoptimized: true,
   };
-} else if (process.env.NODE_ENV === "production") {
-  // Standalone mode for Railway/production deployments
-  nextConfig.output = "standalone";
 }
 
 export default nextConfig;
