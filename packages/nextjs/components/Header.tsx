@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
 import { hardhat } from "viem/chains";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
-import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
-import { BUILD_VERSION } from "~~/utils/version";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth";
 
 type HeaderMenuLink = {
   label: string;
@@ -66,54 +64,28 @@ export const Header = () => {
   const { targetNetwork } = useTargetNetwork();
   const isLocalNetwork = targetNetwork.id === hardhat.id;
 
-  const burgerMenuRef = useRef<HTMLDetailsElement>(null);
-  useOutsideClick(burgerMenuRef, () => {
-    burgerMenuRef?.current?.removeAttribute("open");
-  });
-
   return (
-    <div className="sticky lg:static top-0 navbar glass-navbar min-h-0 shrink-0 justify-between z-20 px-0 sm:px-2">
-      <div className="navbar-start w-auto lg:w-1/2">
-        <details className="dropdown" ref={burgerMenuRef}>
-          <summary className="ml-1 btn btn-ghost lg:hidden hover:bg-transparent">
-            <Menu className="h-1/2" />
-          </summary>
-          <ul
-            className="menu menu-compact dropdown-content mt-3 p-3 rounded-2xl w-52 glass-dropdown"
-            onClick={() => {
-              burgerMenuRef?.current?.removeAttribute("open");
-            }}
-          >
+    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
+      <nav className="glass-navbar w-full max-w-6xl flex items-center justify-between px-6 py-3 rounded-full">
+        {/* Left: Logo + Brand */}
+        <Link href="/" passHref className="flex items-center gap-3 shrink-0">
+          <div className="flex relative w-8 h-8">
+            <Image alt="TapThat X logo" className="cursor-pointer" fill src="/logo.svg" />
+          </div>
+          <span className="font-bold text-base leading-tight">TapThat X</span>
+        </Link>
+
+        {/* Right: Nav Links + Actions */}
+        <div className="flex items-center gap-6">
+          <ul className="hidden md:flex items-center gap-2">
             <HeaderMenuLinks />
           </ul>
-        </details>
-        {/* Mobile Logo - Now Visible */}
-        <Link href="/" passHref className="flex lg:hidden items-center gap-2 ml-2 shrink-0">
-          <div className="flex relative w-6 h-6">
-            <Image alt="TapThat X logo" className="cursor-pointer" fill src="/logo.svg" />
+          <div className="flex items-center gap-3">
+            <RainbowKitCustomConnectButton />
+            {isLocalNetwork && <FaucetButton />}
           </div>
-        </Link>
-        {/* Desktop Logo */}
-        <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
-          <div className="flex relative w-10 h-10">
-            <Image alt="TapThat X logo" className="cursor-pointer" fill src="/logo.svg" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold leading-tight">TapThat X</span>
-            <span className="text-xs">NFC Payment System</span>
-          </div>
-        </Link>
-        <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
-          <HeaderMenuLinks />
-        </ul>
-      </div>
-      <div className="navbar-end grow mr-4 gap-3">
-        <div className="hidden md:flex items-center px-3 py-1.5 rounded-full text-[10px] font-semibold glass-badge">
-          <span className="text-success">v{BUILD_VERSION}</span>
         </div>
-        <RainbowKitCustomConnectButton />
-        {isLocalNetwork && <FaucetButton />}
-      </div>
+      </nav>
     </div>
   );
 };

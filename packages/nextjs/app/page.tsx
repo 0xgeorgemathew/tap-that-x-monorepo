@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { ArrowRight, Nfc } from "lucide-react";
 import type { NextPage } from "next";
+import { NavigationArrows } from "~~/components/NavigationArrows";
+import { NavigationDots } from "~~/components/NavigationDots";
 
 const Home: NextPage = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 gradient-bg">
+    <div className="min-h-screen flex items-start justify-center pt-24 md:pt-32 p-4 sm:p-6 gradient-bg">
       <div className="w-full max-w-lg">
         {/* Main Glass Card */}
         <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col items-center justify-center">
@@ -30,6 +32,9 @@ const Home: NextPage = () => {
               <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
+
+          <NavigationDots />
+          <NavigationArrows />
         </div>
       </div>
     </div>

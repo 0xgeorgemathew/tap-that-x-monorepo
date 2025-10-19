@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Nfc, Wallet } from "lucide-react";
 import { useAccount, useChainId, useWriteContract } from "wagmi";
+import { NavigationArrows } from "~~/components/NavigationArrows";
+import { NavigationDots } from "~~/components/NavigationDots";
 import { ChipAddressDisplay } from "~~/components/register/ChipAddressDisplay";
 import { Separator } from "~~/components/ui/separator";
 import deployedContracts from "~~/contracts/deployedContracts";
@@ -112,7 +114,7 @@ export default function RegisterPage() {
   const allComplete = isTxSuccess && flowState === "success";
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 gradient-bg">
+    <div className="min-h-screen flex items-start justify-center pt-24 md:pt-32 p-4 sm:p-6 gradient-bg">
       <div className="w-full max-w-lg">
         {/* Main Glass Card */}
         <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col">
@@ -202,6 +204,9 @@ export default function RegisterPage() {
               Make sure NFC is enabled on your device and hold it close to the chip
             </p>
           </div>
+
+          <NavigationDots />
+          <NavigationArrows />
         </div>
       </div>
     </div>

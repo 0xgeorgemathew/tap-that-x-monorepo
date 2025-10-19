@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, CreditCard, Loader2, Shield, Wallet } from "lucide-react";
 import { formatUnits, maxUint256 } from "viem";
 import { useAccount, useChainId, usePublicClient, useWriteContract } from "wagmi";
+import { NavigationArrows } from "~~/components/NavigationArrows";
+import { NavigationDots } from "~~/components/NavigationDots";
 import deployedContracts from "~~/contracts/deployedContracts";
 
 export default function ApprovePage() {
@@ -114,7 +116,7 @@ export default function ApprovePage() {
   const isUnlimited = allowance !== null && allowance === maxUint256;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 gradient-bg">
+    <div className="min-h-screen flex items-start justify-center pt-24 md:pt-32 p-4 sm:p-6 gradient-bg">
       <div className="w-full max-w-lg">
         {/* Main Glass Card */}
         <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col">
@@ -254,6 +256,9 @@ export default function ApprovePage() {
               <p>Only approve contracts you trust. You can revoke this anytime.</p>
             </div>
           </div>
+
+          <NavigationDots />
+          <NavigationArrows />
         </div>
       </div>
     </div>

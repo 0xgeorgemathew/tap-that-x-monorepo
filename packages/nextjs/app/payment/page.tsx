@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, CreditCard, Loader2, Wallet, Zap } from "lucide-react";
 import { parseUnits } from "viem";
 import { useAccount, useChainId, usePublicClient } from "wagmi";
+import { NavigationArrows } from "~~/components/NavigationArrows";
+import { NavigationDots } from "~~/components/NavigationDots";
 import { ChipOwnerDisplay } from "~~/components/payment/ChipOwnerDisplay";
 import { Separator } from "~~/components/ui/separator";
 import deployedContracts from "~~/contracts/deployedContracts";
@@ -195,7 +197,7 @@ export default function PaymentPage() {
   const allComplete = flowState === "success";
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 gradient-bg">
+    <div className="min-h-screen flex items-start justify-center pt-24 md:pt-32 p-4 sm:p-6 gradient-bg">
       <div className="w-full max-w-lg">
         {/* Main Glass Card */}
         <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col">
@@ -321,6 +323,9 @@ export default function PaymentPage() {
               Make sure NFC is enabled on your device and hold it close to the chip
             </p>
           </div>
+
+          <NavigationDots />
+          <NavigationArrows />
         </div>
       </div>
     </div>

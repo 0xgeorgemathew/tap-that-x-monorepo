@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 import { NetworkOptions } from "./NetworkOptions";
-import { ArrowLeftRight, CheckCircle, ChevronDown, Copy, ExternalLink, Eye, LogOut, QrCode } from "lucide-react";
+import { ArrowLeftRight, CheckCircle, Copy, ExternalLink, Eye, LogOut, QrCode } from "lucide-react";
 import { getAddress } from "viem";
 import { Address } from "viem";
 import { useAccount, useDisconnect } from "wagmi";
-import { BlockieAvatar, isENS } from "~~/components/scaffold-eth";
+import { Balance, BlockieAvatar, isENS } from "~~/components/scaffold-eth";
 import { useCopyToClipboard, useOutsideClick } from "~~/hooks/scaffold-eth";
 import { getTargetNetworks } from "~~/utils/scaffold-eth";
 
@@ -17,6 +17,7 @@ type AddressInfoDropdownProps = {
   blockExplorerAddressLink: string | undefined;
   displayName: string;
   ensAvatar?: string;
+  chainName?: string;
 };
 
 export const AddressInfoDropdown = ({
@@ -24,6 +25,7 @@ export const AddressInfoDropdown = ({
   ensAvatar,
   displayName,
   blockExplorerAddressLink,
+  chainName,
 }: AddressInfoDropdownProps) => {
   const { disconnect } = useDisconnect();
   const { connector } = useAccount();
@@ -44,14 +46,21 @@ export const AddressInfoDropdown = ({
   return (
     <>
       <details ref={dropdownRef} className="dropdown dropdown-end leading-3">
-        <summary className="btn btn-primary btn-sm pl-0 pr-2 border-2 dropdown-toggle gap-0 h-auto!">
-          <BlockieAvatar address={checkSumAddress} size={30} ensImage={ensAvatar} />
-          <span className="ml-2 mr-1 font-semibold">
-            {isENS(displayName) ? displayName : checkSumAddress?.slice(0, 6) + "..." + checkSumAddress?.slice(-4)}
-          </span>
-          <ChevronDown className="h-6 w-4 ml-2 sm:ml-0" />
+        <summary className="btn btn-ghost btn-sm p-0 hover:bg-transparent border-0">
+          <BlockieAvatar address={checkSumAddress} size={32} ensImage={ensAvatar} />
         </summary>
-        <ul className="dropdown-content menu z-2 p-2 mt-2 shadow-center shadow-accent bg-base-200 rounded-box gap-1">
+        <ul className="dropdown-content menu z-2 p-2 mt-2 shadow-center shadow-accent bg-base-200 rounded-box gap-1 min-w-[240px]">
+          {/* Balance & Address Info */}
+          <li className={selectingNetwork ? "hidden" : ""}>
+            <div className="flex flex-col items-center gap-1 py-3 pointer-events-none hover:bg-transparent">
+              <Balance address={address} className="min-h-0 h-auto" />
+              <span className="text-xs text-base-content/70 font-semibold">{chainName || "Unknown Network"}</span>
+              <span className="text-sm font-mono font-semibold mt-1">
+                {isENS(displayName) ? displayName : checkSumAddress?.slice(0, 6) + "..." + checkSumAddress?.slice(-4)}
+              </span>
+            </div>
+          </li>
+          <div className={`divider my-0 ${selectingNetwork ? "hidden" : ""}`}></div>
           <NetworkOptions hidden={!selectingNetwork} />
           <li className={selectingNetwork ? "hidden" : ""}>
             <div
