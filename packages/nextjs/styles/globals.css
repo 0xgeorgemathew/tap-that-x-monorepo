@@ -10,6 +10,9 @@
   --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-shimmer: shimmer 2s linear infinite;
   --animate-shake: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  --animate-gradient: gradient-shift 15s ease infinite;
+  --animate-fade-in: fade-in 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --animate-fade-out: fade-out 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes pulse-slow {
