@@ -114,7 +114,9 @@ export default function PaymentPage() {
         owner: chipOwner,
       });
 
-      setRecipient(chipOwner);
+      // Get USDCTapPayment contract address (this is where USDC will be sent)
+      const PAYMENT_CONTRACT = contracts.USDCTapPayment.address;
+      setRecipient(PAYMENT_CONTRACT);
       updateStep(1, "complete");
       setStatusMessage("");
 
@@ -129,11 +131,11 @@ export default function PaymentPage() {
         .map(b => b.toString(16).padStart(2, "0"))
         .join("")}` as `0x${string}`;
 
-      // Build USDC transfer calldata
+      // Build USDC transfer calldata - sending to USDCTapPayment contract
       const transferCallData = `0x${(
         "23b872dd" + // transferFrom selector
         address.slice(2).padStart(64, "0") + // from
-        chipOwner.slice(2).padStart(64, "0") + // to
+        PAYMENT_CONTRACT.slice(2).padStart(64, "0") + // to (USDCTapPayment contract)
         amountWei.toString(16).padStart(64, "0")
       ) // amount
         .toLowerCase()}` as `0x${string}`;
@@ -171,8 +173,7 @@ export default function PaymentPage() {
 
       await relayPayment({
         owner: address,
-        recipient: chipOwner,
-        amount: amountWei.toString(),
+        transferCallData,
         chipSignature: chipSig.signature,
         timestamp,
         nonce,
@@ -292,7 +293,7 @@ export default function PaymentPage() {
                 isLoading ||
                 !address ||
                 !contracts ||
-                !allowance ||
+                allowance === null ||
                 allowance < parseUnits(amount, 6) ||
                 checkingApproval
               }

@@ -29,32 +29,21 @@ contract USDCTapPayment is ReentrancyGuard {
     }
 
     /// @notice Execute USDC payment using pre-approved allowance
-    /// @dev User must have pre-approved this contract for USDC spending
+    /// @dev User must have pre-approved TapThatXProtocol for USDC spending
     /// @param owner The USDC token owner (payer)
-    /// @param recipient The payment recipient
-    /// @param amount The amount of USDC to transfer
+    /// @param transferCallData The pre-built and signed transferFrom callData
     /// @param chipSignature The chip's authorization signature
     /// @param timestamp When the chip authorization was created
     /// @param nonce Unique nonce for replay protection
     function tapToPay(
         address owner,
-        address recipient,
-        uint256 amount,
+        bytes calldata transferCallData,
         bytes memory chipSignature,
         uint256 timestamp,
         bytes32 nonce
     ) external nonReentrant {
         require(owner != address(0), "Invalid owner");
-        require(recipient != address(0), "Invalid recipient");
-        require(amount > 0, "Amount must be > 0");
-
-        // Build transferFrom call data
-        bytes memory transferCallData = abi.encodeWithSelector(
-            IERC20.transferFrom.selector,
-            owner,
-            address(this),
-            amount
-        );
+        require(transferCallData.length > 0, "Invalid callData");
 
         // Execute via protocol - this verifies chip authorization and executes transfer
         (bool success,) = protocol.executeAuthorizedCall(
@@ -79,6 +68,17 @@ contract USDCTapPayment is ReentrancyGuard {
             nonce,
             chipSignature
         );
+
+        // Decode recipient and amount from callData for event
+        // transferFrom selector is 0x23b872dd, followed by from, to, amount
+        address recipient;
+        uint256 amount;
+        assembly {
+            // Skip 4 bytes (selector) + 32 bytes (from) = 36 bytes
+            recipient := calldataload(add(transferCallData.offset, 36))
+            // Skip 4 bytes (selector) + 32 bytes (from) + 32 bytes (to) = 68 bytes
+            amount := calldataload(add(transferCallData.offset, 68))
+        }
 
         emit TapPaymentExecuted(owner, recipient, amount, chip, nonce);
     }

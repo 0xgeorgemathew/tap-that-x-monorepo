@@ -8,6 +8,7 @@ import { Menu } from "lucide-react";
 import { hardhat } from "viem/chains";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
+import { BUILD_VERSION } from "~~/utils/version";
 
 type HeaderMenuLink = {
   label: string;
@@ -99,7 +100,10 @@ export const Header = () => {
           <HeaderMenuLinks />
         </ul>
       </div>
-      <div className="navbar-end grow mr-4">
+      <div className="navbar-end grow mr-4 gap-3">
+        <div className="hidden sm:flex items-center px-3 py-1 rounded-full bg-green-500/20 text-green-600 dark:bg-green-500/30 dark:text-green-400 text-xs font-medium shadow-sm">
+          Built: {BUILD_VERSION}
+        </div>
         <RainbowKitCustomConnectButton />
         {isLocalNetwork && <FaucetButton />}
       </div>

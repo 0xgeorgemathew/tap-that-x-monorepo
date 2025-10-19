@@ -14,10 +14,10 @@ const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || process.env.A
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { owner, recipient, amount, chipSignature, timestamp, nonce, chainId } = body;
+    const { owner, transferCallData, chipSignature, timestamp, nonce, chainId } = body;
 
     // Validate inputs
-    if (!owner || !recipient || !amount || !chipSignature || !timestamp || !nonce || !chainId) {
+    if (!owner || !transferCallData || !chipSignature || !timestamp || !nonce || !chainId) {
       return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
     }
 
@@ -57,8 +57,7 @@ export async function POST(req: NextRequest) {
       functionName: "tapToPay",
       args: [
         owner as `0x${string}`,
-        recipient as `0x${string}`,
-        BigInt(amount),
+        transferCallData as `0x${string}`,
         chipSignature as `0x${string}`,
         BigInt(timestamp),
         nonce as `0x${string}`, // bytes32
