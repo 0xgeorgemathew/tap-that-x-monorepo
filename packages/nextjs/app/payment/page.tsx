@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertCircle, CreditCard, Loader2, Wallet } from "lucide-react";
+import { AlertCircle, CheckCircle2, CreditCard, Loader2, Wallet, Zap } from "lucide-react";
 import { parseUnits } from "viem";
 import { useAccount, useChainId, usePublicClient } from "wagmi";
 import { ChipOwnerDisplay } from "~~/components/payment/ChipOwnerDisplay";
-import { PaymentStep } from "~~/components/payment/PaymentStep";
-import { PAYMENT_STEPS, type PaymentStep as Step } from "~~/components/payment/types";
 import { Separator } from "~~/components/ui/separator";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { useGaslessRelay } from "~~/hooks/useGaslessRelay";
 import { useHaloChip } from "~~/hooks/useHaloChip";
+
+type FlowState = "idle" | "detecting" | "authorizing" | "success" | "error";
 
 export default function PaymentPage() {
   const { address } = useAccount();
@@ -26,16 +26,12 @@ export default function PaymentPage() {
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("1");
   const [statusMessage, setStatusMessage] = useState<string>("");
-  const [steps, setSteps] = useState<Step[]>(PAYMENT_STEPS.map(step => ({ ...step, status: "idle" })));
+  const [flowState, setFlowState] = useState<FlowState>("idle");
   const [allowance, setAllowance] = useState<bigint | null>(null);
   const [checkingApproval, setCheckingApproval] = useState(true);
 
-  const { signMessage, signTypedData, isLoading, error } = useHaloChip();
+  const { signMessage, signTypedData, isLoading } = useHaloChip();
   const { relayPayment } = useGaslessRelay();
-
-  const updateStep = (stepId: number, status: Step["status"]) => {
-    setSteps(prev => prev.map(step => (step.id === stepId ? { ...step, status } : step)));
-  };
 
   // Check USDC allowance on mount
   useEffect(() => {
@@ -67,18 +63,20 @@ export default function PaymentPage() {
   const handlePayment = async () => {
     if (!address || !publicClient) {
       setStatusMessage("Please connect your wallet first");
+      setFlowState("error");
       return;
     }
 
     // Network validation - check contracts are deployed
     if (!contracts || !PROTOCOL_ADDRESS || !USDC || !REGISTRY_ADDRESS) {
       setStatusMessage(`Contracts not deployed on this network (chain ${chainId}). Please switch networks.`);
+      setFlowState("error");
       return;
     }
 
     try {
       // Step 1: Detect chip and get owner
-      updateStep(1, "loading");
+      setFlowState("detecting");
       setStatusMessage("Hold your device near the NFC chip...");
 
       const chipData = await signMessage({ message: "init", format: "text" });
@@ -97,7 +95,7 @@ export default function PaymentPage() {
       })) as `0x${string}`;
 
       if (!chipOwner || chipOwner === "0x0000000000000000000000000000000000000000") {
-        updateStep(1, "error");
+        setFlowState("error");
         setStatusMessage(
           `Error: Chip not registered (${detectedChipAddress.slice(0, 10)}...). Please register the chip first at /register page.`,
         );
@@ -117,12 +115,11 @@ export default function PaymentPage() {
       // Get USDCTapPayment contract address (this is where USDC will be sent)
       const PAYMENT_CONTRACT = contracts.USDCTapPayment.address;
       setRecipient(PAYMENT_CONTRACT);
-      updateStep(1, "complete");
       setStatusMessage("");
 
       // Step 2: Tap chip to authorize payment
       await new Promise(resolve => setTimeout(resolve, 500));
-      updateStep(2, "loading");
+      setFlowState("authorizing");
       setStatusMessage("Tap your chip again to authorize payment...");
 
       const amountWei = parseUnits(amount, 6);
@@ -168,7 +165,6 @@ export default function PaymentPage() {
         },
       });
 
-      updateStep(2, "complete");
       setStatusMessage("Processing payment on blockchain...");
 
       await relayPayment({
@@ -178,145 +174,153 @@ export default function PaymentPage() {
         timestamp,
         nonce,
       });
+
+      setFlowState("success");
       setStatusMessage(`Success! Payment of ${amount} USDC sent.`);
     } catch (err) {
       console.error("Payment failed:", err);
-      const currentStep = steps.findIndex(s => s.status === "loading");
-      if (currentStep !== -1) {
-        updateStep(currentStep + 1, "error");
-      }
+      setFlowState("error");
       setStatusMessage(`Error: ${err instanceof Error ? err.message : "Payment failed"}`);
     }
   };
 
   const resetFlow = () => {
-    setSteps(PAYMENT_STEPS.map(step => ({ ...step, status: "idle" })));
+    setFlowState("idle");
     setStatusMessage("");
     setChipAddress("");
     setRecipient("");
     setAmount("1");
   };
 
-  const showError = error || steps.some(s => s.status === "error");
-  const allComplete = steps.every(s => s.status === "complete");
+  const allComplete = flowState === "success";
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-base-200">
-      <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-xl bg-primary mb-4 transition-transform hover:scale-105 border-4 border-primary">
-            <CreditCard className="h-14 w-14 text-primary-content" />
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 gradient-bg">
+      <div className="w-full max-w-lg">
+        {/* Main Glass Card */}
+        <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col">
+          {/* Header */}
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-5 animate-pulse-slow">
+              <CreditCard className="h-12 w-12 sm:h-14 sm:w-14 text-white" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">Tap to Pay</h1>
+            <p className="text-sm sm:text-base text-base-content/80 font-medium px-4">
+              Send USDC by tapping your NFC chip
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-base-content mb-2">Tap to Pay</h1>
-          <p className="text-base-content/80 font-medium">Send USDC by tapping your NFC chip</p>
-        </div>
 
-        {/* Main Card */}
-        <div className="bg-base-100 rounded-xl border-2 border-base-300 p-6 space-y-4 transition-all hover:border-primary">
-          {/* Wallet Alert */}
-          {!address && (
-            <div className="alert alert-warning border-2">
-              <Wallet className="h-5 w-5" />
-              <span className="text-sm font-semibold">Connect your wallet to make payments</span>
-            </div>
-          )}
+          {/* Dynamic Content Area */}
+          <div className="space-y-5 sm:space-y-6 flex flex-col">
+            {/* Wallet Alert */}
+            {!address && (
+              <div className="glass-alert">
+                <Wallet className="h-5 w-5 text-warning" />
+                <span className="text-sm font-semibold text-base-content">Connect your wallet to make payments</span>
+              </div>
+            )}
 
-          {/* Network Alert */}
-          {address && !contracts && (
-            <div className="alert alert-warning border-2">
-              <AlertCircle className="h-5 w-5" />
-              <span className="text-sm font-semibold">
-                Contracts not deployed on this network. Please switch networks.
-              </span>
-            </div>
-          )}
-
-          {/* Approval Alert */}
-          {address && contracts && !checkingApproval && allowance !== null && allowance < parseUnits(amount, 6) && (
-            <div className="alert alert-warning border-2">
-              <AlertCircle className="h-5 w-5" />
-              <div className="flex flex-col items-start">
-                <span className="text-sm font-semibold">
-                  {allowance === 0n ? "USDC approval required" : "Insufficient USDC allowance"}
+            {/* Network Alert */}
+            {address && !contracts && (
+              <div className="glass-alert">
+                <AlertCircle className="h-5 w-5 text-warning" />
+                <span className="text-sm font-semibold text-base-content">
+                  Contracts not deployed on this network. Please switch networks.
                 </span>
-                <a href="/approve" className="text-xs underline hover:text-primary">
-                  Go to approval page →
+              </div>
+            )}
+
+            {/* Approval Alert - Subtle inline */}
+            {address && contracts && !checkingApproval && allowance !== null && allowance < parseUnits(amount, 6) && (
+              <div className="text-center">
+                <a href="/approve" className="inline-warning hover:opacity-80 transition-opacity">
+                  <AlertCircle className="h-4 w-4 text-warning" />
+                  <span>{allowance === 0n ? "USDC approval required" : "Insufficient allowance"}</span>
+                  <span className="text-xs opacity-75">→</span>
                 </a>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Status Message */}
-          {statusMessage && (
-            <div
-              className={`alert border-2 ${showError ? "alert-error" : allComplete ? "alert-success" : "alert-info"}`}
-            >
-              {showError ? (
-                <AlertCircle className="h-5 w-5" />
-              ) : allComplete ? (
-                <CreditCard className="h-5 w-5" />
-              ) : (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              )}
-              <span className="text-sm font-semibold">{statusMessage}</span>
-            </div>
-          )}
+            {/* Dynamic Status Display */}
+            {flowState !== "idle" && statusMessage && (
+              <div className="text-center py-3 fade-in">
+                <div className="flex items-center justify-center gap-2.5">
+                  {flowState === "error" ? (
+                    <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-error flex-shrink-0" />
+                  ) : flowState === "success" ? (
+                    <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-success flex-shrink-0" />
+                  ) : (
+                    <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary animate-spin flex-shrink-0" />
+                  )}
+                  <p className="text-base sm:text-lg md:text-xl font-bold text-base-content">{statusMessage}</p>
+                </div>
+              </div>
+            )}
 
-          {/* Steps List - Only show first 2 */}
-          <div className="space-y-2">
-            {steps.slice(0, 2).map(step => (
-              <PaymentStep key={step.id} step={step} />
-            ))}
+            {/* Gasless Badge - show on idle and success */}
+            {(flowState === "idle" || flowState === "success") && (
+              <div className="flex items-center justify-center gap-2 text-sm text-base-content/70 fade-in">
+                <Zap className="h-4 w-4 text-primary" />
+                <span>No wallet popup needed</span>
+              </div>
+            )}
+
+            {/* Current Flow State Indicator */}
+            {flowState === "detecting" && !statusMessage && (
+              <div className="text-center py-4 fade-in">
+                <CheckCircle2 className="h-6 w-6 text-success mx-auto mb-2" />
+                <p className="text-lg font-semibold text-base-content">Chip detected</p>
+              </div>
+            )}
+
+            {/* Chip Owner Display */}
+            {chipAddress && recipient && (
+              <div className="fade-in">
+                <Separator />
+                <ChipOwnerDisplay chipAddress={chipAddress} ownerAddress={recipient} />
+              </div>
+            )}
           </div>
 
-          {/* Chip Owner Display */}
-          {chipAddress && recipient && (
-            <>
-              <Separator />
-              <ChipOwnerDisplay chipAddress={chipAddress} ownerAddress={recipient} />
-            </>
-          )}
+          {/* Action Button - Fixed position */}
+          <div className="mt-6 space-y-4">
+            {allComplete ? (
+              <button onClick={resetFlow} className="glass-btn flex items-center justify-center gap-3 w-full">
+                <CreditCard className="h-6 w-6" />
+                <span>Make Another Payment</span>
+              </button>
+            ) : (
+              <button
+                onClick={handlePayment}
+                disabled={
+                  isLoading ||
+                  !address ||
+                  !contracts ||
+                  allowance === null ||
+                  allowance < parseUnits(amount, 6) ||
+                  checkingApproval
+                }
+                className="glass-btn flex items-center justify-center gap-3 w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-6 w-6" />
+                    <span>Pay {amount} USDC</span>
+                  </>
+                )}
+              </button>
+            )}
 
-          {/* Action Button */}
-          {allComplete ? (
-            <button
-              onClick={resetFlow}
-              className="btn btn-primary w-full h-16 rounded-lg text-lg font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform"
-            >
-              Make Another Payment
-            </button>
-          ) : (
-            <button
-              onClick={handlePayment}
-              disabled={
-                isLoading ||
-                !address ||
-                !contracts ||
-                allowance === null ||
-                allowance < parseUnits(amount, 6) ||
-                checkingApproval
-              }
-              className="btn btn-primary w-full h-16 rounded-lg text-lg font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:hover:scale-100"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                  <span>Processing...</span>
-                </>
-              ) : (
-                <>
-                  <CreditCard className="h-6 w-6" />
-                  <span>Pay {amount} USDC</span>
-                </>
-              )}
-            </button>
-          )}
-
-          {/* Help Text */}
-          <p className="text-xs text-center text-base-content/50">
-            Make sure NFC is enabled on your device and hold it close to the chip
-          </p>
+            {/* Help Text */}
+            <p className="text-xs sm:text-sm text-center text-base-content/60 px-2">
+              Make sure NFC is enabled on your device and hold it close to the chip
+            </p>
+          </div>
         </div>
       </div>
     </div>

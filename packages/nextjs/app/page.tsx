@@ -6,22 +6,30 @@ import type { NextPage } from "next";
 
 const Home: NextPage = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-base-200">
-      <div className="max-w-4xl w-full">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-32 h-32 rounded-xl bg-primary mb-8 border-4 border-primary">
-            <Nfc className="h-20 w-20 text-primary-content" aria-hidden="true" />
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 gradient-bg">
+      <div className="w-full max-w-lg">
+        {/* Main Glass Card */}
+        <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col items-center justify-center">
+          {/* Header */}
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-5 animate-pulse-slow">
+              <Nfc className="h-12 w-12 sm:h-14 sm:w-14 text-white" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">NFC Chip Registry</h1>
+            <p className="text-sm sm:text-base text-base-content/80 font-medium px-4">
+              Securely register and authenticate NFC chips on-chain with cryptographic proof of ownership
+            </p>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 text-base-content">NFC Chip Registry</h1>
-          <p className="text-lg md:text-xl text-base-content/80 max-w-2xl mx-auto mb-8 font-medium">
-            Securely register and authenticate NFC chips on-chain with cryptographic proof of ownership
-          </p>
 
-          <Link href="/register" className="btn btn-primary btn-lg h-14 px-8 gap-3 text-base font-bold">
-            <span>Register Your Chip</span>
-            <ArrowRight className="h-5 w-5" aria-hidden="true" />
-          </Link>
+          <div className="w-full">
+            <Link
+              href="/register"
+              className="glass-btn flex items-center justify-center gap-3 w-full hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span>Register Your Chip</span>
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

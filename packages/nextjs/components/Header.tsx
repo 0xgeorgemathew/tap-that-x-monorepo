@@ -72,14 +72,14 @@ export const Header = () => {
   });
 
   return (
-    <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 shrink-0 justify-between z-20 border-b-2 border-base-300 px-0 sm:px-2">
+    <div className="sticky lg:static top-0 navbar glass-navbar min-h-0 shrink-0 justify-between z-20 px-0 sm:px-2">
       <div className="navbar-start w-auto lg:w-1/2">
         <details className="dropdown" ref={burgerMenuRef}>
           <summary className="ml-1 btn btn-ghost lg:hidden hover:bg-transparent">
             <Menu className="h-1/2" />
           </summary>
           <ul
-            className="menu menu-compact dropdown-content mt-3 p-2 shadow-sm bg-base-100 rounded-box w-52"
+            className="menu menu-compact dropdown-content mt-3 p-3 rounded-2xl w-52 glass-dropdown"
             onClick={() => {
               burgerMenuRef?.current?.removeAttribute("open");
             }}
@@ -87,6 +87,13 @@ export const Header = () => {
             <HeaderMenuLinks />
           </ul>
         </details>
+        {/* Mobile Logo - Now Visible */}
+        <Link href="/" passHref className="flex lg:hidden items-center gap-2 ml-2 shrink-0">
+          <div className="flex relative w-6 h-6">
+            <Image alt="TapThat X logo" className="cursor-pointer" fill src="/logo.svg" />
+          </div>
+        </Link>
+        {/* Desktop Logo */}
         <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
           <div className="flex relative w-10 h-10">
             <Image alt="TapThat X logo" className="cursor-pointer" fill src="/logo.svg" />
@@ -101,8 +108,8 @@ export const Header = () => {
         </ul>
       </div>
       <div className="navbar-end grow mr-4 gap-3">
-        <div className="hidden sm:flex items-center px-3 py-1 rounded-full bg-green-500/20 text-green-600 dark:bg-green-500/30 dark:text-green-400 text-xs font-medium shadow-sm">
-          Built: {BUILD_VERSION}
+        <div className="hidden md:flex items-center px-3 py-1.5 rounded-full text-[10px] font-semibold glass-badge">
+          <span className="text-success">v{BUILD_VERSION}</span>
         </div>
         <RainbowKitCustomConnectButton />
         {isLocalNetwork && <FaucetButton />}
