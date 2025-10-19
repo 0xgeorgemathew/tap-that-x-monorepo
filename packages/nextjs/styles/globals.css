@@ -300,47 +300,35 @@
     background: linear-gradient(135deg, #6ba4bf 0%, #4a8ba6 100%);
     border: 1.5px solid rgba(255, 255, 255, 0.3);
     filter: brightness(1.1) saturate(1.15);
-    box-shadow:
-      0 4px 16px rgba(107, 164, 191, 0.25),
-      0 8px 32px rgba(107, 164, 191, 0.15),
-      inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
   }
 
   .round-icon:hover {
     transform: translateY(-2px);
-    box-shadow:
-      0 6px 20px rgba(107, 164, 191, 0.3),
-      0 12px 40px rgba(107, 164, 191, 0.2),
-      inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4);
   }
 
   [data-theme="dark"] .round-icon {
     background: linear-gradient(135deg, #7ec8e3 0%, #5ab3d1 100%);
     border: 1.5px solid rgba(255, 255, 255, 0.25);
-    box-shadow:
-      0 4px 16px rgba(126, 200, 227, 0.3),
-      0 8px 32px rgba(126, 200, 227, 0.2),
-      inset 0 2px 4px rgba(255, 255, 255, 0.25);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25);
   }
 
   [data-theme="dark"] .round-icon:hover {
-    box-shadow:
-      0 6px 20px rgba(126, 200, 227, 0.35),
-      0 12px 40px rgba(126, 200, 227, 0.25),
-      inset 0 2px 4px rgba(255, 255, 255, 0.35);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.35);
   }
 
-  /* Gradient animated background */
+  /* Gradient animated background - now transparent for orb */
   .gradient-bg {
-    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 25%, #fff3e0 50%, #e0f2f1 75%, #fce4ec 100%);
-    background-size: 400% 400%;
-    animation: gradient-shift 20s ease infinite;
+    background: transparent;
+    position: relative;
+    z-index: 1;
   }
 
   [data-theme="dark"] .gradient-bg {
-    background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 25%, #415a77 50%, #2c3e50 75%, #1a1a2e 100%);
-    background-size: 400% 400%;
-    animation: gradient-shift 20s ease infinite;
+    background: transparent;
+    position: relative;
+    z-index: 1;
   }
 
   /* Glass button with strong gradient and high contrast */
@@ -350,34 +338,22 @@
     color: #ffffff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow:
-      0 4px 12px rgba(90, 148, 175, 0.3),
-      0 2px 6px rgba(90, 148, 175, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
   }
 
   [data-theme="dark"] .glass-btn {
     background: linear-gradient(135deg, #6ab8d3 0%, #5ab3d1 100%);
-    box-shadow:
-      0 4px 12px rgba(106, 184, 211, 0.35),
-      0 2px 6px rgba(106, 184, 211, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   .glass-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     filter: brightness(1.1);
-    box-shadow:
-      0 6px 16px rgba(90, 148, 175, 0.4),
-      0 3px 8px rgba(90, 148, 175, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   [data-theme="dark"] .glass-btn:hover:not(:disabled) {
-    box-shadow:
-      0 6px 16px rgba(106, 184, 211, 0.45),
-      0 3px 8px rgba(106, 184, 211, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
   }
 
   .glass-btn:active:not(:disabled) {
@@ -491,13 +467,11 @@
     height: 10px;
     background: rgba(107, 164, 191, 0.6);
     border: 1px solid rgba(107, 164, 191, 0.8);
-    box-shadow: 0 2px 12px rgba(107, 164, 191, 0.4);
   }
 
   [data-theme="dark"] .nav-dot-active {
     background: rgba(126, 200, 227, 0.5);
     border: 1px solid rgba(126, 200, 227, 0.7);
-    box-shadow: 0 2px 12px rgba(126, 200, 227, 0.3);
   }
 
   /* Glassmorphic navigation arrows */
@@ -522,13 +496,11 @@
     transform: scale(1.08);
     background: rgba(107, 164, 191, 0.35);
     border-color: rgba(107, 164, 191, 0.5);
-    box-shadow: 0 6px 20px 0 rgba(107, 164, 191, 0.3);
   }
 
   [data-theme="dark"] .nav-arrow:hover {
     background: rgba(126, 200, 227, 0.25);
     border-color: rgba(126, 200, 227, 0.45);
-    box-shadow: 0 6px 20px 0 rgba(126, 200, 227, 0.25);
   }
 
   .nav-arrow:active {

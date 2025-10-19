@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Nfc, Wallet } from "lucide-react";
 import { useAccount, useChainId, useWriteContract } from "wagmi";
-import { NavigationArrows } from "~~/components/NavigationArrows";
-import { NavigationDots } from "~~/components/NavigationDots";
+import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
 import { ChipAddressDisplay } from "~~/components/register/ChipAddressDisplay";
 import { Separator } from "~~/components/ui/separator";
 import deployedContracts from "~~/contracts/deployedContracts";
@@ -120,7 +119,7 @@ export default function RegisterPage() {
         <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-5 animate-pulse-slow">
+            <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-5">
               <Nfc className="h-12 w-12 sm:h-14 sm:w-14 text-white" />
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">Register Your Chip</h1>
@@ -130,7 +129,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Dynamic Content Area */}
-          <div className="space-y-5 sm:space-y-6 flex flex-col">
+          <div className="space-y-5 sm:space-y-6 flex flex-col min-h-[120px]">
             {/* Wallet Alert */}
             {!address && (
               <div className="glass-alert">
@@ -173,7 +172,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Action Button - Fixed position */}
-          <div className="mt-6 space-y-4">
+          <div className="mt-4 space-y-4">
             {allComplete ? (
               <button onClick={resetFlow} className="glass-btn flex items-center justify-center gap-3 w-full">
                 <Nfc className="h-6 w-6" />
@@ -205,8 +204,7 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          <NavigationDots />
-          <NavigationArrows />
+          <UnifiedNavigation />
         </div>
       </div>
     </div>

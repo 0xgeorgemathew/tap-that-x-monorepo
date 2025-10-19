@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, CreditCard, Loader2, Shield, Wallet } from "lucide-react";
 import { formatUnits, maxUint256 } from "viem";
 import { useAccount, useChainId, usePublicClient, useWriteContract } from "wagmi";
-import { NavigationArrows } from "~~/components/NavigationArrows";
-import { NavigationDots } from "~~/components/NavigationDots";
+import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
 import deployedContracts from "~~/contracts/deployedContracts";
 
 export default function ApprovePage() {
@@ -122,7 +121,7 @@ export default function ApprovePage() {
         <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-5 animate-pulse-slow">
+            <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-5">
               <Shield className="h-12 w-12 sm:h-14 sm:w-14 text-white" />
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">USDC Approval Setup</h1>
@@ -132,7 +131,7 @@ export default function ApprovePage() {
           </div>
 
           {/* Dynamic Content Area */}
-          <div className="space-y-5 sm:space-y-6 flex flex-col">
+          <div className="space-y-5 sm:space-y-6 flex flex-col min-h-[120px]">
             {/* Wallet Alert */}
             {!address && (
               <div className="glass-alert">
@@ -208,7 +207,7 @@ export default function ApprovePage() {
           </div>
 
           {/* Action Buttons - Fixed position */}
-          <div className="mt-6 space-y-4">
+          <div className="mt-4 space-y-4">
             {!isApproved ? (
               <button
                 onClick={handleApprove}
@@ -251,14 +250,9 @@ export default function ApprovePage() {
             )}
 
             {/* Security Note */}
-            <div className="text-xs sm:text-sm text-center text-base-content/60 px-2 space-y-1">
-              <p>⚠️ This gives the payment processor unlimited access to your USDC.</p>
-              <p>Only approve contracts you trust. You can revoke this anytime.</p>
-            </div>
           </div>
 
-          <NavigationDots />
-          <NavigationArrows />
+          <UnifiedNavigation />
         </div>
       </div>
     </div>

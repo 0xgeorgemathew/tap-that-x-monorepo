@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, CreditCard, Loader2, Wallet, Zap } from "lucide-react";
 import { parseUnits } from "viem";
 import { useAccount, useChainId, usePublicClient } from "wagmi";
-import { NavigationArrows } from "~~/components/NavigationArrows";
-import { NavigationDots } from "~~/components/NavigationDots";
+import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
 import { ChipOwnerDisplay } from "~~/components/payment/ChipOwnerDisplay";
 import { Separator } from "~~/components/ui/separator";
 import deployedContracts from "~~/contracts/deployedContracts";
@@ -203,7 +202,7 @@ export default function PaymentPage() {
         <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-5 animate-pulse-slow">
+            <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-5">
               <CreditCard className="h-12 w-12 sm:h-14 sm:w-14 text-white" />
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">Tap to Pay</h1>
@@ -213,7 +212,7 @@ export default function PaymentPage() {
           </div>
 
           {/* Dynamic Content Area */}
-          <div className="space-y-5 sm:space-y-6 flex flex-col">
+          <div className="space-y-5 sm:space-y-6 flex flex-col min-h-[120px]">
             {/* Wallet Alert */}
             {!address && (
               <div className="glass-alert">
@@ -285,7 +284,7 @@ export default function PaymentPage() {
           </div>
 
           {/* Action Button - Fixed position */}
-          <div className="mt-6 space-y-4">
+          <div className="mt-4 space-y-4">
             {allComplete ? (
               <button onClick={resetFlow} className="glass-btn flex items-center justify-center gap-3 w-full">
                 <CreditCard className="h-6 w-6" />
@@ -324,8 +323,7 @@ export default function PaymentPage() {
             </p>
           </div>
 
-          <NavigationDots />
-          <NavigationArrows />
+          <UnifiedNavigation />
         </div>
       </div>
     </div>
