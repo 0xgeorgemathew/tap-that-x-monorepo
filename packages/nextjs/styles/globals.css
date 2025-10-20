@@ -445,6 +445,7 @@
       radial-gradient(circle at 80% 70%, rgba(255, 104, 149, 0.7) 0%, transparent 45%),
       radial-gradient(circle at 50% 10%, rgba(255, 199, 80, 0.68) 0%, transparent 40%);
     animation: mesh-drift 8s ease-in-out infinite;
+    pointer-events: none;
     z-index: 0;
   }
 
@@ -457,6 +458,7 @@
       radial-gradient(circle at 30% 80%, rgba(255, 199, 80, 0.66) 0%, transparent 48%),
       radial-gradient(circle at 90% 50%, rgba(86, 102, 246, 0.68) 0%, transparent 43%);
     animation: mesh-drift-reverse 10s ease-in-out infinite;
+    pointer-events: none;
     z-index: 0;
   }
 
