@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, CreditCard, Loader2, Wallet, Zap } from "lucide-react";
 import { parseUnits } from "viem";
 import { useAccount, useChainId, usePublicClient } from "wagmi";
+import { BalancePreview } from "~~/components/BalancePreview";
+import { StepIndicator } from "~~/components/StepIndicator";
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
 import { ChipOwnerDisplay } from "~~/components/payment/ChipOwnerDisplay";
 import { Separator } from "~~/components/ui/separator";
@@ -12,6 +14,12 @@ import { useGaslessRelay } from "~~/hooks/useGaslessRelay";
 import { useHaloChip } from "~~/hooks/useHaloChip";
 
 type FlowState = "idle" | "detecting" | "authorizing" | "success" | "error";
+
+const PAYMENT_STEPS = [
+  { label: "Detect & Verify", description: "Verifying chip ownership", timeEstimate: "2-3 sec" },
+  { label: "Authorize Payment", description: "Tap chip to authorize", timeEstimate: "2-3 sec" },
+  { label: "Process Transaction", description: "Relaying to blockchain", timeEstimate: "10-15 sec" },
+];
 
 export default function PaymentPage() {
   const { address } = useAccount();
@@ -30,6 +38,7 @@ export default function PaymentPage() {
   const [flowState, setFlowState] = useState<FlowState>("idle");
   const [allowance, setAllowance] = useState<bigint | null>(null);
   const [checkingApproval, setCheckingApproval] = useState(true);
+  const [userBalance, setUserBalance] = useState<bigint | null>(null);
 
   const { signMessage, signTypedData, isLoading } = useHaloChip();
   const { relayPayment } = useGaslessRelay();
@@ -51,8 +60,18 @@ export default function PaymentPage() {
         })) as bigint;
 
         setAllowance(currentAllowance);
+
+        // Also fetch user's USDC balance
+        const balance = (await publicClient.readContract({
+          address: USDC,
+          abi: contracts.MockUSDC.abi,
+          functionName: "balanceOf",
+          args: [address],
+        })) as bigint;
+
+        setUserBalance(balance);
       } catch (err) {
-        console.error("Failed to check allowance:", err);
+        console.error("Failed to check allowance/balance:", err);
       } finally {
         setCheckingApproval(false);
       }
@@ -196,14 +215,14 @@ export default function PaymentPage() {
   const allComplete = flowState === "success";
 
   return (
-    <div className="min-h-screen flex items-start justify-center pt-24 md:pt-32 p-4 sm:p-6 gradient-bg">
+    <div className="flex items-start justify-center p-4 sm:p-6 pb-28">
       <div className="w-full max-w-lg">
         {/* Main Glass Card */}
         <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-5">
-              <CreditCard className="h-12 w-12 sm:h-14 sm:w-14 text-white" />
+              <CreditCard className="h-12 w-12 sm:h-14 sm:w-14" />
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">Tap to Pay</h1>
             <p className="text-sm sm:text-base text-base-content/80 font-medium px-4">
@@ -212,7 +231,17 @@ export default function PaymentPage() {
           </div>
 
           {/* Dynamic Content Area */}
-          <div className="space-y-5 sm:space-y-6 flex flex-col min-h-[120px]">
+          <div className="space-y-5 sm:space-y-6 flex flex-col min-h-[140px]">
+            {/* Step Indicator - Show when flow is active */}
+            {flowState !== "idle" && flowState !== "error" && (
+              <StepIndicator
+                steps={PAYMENT_STEPS}
+                currentStep={
+                  flowState === "detecting" ? 0 : flowState === "authorizing" ? 1 : flowState === "success" ? 2 : 0
+                }
+              />
+            )}
+
             {/* Wallet Alert */}
             {!address && (
               <div className="glass-alert">
@@ -281,10 +310,25 @@ export default function PaymentPage() {
                 <ChipOwnerDisplay chipAddress={chipAddress} ownerAddress={recipient} />
               </div>
             )}
+
+            {/* Balance Preview - Show when chip detected and balance available */}
+            {chipAddress && recipient && userBalance !== null && flowState !== "success" && (
+              <div className="fade-in">
+                <BalancePreview
+                  currentBalance={userBalance}
+                  amount={parseUnits(amount, 6)}
+                  recipientAddress={recipient}
+                  decimals={6}
+                  tokenSymbol="USDC"
+                  estimatedTime="10-15 sec"
+                  showGasFeeBadge={true}
+                />
+              </div>
+            )}
           </div>
 
           {/* Action Button - Fixed position */}
-          <div className="mt-4 space-y-4">
+          <div className="mt-6 space-y-4">
             {allComplete ? (
               <button onClick={resetFlow} className="glass-btn flex items-center justify-center gap-3 w-full">
                 <CreditCard className="h-6 w-6" />
@@ -316,16 +360,11 @@ export default function PaymentPage() {
                 )}
               </button>
             )}
-
-            {/* Help Text */}
-            <p className="text-xs sm:text-sm text-center text-base-content/60 px-2">
-              Make sure NFC is enabled on your device and hold it close to the chip
-            </p>
           </div>
-
-          <UnifiedNavigation />
         </div>
       </div>
+
+      <UnifiedNavigation />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { NetworkOptions } from "./NetworkOptions";
-import { ArrowLeftRight, CheckCircle, Copy, ExternalLink, Eye, LogOut, QrCode } from "lucide-react";
+import { ArrowLeftRight, CheckCircle, Copy, ExternalLink, Eye, LogOut, Moon, QrCode, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import { getAddress } from "viem";
 import { Address } from "viem";
 import { useAccount, useDisconnect } from "wagmi";
@@ -29,12 +30,15 @@ export const AddressInfoDropdown = ({
 }: AddressInfoDropdownProps) => {
   const { disconnect } = useDisconnect();
   const { connector } = useAccount();
+  const { setTheme, resolvedTheme } = useTheme();
   const checkSumAddress = getAddress(address);
 
   const { copyToClipboard: copyAddressToClipboard, isCopiedToClipboard: isAddressCopiedToClipboard } =
     useCopyToClipboard();
   const [selectingNetwork, setSelectingNetwork] = useState(false);
   const dropdownRef = useRef<HTMLDetailsElement>(null);
+
+  const isDarkMode = resolvedTheme === "dark";
 
   const closeDropdown = () => {
     setSelectingNetwork(false);
@@ -46,8 +50,11 @@ export const AddressInfoDropdown = ({
   return (
     <>
       <details ref={dropdownRef} className="dropdown dropdown-end leading-3">
-        <summary className="btn btn-ghost btn-sm p-0 hover:bg-transparent border-0">
+        <summary className="btn btn-ghost btn-sm px-2 hover:bg-transparent border-0 flex items-center gap-2">
           <BlockieAvatar address={checkSumAddress} size={32} ensImage={ensAvatar} />
+          <span className="font-mono text-sm font-medium">
+            {isENS(displayName) ? displayName : checkSumAddress?.slice(-4)}
+          </span>
         </summary>
         <ul className="dropdown-content menu z-2 p-2 mt-2 shadow-center shadow-accent bg-base-200 rounded-box gap-1 min-w-[240px]">
           {/* Balance & Address Info */}
@@ -120,6 +127,25 @@ export const AddressInfoDropdown = ({
               </label>
             </li>
           ) : null}
+          <li className={selectingNetwork ? "hidden" : ""}>
+            <button
+              className="h-8 btn-sm rounded-xl! flex gap-3 py-3"
+              type="button"
+              onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+            >
+              {isDarkMode ? (
+                <>
+                  <Sun className="h-6 w-4 ml-2 sm:ml-0" />
+                  <span>Light Mode</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="h-6 w-4 ml-2 sm:ml-0" />
+                  <span>Dark Mode</span>
+                </>
+              )}
+            </button>
+          </li>
           <li className={selectingNetwork ? "hidden" : ""}>
             <button
               className="menu-item text-error h-8 btn-sm rounded-xl! flex gap-3 py-3"

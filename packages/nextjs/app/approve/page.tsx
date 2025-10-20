@@ -115,14 +115,14 @@ export default function ApprovePage() {
   const isUnlimited = allowance !== null && allowance === maxUint256;
 
   return (
-    <div className="min-h-screen flex items-start justify-center pt-24 md:pt-32 p-4 sm:p-6 gradient-bg">
+    <div className="flex items-start justify-center p-4 sm:p-6 pb-28">
       <div className="w-full max-w-lg">
         {/* Main Glass Card */}
         <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-5">
-              <Shield className="h-12 w-12 sm:h-14 sm:w-14 text-white" />
+              <Shield className="h-12 w-12 sm:h-14 sm:w-14" />
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">USDC Approval Setup</h1>
             <p className="text-sm sm:text-base text-base-content/80 font-medium px-4">
@@ -131,7 +131,7 @@ export default function ApprovePage() {
           </div>
 
           {/* Dynamic Content Area */}
-          <div className="space-y-5 sm:space-y-6 flex flex-col min-h-[120px]">
+          <div className="space-y-5 sm:space-y-6 flex flex-col min-h-[140px]">
             {/* Wallet Alert */}
             {!address && (
               <div className="glass-alert">
@@ -207,7 +207,7 @@ export default function ApprovePage() {
           </div>
 
           {/* Action Buttons - Fixed position */}
-          <div className="mt-4 space-y-4">
+          <div className="mt-6 space-y-4">
             {!isApproved ? (
               <button
                 onClick={handleApprove}
@@ -251,10 +251,10 @@ export default function ApprovePage() {
 
             {/* Security Note */}
           </div>
-
-          <UnifiedNavigation />
         </div>
       </div>
+
+      <UnifiedNavigation />
     </div>
   );
 }

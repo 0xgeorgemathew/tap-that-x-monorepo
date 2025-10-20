@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { hardhat } from "viem/chains";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth";
@@ -38,15 +39,7 @@ export const HeaderMenuLinks = () => {
         const isActive = pathname === href;
         return (
           <li key={href}>
-            <Link
-              href={href}
-              passHref
-              className={`${
-                isActive
-                  ? "bg-primary text-primary-content border-2 border-primary font-bold"
-                  : "border-2 border-transparent"
-              } hover:bg-primary/10 hover:border-primary focus:!bg-primary/10 active:!text-neutral py-1.5 px-3 text-sm rounded-lg gap-2 grid grid-flow-col transition-all`}
-            >
+            <Link href={href} passHref className={`glass-nav-btn ${isActive ? "glass-nav-btn-active" : ""}`}>
               {icon}
               <span>{label}</span>
             </Link>
@@ -62,28 +55,37 @@ export const HeaderMenuLinks = () => {
  */
 export const Header = () => {
   const { targetNetwork } = useTargetNetwork();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
   const isLocalNetwork = targetNetwork.id === hardhat.id;
 
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const logoSrc = mounted
+    ? resolvedTheme === "dark"
+      ? "https://lucide.dev/logo.dark.svg"
+      : "https://lucide.dev/logo.light.svg"
+    : "https://lucide.dev/logo.light.svg";
+
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
+    <div className="fixed top-0 left-0 right-0 flex justify-center pt-4 px-4 z-50 bg-transparent">
       <nav className="glass-navbar w-full max-w-6xl flex items-center justify-between px-6 py-3 rounded-full">
         {/* Left: Logo + Brand */}
-        <Link href="/" passHref className="flex items-center gap-3 shrink-0">
-          <div className="flex relative w-8 h-8">
-            <Image alt="TapThat X logo" className="cursor-pointer" fill src="/logo.svg" />
+        <Link href="/" passHref className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center justify-center w-16 h-16 relative">
+            <Image src={logoSrc} alt="Lucide Logo" width={64} height={64} className="object-contain" />
           </div>
-          <span className="font-bold text-base leading-tight">TapThat X</span>
+          <span className="font-bold text-2xl leading-tight bg-gradient-to-r from-[#F56566] to-black bg-clip-text text-transparent dark:from-[#F56566] dark:to-white">
+            TapThat X
+          </span>
         </Link>
 
-        {/* Right: Nav Links + Actions */}
-        <div className="flex items-center gap-6">
-          <ul className="hidden md:flex items-center gap-2">
-            <HeaderMenuLinks />
-          </ul>
-          <div className="flex items-center gap-3">
-            <RainbowKitCustomConnectButton />
-            {isLocalNetwork && <FaucetButton />}
-          </div>
+        {/* Right: Actions */}
+        <div className="flex items-center gap-3">
+          <RainbowKitCustomConnectButton />
+          {isLocalNetwork && <FaucetButton />}
         </div>
       </nav>
     </div>

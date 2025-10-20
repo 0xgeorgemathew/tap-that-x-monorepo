@@ -1,58 +1,43 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CreditCard, Home, Nfc, Shield } from "lucide-react";
 
-const navSteps = [
-  { path: "/", label: "Home" },
-  { path: "/register", label: "Register" },
-  { path: "/approve", label: "Approve" },
-  { path: "/payment", label: "Payment" },
+const navTabs = [
+  { path: "/", label: "Home", icon: Home },
+  { path: "/register", label: "Register", icon: Nfc },
+  { path: "/approve", label: "Approve", icon: Shield },
+  { path: "/payment", label: "Payment", icon: CreditCard },
 ];
 
 export const UnifiedNavigation = () => {
   const pathname = usePathname();
   const router = useRouter();
 
-  const currentIndex = navSteps.findIndex(step => step.path === pathname);
-  const prevStep = currentIndex > 0 ? navSteps[currentIndex - 1] : null;
-  const nextStep = currentIndex < navSteps.length - 1 ? navSteps[currentIndex + 1] : null;
-
   return (
-    <div className="flex items-center justify-center gap-3 mt-5">
-      {/* Previous Arrow */}
-      {prevStep ? (
-        <button
-          onClick={() => router.push(prevStep.path)}
-          className="nav-arrow"
-          title={`Previous: ${prevStep.label}`}
-          aria-label={`Go to ${prevStep.label}`}
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-      ) : (
-        <div className="w-10 h-10" />
-      )}
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4">
+      <nav
+        className="glass-navbar w-full max-w-6xl flex items-center justify-around px-6 py-3 rounded-full"
+        role="navigation"
+        aria-label="Main navigation"
+      >
+        {navTabs.map(tab => {
+          const isActive = pathname === tab.path;
+          const Icon = tab.icon;
 
-      {/* Navigation Dots */}
-      {navSteps.map(step => {
-        const isActive = pathname === step.path;
-        return <div key={step.path} className={`nav-dot ${isActive ? "nav-dot-active" : ""}`} title={step.label} />;
-      })}
-
-      {/* Next Arrow */}
-      {nextStep ? (
-        <button
-          onClick={() => router.push(nextStep.path)}
-          className="nav-arrow"
-          title={`Next: ${nextStep.label}`}
-          aria-label={`Go to ${nextStep.label}`}
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
-      ) : (
-        <div className="w-10 h-10" />
-      )}
+          return (
+            <button
+              key={tab.path}
+              onClick={() => router.push(tab.path)}
+              className={`glass-nav-icon ${isActive ? "glass-nav-icon-active" : ""}`}
+              aria-label={tab.label}
+              aria-current={isActive ? "page" : undefined}
+            >
+              <Icon className={`h-6 w-6 ${isActive ? "text-[#5666F6] dark:text-[#A78BFA]" : "text-base-content/50"}`} />
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 };

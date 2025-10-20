@@ -7,7 +7,7 @@ import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
 
 const Home: NextPage = () => {
   return (
-    <div className="min-h-screen flex items-start justify-center pt-24 md:pt-32 p-4 sm:p-6 gradient-bg">
+    <div className="flex items-start justify-center p-4 sm:p-6 pb-28">
       <div className="w-full max-w-lg">
         {/* Main Glass Card */}
         <div className="glass-card p-6 sm:p-8 md:p-10 flex flex-col">
@@ -23,12 +23,12 @@ const Home: NextPage = () => {
           </div>
 
           {/* Dynamic Content Area */}
-          <div className="space-y-5 sm:space-y-6 flex flex-col min-h-[120px]">
+          <div className="space-y-5 sm:space-y-6 flex flex-col min-h-[140px]">
             {/* Empty content area for layout consistency */}
           </div>
 
           {/* Action Button - Fixed position */}
-          <div className="mt-4 space-y-4">
+          <div className="mt-6 space-y-4">
             <Link
               href="/register"
               className="glass-btn flex items-center justify-center gap-3 w-full hover:scale-[1.02] active:scale-[0.98]"
@@ -36,16 +36,11 @@ const Home: NextPage = () => {
               <span>Register Your Chip</span>
               <ArrowRight className="h-5 w-5" />
             </Link>
-
-            {/* Help Text */}
-            <p className="text-xs sm:text-sm text-center text-base-content/60 px-2">
-              Start by registering your NFC chip to your wallet
-            </p>
           </div>
-
-          <UnifiedNavigation />
         </div>
       </div>
+
+      <UnifiedNavigation />
     </div>
   );
 };

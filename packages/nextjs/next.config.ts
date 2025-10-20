@@ -4,6 +4,15 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   devIndicators: false,
   transpilePackages: ["@rainbow-me/rainbowkit"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lucide.dev",
+        pathname: "/**",
+      },
+    ],
+  },
   typescript: {
     ignoreBuildErrors: process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR === "true",
   },
