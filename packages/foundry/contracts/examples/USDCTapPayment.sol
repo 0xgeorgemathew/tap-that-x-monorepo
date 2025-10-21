@@ -15,7 +15,7 @@ contract USDCTapPayment is ReentrancyGuard {
     TapThatXRegistry public immutable registry;
 
     event TapPaymentExecuted(
-        address indexed from, address indexed to, uint256 amount, address indexed chip, bytes32 nonce
+        address indexed owner,  bytes32 nonce
     );
 
     constructor(address _usdc, address _protocol, address _registry) {
@@ -58,29 +58,9 @@ contract USDCTapPayment is ReentrancyGuard {
 
         require(success, "Protocol execution failed");
 
-        // Get chip address from protocol verification
-        address chip = protocol.verifyChipAuth(
-            owner,
-            address(usdc),
-            transferCallData,
-            0,
-            timestamp,
-            nonce,
-            chipSignature
-        );
+       
 
-        // Decode recipient and amount from callData for event
-        // transferFrom selector is 0x23b872dd, followed by from, to, amount
-        address recipient;
-        uint256 amount;
-        assembly {
-            // Skip 4 bytes (selector) + 32 bytes (from) = 36 bytes
-            recipient := calldataload(add(transferCallData.offset, 36))
-            // Skip 4 bytes (selector) + 32 bytes (from) + 32 bytes (to) = 68 bytes
-            amount := calldataload(add(transferCallData.offset, 68))
-        }
-
-        emit TapPaymentExecuted(owner, recipient, amount, chip, nonce);
+        emit TapPaymentExecuted(owner,nonce);
     }
 
     /// @notice Helper to check if owner has approved sufficient USDC

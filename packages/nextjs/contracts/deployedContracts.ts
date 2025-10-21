@@ -644,7 +644,7 @@ const deployedContracts = {
   },
   84532: {
     MockUSDC: {
-      address: "0x419184067e0c40d3622717be5df4758dfd3d7242",
+      address: "0x60f849b459cfaf33d4d6f4262366782aa173e46e",
       abi: [
         {
           type: "constructor",
@@ -1276,10 +1276,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32533364,
+      deployedOnBlock: 32657546,
     },
     TapThatXRegistry: {
-      address: "0x91d05d5b8913bcda59f1923dc6831b108154df22",
+      address: "0x196fa656904a3ec641ada2d38acc5fe428350b53",
       abi: [
         {
           type: "constructor",
@@ -1566,10 +1566,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32533364,
+      deployedOnBlock: 32657546,
     },
     TapThatXProtocol: {
-      address: "0x0f917750db157d65c6c14e5ce5828a250569afe1",
+      address: "0xbdb509f7924b2105bdf80f34af6408e5897eb6ca",
       abi: [
         {
           type: "constructor",
@@ -1908,10 +1908,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32533364,
+      deployedOnBlock: 32657546,
     },
     USDCTapPayment: {
-      address: "0x4c39e327108808f0121c37110b8970752e2fc5de",
+      address: "0xc7d4a77fd7b8b58c6bb71aaf16b7eeb419858bfe",
       abi: [
         {
           type: "constructor",
@@ -2048,25 +2048,7 @@ const deployedContracts = {
           name: "TapPaymentExecuted",
           inputs: [
             {
-              name: "from",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "to",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "amount",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "chip",
+              name: "owner",
               type: "address",
               indexed: true,
               internalType: "address",
@@ -2087,7 +2069,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32533364,
+      deployedOnBlock: 32657546,
     },
   },
   11155111: {
