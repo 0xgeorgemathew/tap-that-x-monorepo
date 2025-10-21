@@ -126,8 +126,8 @@ contract TapThatXProtocol is EIP712, ReentrancyGuard {
             TapThatXAuth.validateTimestamp(timestamp, MAX_TIMESTAMP_WINDOW), "Authorization expired"
         );
 
-        // Recover chip address from signature
-        address chip = TapThatXAuth.recoverChipFromCallAuth(_domainSeparatorV4(), auth, signature);
+        // Recover chip address from signature (chain-agnostic)
+        address chip = TapThatXAuth.recoverChipFromCallAuth(_chainAgnosticDomainSeparator(), auth, signature);
 
         require(chip != address(0), "Invalid chip signature");
 
@@ -138,6 +138,18 @@ contract TapThatXProtocol is EIP712, ReentrancyGuard {
     /// @return bytes32 The domain separator
     function getDomainSeparator() external view returns (bytes32) {
         return _domainSeparatorV4();
+    }
+
+    /// @notice Chain-agnostic domain separator (excludes chainId)
+    function _chainAgnosticDomainSeparator() internal view returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,address verifyingContract)"),
+                keccak256(bytes("TapThatXProtocol")),
+                keccak256(bytes("1")),
+                address(this)
+            )
+        );
     }
 
     /// @notice Allow contract to receive ETH

@@ -28,9 +28,9 @@ contract TapThatXRegistry is Ownable, ReentrancyGuard, EIP712 {
         require(chipAddress != address(0), "Invalid chip address");
         // require(chipToOwner[chipAddress] == address(0), "Chip already registered");
 
-        // Verify EIP-712 chip signature
+        // Verify EIP-712 chip signature (chain-agnostic)
         bytes32 structHash = keccak256(abi.encode(REGISTRATION_TYPEHASH, msg.sender, chipAddress));
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", _domainSeparatorV4(), structHash));
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", _chainAgnosticDomainSeparator(), structHash));
         address signer = digest.recover(chipSignature);
 
         require(signer == chipAddress, "Invalid chip signature");
@@ -58,5 +58,17 @@ contract TapThatXRegistry is Ownable, ReentrancyGuard, EIP712 {
     /// @return bytes32 The domain separator
     function getDomainSeparator() external view returns (bytes32) {
         return _domainSeparatorV4();
+    }
+
+    /// @notice Chain-agnostic domain separator (excludes chainId)
+    function _chainAgnosticDomainSeparator() internal view returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,address verifyingContract)"),
+                keccak256(bytes("TapThatXRegistry")),
+                keccak256(bytes("1")),
+                address(this)
+            )
+        );
     }
 }

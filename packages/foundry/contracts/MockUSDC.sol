@@ -14,7 +14,7 @@ contract MockUSDC is ERC20Permit, Ownable {
         _mint(0x59d4C5BE20B41139494b3F1ba2A745ad9e71B00B, 1_000_000 * 10 ** DECIMALS);
         _mint(0x180c5f2aBF35442Fb4425A1edBF3B5faDFc2208D, 1_000_000 * 10 ** DECIMALS);
         _mint(0x04aDa81c30ea0D0ab3C66555F8b446E0074ec001, 1_000_000 * 10 ** DECIMALS);
-
+        _mint(0x3A308d0B3E1a4bC83Aa7DAAcdC61c682D1A0D246, 1_000_000 * 10 ** DECIMALS);
     }
 
     /// @notice Mint USDC tokens for testing

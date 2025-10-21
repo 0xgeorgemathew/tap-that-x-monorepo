@@ -64,7 +64,6 @@ export default function RegisterPage() {
         domain: {
           name: "TapThatXRegistry",
           version: "1",
-          chainId,
           verifyingContract: registryAddress,
         },
         types: {

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, CreditCard, Loader2, Wallet, Zap } from "lucide-react";
 import { parseUnits } from "viem";
 import { useAccount, useChainId, usePublicClient } from "wagmi";
-import { BalancePreview } from "~~/components/BalancePreview";
 import { StepIndicator } from "~~/components/StepIndicator";
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
 import { ChipOwnerDisplay } from "~~/components/payment/ChipOwnerDisplay";
@@ -38,7 +37,6 @@ export default function PaymentPage() {
   const [flowState, setFlowState] = useState<FlowState>("idle");
   const [allowance, setAllowance] = useState<bigint | null>(null);
   const [checkingApproval, setCheckingApproval] = useState(true);
-  const [userBalance, setUserBalance] = useState<bigint | null>(null);
 
   const { signMessage, signTypedData, isLoading } = useHaloChip();
   const { relayPayment } = useGaslessRelay();
@@ -60,16 +58,6 @@ export default function PaymentPage() {
         })) as bigint;
 
         setAllowance(currentAllowance);
-
-        // Also fetch user's USDC balance
-        const balance = (await publicClient.readContract({
-          address: USDC,
-          abi: contracts.MockUSDC.abi,
-          functionName: "balanceOf",
-          args: [address],
-        })) as bigint;
-
-        setUserBalance(balance);
       } catch (err) {
         console.error("Failed to check allowance/balance:", err);
       } finally {
@@ -161,7 +149,6 @@ export default function PaymentPage() {
         domain: {
           name: "TapThatXProtocol",
           version: "1",
-          chainId,
           verifyingContract: PROTOCOL_ADDRESS,
         },
         types: {
@@ -308,21 +295,6 @@ export default function PaymentPage() {
               <div className="fade-in">
                 <Separator />
                 <ChipOwnerDisplay chipAddress={chipAddress} ownerAddress={recipient} />
-              </div>
-            )}
-
-            {/* Balance Preview - Show when chip detected and balance available */}
-            {chipAddress && recipient && userBalance !== null && flowState !== "success" && (
-              <div className="fade-in">
-                <BalancePreview
-                  currentBalance={userBalance}
-                  amount={parseUnits(amount, 6)}
-                  recipientAddress={recipient}
-                  decimals={6}
-                  tokenSymbol="USDC"
-                  estimatedTime="10-15 sec"
-                  showGasFeeBadge={true}
-                />
               </div>
             )}
           </div>
