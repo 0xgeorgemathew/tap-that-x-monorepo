@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Nfc, Wallet } from "lucide-react";
-import { useAccount, useChainId, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, useChainId, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { StepIndicator } from "~~/components/StepIndicator";
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
 import deployedContracts from "~~/contracts/deployedContracts";
@@ -18,12 +18,16 @@ const REGISTRATION_STEPS = [
 
 export default function RegisterPage() {
   const { address } = useAccount();
-  const { writeContract, isPending: isTxPending, isSuccess: isTxSuccess } = useWriteContract();
+  const { writeContract, isPending: isTxPending, data: txHash } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
   const chainId = useChainId();
   const { signMessage, signTypedData, isLoading } = useHaloChip();
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [flowState, setFlowState] = useState<FlowState>("idle");
   const [registeredChipAddress, setRegisteredChipAddress] = useState<string>("");
+  const [detectedChip, setDetectedChip] = useState<string>("");
 
   const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
   const registryAddress = contracts?.TapThatXRegistry?.address;
@@ -49,6 +53,16 @@ export default function RegisterPage() {
     }
   }, [ownerChipData]);
 
+  // Handle transaction confirmation
+  useEffect(() => {
+    if (isConfirmed && detectedChip) {
+      setStatusMessage("");
+      setFlowState("success");
+      setStatusMessage("Success! Chip registered on-chain.");
+      setRegisteredChipAddress(detectedChip);
+    }
+  }, [isConfirmed, detectedChip]);
+
   const handleRegister = async () => {
     if (!address) {
       setStatusMessage("Please connect your wallet first");
@@ -69,6 +83,7 @@ export default function RegisterPage() {
 
       const chipData = await signMessage({ message: "init", format: "text" });
       const detectedChipAddress = chipData.address as `0x${string}`;
+      setDetectedChip(detectedChipAddress);
 
       setStatusMessage("");
 
@@ -111,15 +126,6 @@ export default function RegisterPage() {
           args: [detectedChipAddress, registrationSig.signature as `0x${string}`],
         },
         {
-          onSuccess: async () => {
-            // Clear message to show Step 3 completion indicator
-            setStatusMessage("");
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            setFlowState("success");
-            setStatusMessage("Success! Chip registered on-chain.");
-            setRegisteredChipAddress(detectedChipAddress);
-          },
           onError: err => {
             setFlowState("error");
             setStatusMessage(`Transaction failed: ${err.message}`);
@@ -135,9 +141,10 @@ export default function RegisterPage() {
   const resetFlow = () => {
     setFlowState("idle");
     setStatusMessage("");
+    setDetectedChip("");
   };
 
-  const allComplete = isTxSuccess && flowState === "success";
+  const allComplete = isConfirmed && flowState === "success";
 
   return (
     <div className="flex items-start justify-center p-4 sm:p-6 pb-24">
@@ -222,11 +229,19 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Step 3 Complete Indicator */}
-            {flowState === "confirming" && !statusMessage && (
+            {/* Step 3 Complete Indicator - show when tx submitted but waiting for confirmation */}
+            {flowState === "confirming" && !statusMessage && isTxPending && (
               <div className="text-center py-4 fade-in">
-                <CheckCircle2 className="h-6 w-6 text-success mx-auto mb-2" />
-                <p className="text-lg font-semibold text-base-content">Transaction confirmed</p>
+                <Loader2 className="h-6 w-6 text-primary animate-spin mx-auto mb-2" />
+                <p className="text-lg font-semibold text-base-content">Submitting transaction...</p>
+              </div>
+            )}
+
+            {/* Transaction submitted, waiting for confirmation */}
+            {flowState === "confirming" && !statusMessage && !isTxPending && isConfirming && (
+              <div className="text-center py-4 fade-in">
+                <Loader2 className="h-6 w-6 text-primary animate-spin mx-auto mb-2" />
+                <p className="text-lg font-semibold text-base-content">Waiting for confirmation...</p>
               </div>
             )}
           </div>
@@ -241,13 +256,13 @@ export default function RegisterPage() {
             ) : (
               <button
                 onClick={handleRegister}
-                disabled={isLoading || isTxPending || !address}
+                disabled={isLoading || isTxPending || isConfirming || !address}
                 className="glass-btn flex items-center justify-center gap-3 w-full"
               >
-                {isLoading || isTxPending ? (
+                {isLoading || isTxPending || isConfirming ? (
                   <>
                     <Loader2 className="h-6 w-6 animate-spin" />
-                    <span>{isLoading ? "Scanning..." : "Confirming..."}</span>
+                    <span>{isLoading ? "Scanning..." : isTxPending ? "Submitting..." : "Confirming..."}</span>
                   </>
                 ) : (
                   <>
