@@ -13,6 +13,7 @@ contract TapThatXRegistry is Ownable, ReentrancyGuard, EIP712 {
     using ECDSA for bytes32;
 
     mapping(address => address) public chipToOwner;
+    mapping(address => address) public ownerToChip;
 
     bytes32 private constant REGISTRATION_TYPEHASH =
         keccak256("ChipRegistration(address owner,address chipAddress)");
@@ -36,7 +37,8 @@ contract TapThatXRegistry is Ownable, ReentrancyGuard, EIP712 {
         require(signer == chipAddress, "Invalid chip signature");
 
         chipToOwner[chipAddress] = msg.sender;
-
+        ownerToChip[msg.sender] = chipAddress;
+        
         emit ChipRegistered(chipAddress, msg.sender);
     }
 
@@ -52,6 +54,13 @@ contract TapThatXRegistry is Ownable, ReentrancyGuard, EIP712 {
     /// @return bool True if chip is registered
     function isChipRegistered(address chip) external view returns (bool) {
         return chipToOwner[chip] != address(0);
+    }
+
+    /// @notice Get the chip owned by an address
+    /// @param owner The owner address
+    /// @return address The chip address, or address(0) if not registered
+    function getOwnerChip(address owner) external view returns (address) {
+        return ownerToChip[owner];
     }
 
     /// @notice Get the EIP-712 domain separator

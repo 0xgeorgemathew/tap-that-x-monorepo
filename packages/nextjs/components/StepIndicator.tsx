@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 export interface Step {
   label: string;
@@ -40,17 +40,12 @@ export const StepIndicator = ({ steps, currentStep, className = "" }: StepIndica
                       : "step-indicator-circle-upcoming"
                 }`}
               >
-                {isCompleted ? <Check className="h-4 w-4" /> : <span className="text-sm font-bold">{index + 1}</span>}
+                {isCompleted ? (
+                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                ) : (
+                  <span className="text-sm sm:text-base font-bold leading-none">{index + 1}</span>
+                )}
               </div>
-
-              {/* Connecting Line (not shown for last step) */}
-              {index < steps.length - 1 && (
-                <div
-                  className={`step-indicator-line ${
-                    isCompleted ? "step-indicator-line-completed" : "step-indicator-line-upcoming"
-                  }`}
-                />
-              )}
             </div>
 
             {/* Step Content */}

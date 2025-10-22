@@ -644,7 +644,7 @@ const deployedContracts = {
   },
   84532: {
     MockUSDC: {
-      address: "0x17d2d02baf48c5306a1fb610cae808af13c94690",
+      address: "0x0b2d164a4b56e782db2c8345b5d845a466994cef",
       abi: [
         {
           type: "constructor",
@@ -1276,10 +1276,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32658564,
+      deployedOnBlock: 32662419,
     },
     TapThatXRegistry: {
-      address: "0x6f201c015a036a0775d20cfa4b12a967fe96190c",
+      address: "0x7e2a86462a28476ba54b9774ca4e2c2c0b0cd63e",
       abi: [
         {
           type: "constructor",
@@ -1382,6 +1382,25 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "getOwnerChip",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "isChipRegistered",
           inputs: [
             {
@@ -1403,6 +1422,25 @@ const deployedContracts = {
           type: "function",
           name: "owner",
           inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "ownerToChip",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
           outputs: [
             {
               name: "",
@@ -1566,10 +1604,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32658564,
+      deployedOnBlock: 32662419,
     },
     TapThatXProtocol: {
-      address: "0x71000749548896fde8d53d2e6fa6d136c8108734",
+      address: "0x20e9465140034b4b02783594c22c5188617e4c67",
       abi: [
         {
           type: "constructor",
@@ -1908,10 +1946,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32658564,
+      deployedOnBlock: 32662419,
     },
     USDCTapPayment: {
-      address: "0x80a557f32d18ab3c2d8d9e8b8f1558e36211189c",
+      address: "0x84e05d6d3d855c079d50d5b940cea51699ae9cb4",
       abi: [
         {
           type: "constructor",
@@ -2069,7 +2107,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32658564,
+      deployedOnBlock: 32662419,
     },
   },
   11155111: {

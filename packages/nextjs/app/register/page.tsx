@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Nfc, Wallet } from "lucide-react";
-import { useAccount, useChainId, useWriteContract } from "wagmi";
+import { useAccount, useChainId, useReadContract, useWriteContract } from "wagmi";
 import { StepIndicator } from "~~/components/StepIndicator";
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
-import { ChipAddressDisplay } from "~~/components/register/ChipAddressDisplay";
-import { Separator } from "~~/components/ui/separator";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { useHaloChip } from "~~/hooks/useHaloChip";
 
@@ -14,8 +12,8 @@ type FlowState = "idle" | "reading" | "signing" | "confirming" | "success" | "er
 
 const REGISTRATION_STEPS = [
   { label: "Detect Chip", description: "Hold device near NFC chip", timeEstimate: "2-3 sec" },
-  { label: "Sign Authorization", description: "Tap chip again to authorize", timeEstimate: "2-3 sec" },
-  { label: "Confirm Transaction", description: "Confirm in your wallet", timeEstimate: "5-10 sec" },
+  { label: "Sign Authorization", description: "Tap chip to authorize", timeEstimate: "2-3 sec" },
+  { label: "Confirm Transaction", description: "Confirm in wallet", timeEstimate: "5-10 sec" },
 ];
 
 export default function RegisterPage() {
@@ -24,12 +22,32 @@ export default function RegisterPage() {
   const chainId = useChainId();
   const { signMessage, signTypedData, isLoading } = useHaloChip();
   const [statusMessage, setStatusMessage] = useState<string>("");
-  const [chipAddress, setChipAddress] = useState<string>("");
   const [flowState, setFlowState] = useState<FlowState>("idle");
+  const [registeredChipAddress, setRegisteredChipAddress] = useState<string>("");
 
   const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
   const registryAddress = contracts?.TapThatXRegistry?.address;
   const registryAbi = contracts?.TapThatXRegistry?.abi;
+
+  // Query registered chip using wagmi's useReadContract hook (handles IndexedDB errors gracefully)
+  const { data: ownerChipData } = useReadContract({
+    address: registryAddress,
+    abi: registryAbi,
+    functionName: "getOwnerChip",
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address && !!registryAddress && !!registryAbi,
+    },
+  });
+
+  // Update registered chip address when data changes
+  useEffect(() => {
+    if (ownerChipData && ownerChipData !== "0x0000000000000000000000000000000000000000") {
+      setRegisteredChipAddress(ownerChipData as string);
+    } else {
+      setRegisteredChipAddress("");
+    }
+  }, [ownerChipData]);
 
   const handleRegister = async () => {
     if (!address) {
@@ -52,7 +70,6 @@ export default function RegisterPage() {
       const chipData = await signMessage({ message: "init", format: "text" });
       const detectedChipAddress = chipData.address as `0x${string}`;
 
-      setChipAddress(detectedChipAddress);
       setStatusMessage("");
 
       // Step 2: Sign registration with EIP-712
@@ -94,9 +111,14 @@ export default function RegisterPage() {
           args: [detectedChipAddress, registrationSig.signature as `0x${string}`],
         },
         {
-          onSuccess: () => {
+          onSuccess: async () => {
+            // Clear message to show Step 3 completion indicator
+            setStatusMessage("");
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             setFlowState("success");
             setStatusMessage("Success! Chip registered on-chain.");
+            setRegisteredChipAddress(detectedChipAddress);
           },
           onError: err => {
             setFlowState("error");
@@ -113,7 +135,6 @@ export default function RegisterPage() {
   const resetFlow = () => {
     setFlowState("idle");
     setStatusMessage("");
-    setChipAddress("");
   };
 
   const allComplete = isTxSuccess && flowState === "success";
@@ -129,9 +150,18 @@ export default function RegisterPage() {
               <Nfc className="h-12 w-12 sm:h-14 sm:w-14" />
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">Register Your Chip</h1>
-            <p className="text-sm sm:text-base text-base-content/80 font-medium px-4">
-              Link your NFC chip to your wallet on-chain
-            </p>
+
+            {/* Registered Chip Pill */}
+            {registeredChipAddress && (
+              <div className="mt-3 flex justify-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 border border-success/30 backdrop-blur-sm">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                  <span className="text-xs font-mono font-semibold text-success">
+                    {registeredChipAddress.slice(0, 6)}...{registeredChipAddress.slice(-4)}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Dynamic Content Area */}
@@ -145,9 +175,11 @@ export default function RegisterPage() {
                     ? 0
                     : flowState === "signing"
                       ? 1
-                      : flowState === "confirming" || flowState === "success"
+                      : flowState === "confirming"
                         ? 2
-                        : 0
+                        : flowState === "success"
+                          ? 3
+                          : 0
                 }
               />
             )}
@@ -160,14 +192,12 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Dynamic Status Display */}
-            {flowState !== "idle" && statusMessage && (
+            {/* Dynamic Status Display - showing loading and error states only */}
+            {flowState !== "idle" && flowState !== "success" && statusMessage && (
               <div className="text-center py-3 fade-in">
                 <div className="flex items-center justify-center gap-2.5">
                   {flowState === "error" ? (
                     <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-error flex-shrink-0" />
-                  ) : flowState === "success" ? (
-                    <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-success flex-shrink-0" />
                   ) : (
                     <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary animate-spin flex-shrink-0" />
                   )}
@@ -184,11 +214,19 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Chip Address Display */}
-            {chipAddress && (
-              <div className="fade-in">
-                <Separator />
-                <ChipAddressDisplay address={chipAddress} />
+            {/* Step 2 Complete Indicator */}
+            {flowState === "signing" && !statusMessage && (
+              <div className="text-center py-4 fade-in">
+                <CheckCircle2 className="h-6 w-6 text-success mx-auto mb-2" />
+                <p className="text-lg font-semibold text-base-content">Authorization signed</p>
+              </div>
+            )}
+
+            {/* Step 3 Complete Indicator */}
+            {flowState === "confirming" && !statusMessage && (
+              <div className="text-center py-4 fade-in">
+                <CheckCircle2 className="h-6 w-6 text-success mx-auto mb-2" />
+                <p className="text-lg font-semibold text-base-content">Transaction confirmed</p>
               </div>
             )}
           </div>

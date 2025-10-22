@@ -1,23 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, CreditCard, Loader2, Wallet, Zap } from "lucide-react";
+import { AlertCircle, CheckCircle2, CreditCard, Loader2, Wallet } from "lucide-react";
 import { parseUnits } from "viem";
 import { useAccount, useChainId, usePublicClient } from "wagmi";
 import { StepIndicator } from "~~/components/StepIndicator";
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
-import { ChipOwnerDisplay } from "~~/components/payment/ChipOwnerDisplay";
-import { Separator } from "~~/components/ui/separator";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { useGaslessRelay } from "~~/hooks/useGaslessRelay";
 import { useHaloChip } from "~~/hooks/useHaloChip";
 
-type FlowState = "idle" | "detecting" | "authorizing" | "success" | "error";
+type FlowState = "idle" | "detecting" | "authorizing" | "processing" | "success" | "error";
 
 const PAYMENT_STEPS = [
-  { label: "Detect & Verify", description: "Verifying chip ownership", timeEstimate: "2-3 sec" },
-  { label: "Authorize Payment", description: "Tap chip to authorize", timeEstimate: "2-3 sec" },
-  { label: "Process Transaction", description: "Relaying to blockchain", timeEstimate: "10-15 sec" },
+  { label: "Detect Chip", description: "Hold device near NFC chip", timeEstimate: "2-3 sec" },
+  { label: "Sign Payment", description: "Tap chip to authorize", timeEstimate: "2-3 sec" },
+  { label: "Process Payment", description: "Relaying to blockchain", timeEstimate: "10-15 sec" },
 ];
 
 export default function PaymentPage() {
@@ -30,8 +28,6 @@ export default function PaymentPage() {
   const USDC = contracts?.MockUSDC?.address;
   const REGISTRY_ADDRESS = contracts?.TapThatXRegistry?.address;
 
-  const [chipAddress, setChipAddress] = useState<string>("");
-  const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("1");
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [flowState, setFlowState] = useState<FlowState>("idle");
@@ -89,7 +85,6 @@ export default function PaymentPage() {
 
       const chipData = await signMessage({ message: "init", format: "text" });
       const detectedChipAddress = chipData.address as `0x${string}`;
-      setChipAddress(detectedChipAddress);
 
       // Query TapThatXRegistry for owner
       if (!contracts || !REGISTRY_ADDRESS) {
@@ -122,7 +117,6 @@ export default function PaymentPage() {
 
       // Get USDCTapPayment contract address (this is where USDC will be sent)
       const PAYMENT_CONTRACT = contracts.USDCTapPayment.address;
-      setRecipient(PAYMENT_CONTRACT);
       setStatusMessage("");
 
       // Step 2: Tap chip to authorize payment
@@ -172,6 +166,12 @@ export default function PaymentPage() {
         },
       });
 
+      // Clear message to show Step 2 completion indicator
+      setStatusMessage("");
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Step 3: Process payment
+      setFlowState("processing");
       setStatusMessage("Processing payment on blockchain...");
 
       await relayPayment({
@@ -181,6 +181,10 @@ export default function PaymentPage() {
         timestamp,
         nonce,
       });
+
+      // Clear message to show Step 3 completion indicator
+      setStatusMessage("");
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       setFlowState("success");
       setStatusMessage(`Success! Payment of ${amount} USDC sent.`);
@@ -194,8 +198,6 @@ export default function PaymentPage() {
   const resetFlow = () => {
     setFlowState("idle");
     setStatusMessage("");
-    setChipAddress("");
-    setRecipient("");
     setAmount("1");
   };
 
@@ -212,9 +214,6 @@ export default function PaymentPage() {
               <CreditCard className="h-12 w-12 sm:h-14 sm:w-14" />
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">Tap to Pay</h1>
-            <p className="text-sm sm:text-base text-base-content/80 font-medium px-4">
-              Send USDC by tapping your NFC chip
-            </p>
           </div>
 
           {/* Dynamic Content Area */}
@@ -224,7 +223,15 @@ export default function PaymentPage() {
               <StepIndicator
                 steps={PAYMENT_STEPS}
                 currentStep={
-                  flowState === "detecting" ? 0 : flowState === "authorizing" ? 1 : flowState === "success" ? 2 : 0
+                  flowState === "detecting"
+                    ? 0
+                    : flowState === "authorizing"
+                      ? 1
+                      : flowState === "processing"
+                        ? 2
+                        : flowState === "success"
+                          ? 3
+                          : 0
                 }
               />
             )}
@@ -258,27 +265,17 @@ export default function PaymentPage() {
               </div>
             )}
 
-            {/* Dynamic Status Display */}
-            {flowState !== "idle" && statusMessage && (
+            {/* Dynamic Status Display - showing loading and error states only */}
+            {flowState !== "idle" && flowState !== "success" && statusMessage && (
               <div className="text-center py-3 fade-in">
                 <div className="flex items-center justify-center gap-2.5">
                   {flowState === "error" ? (
                     <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-error flex-shrink-0" />
-                  ) : flowState === "success" ? (
-                    <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-success flex-shrink-0" />
                   ) : (
                     <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary animate-spin flex-shrink-0" />
                   )}
                   <p className="text-base sm:text-lg md:text-xl font-bold text-base-content">{statusMessage}</p>
                 </div>
-              </div>
-            )}
-
-            {/* Gasless Badge - show on idle and success */}
-            {(flowState === "idle" || flowState === "success") && (
-              <div className="flex items-center justify-center gap-2 text-sm text-base-content/70 fade-in">
-                <Zap className="h-4 w-4 text-primary" />
-                <span>No wallet popup needed</span>
               </div>
             )}
 
@@ -290,11 +287,19 @@ export default function PaymentPage() {
               </div>
             )}
 
-            {/* Chip Owner Display */}
-            {chipAddress && recipient && (
-              <div className="fade-in">
-                <Separator />
-                <ChipOwnerDisplay chipAddress={chipAddress} ownerAddress={recipient} />
+            {/* Step 2 Complete Indicator */}
+            {flowState === "authorizing" && !statusMessage && (
+              <div className="text-center py-4 fade-in">
+                <CheckCircle2 className="h-6 w-6 text-success mx-auto mb-2" />
+                <p className="text-lg font-semibold text-base-content">Payment authorized</p>
+              </div>
+            )}
+
+            {/* Step 3 Complete Indicator */}
+            {flowState === "processing" && !statusMessage && (
+              <div className="text-center py-4 fade-in">
+                <CheckCircle2 className="h-6 w-6 text-success mx-auto mb-2" />
+                <p className="text-lg font-semibold text-base-content">Payment processed</p>
               </div>
             )}
           </div>

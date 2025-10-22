@@ -690,6 +690,53 @@
     border: 1px solid rgba(126, 200, 227, 0.5);
   }
 
+  /* Glass toast notification - success popup */
+  .glass-toast {
+    @apply fixed top-20 left-1/2 -translate-x-1/2 px-5 py-3.5 rounded-2xl border;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1.5px solid rgba(34, 197, 94, 0.2);
+    box-shadow:
+      0 8px 32px rgba(34, 197, 94, 0.15),
+      0 2px 8px rgba(0, 0, 0, 0.1);
+    animation:
+      slideInFromTop 0.3s ease-out,
+      fadeOut 0.4s ease-in 3.6s forwards;
+    max-width: 90%;
+    z-index: 100;
+  }
+
+  [data-theme="dark"] .glass-toast {
+    background: rgba(26, 31, 46, 0.25);
+    border: 1.5px solid rgba(34, 197, 94, 0.25);
+    box-shadow:
+      0 8px 32px rgba(34, 197, 94, 0.2),
+      0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  @keyframes slideInFromTop {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -20px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -10px);
+    }
+  }
+
   /* Inline warning badge for payment page */
   .inline-warning {
     @apply inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border;
@@ -843,63 +890,70 @@
 
   /* Step Indicator - 3-step progress for optimal completion (72%) */
   .step-indicator-container {
-    @apply flex flex-col gap-4 py-4;
+    @apply flex flex-col gap-3.5 py-3 w-full;
   }
 
   .step-indicator-item {
-    @apply relative flex gap-4;
+    @apply relative flex gap-3 items-start;
   }
 
   .step-indicator-circle-wrapper {
-    @apply relative flex flex-col items-center;
-    min-width: 40px;
+    @apply relative flex flex-col items-center flex-shrink-0;
+    min-width: 32px;
   }
 
   .step-indicator-circle {
-    @apply w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300;
+    @apply w-8 h-8 sm:w-9 sm:h-9 rounded-full transition-all duration-300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 2px solid;
+    flex-shrink: 0;
     z-index: 2;
   }
 
   .step-indicator-circle-upcoming {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(107, 164, 191, 0.3);
-    color: rgba(107, 164, 191, 0.5);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(107, 164, 191, 0.25);
+    color: rgba(107, 164, 191, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
 
   [data-theme="dark"] .step-indicator-circle-upcoming {
-    background: rgba(26, 31, 46, 0.3);
-    border-color: rgba(126, 200, 227, 0.25);
-    color: rgba(126, 200, 227, 0.4);
+    background: rgba(26, 31, 46, 0.4);
+    border-color: rgba(126, 200, 227, 0.3);
+    color: rgba(126, 200, 227, 0.5);
   }
 
   .step-indicator-circle-current {
     background: linear-gradient(135deg, #5a94af 0%, #4a8ba6 100%);
-    border-color: rgba(107, 164, 191, 0.8);
+    border-color: rgba(107, 164, 191, 0.9);
     color: #ffffff;
-    box-shadow: 0 4px 16px rgba(107, 164, 191, 0.3);
+    box-shadow:
+      0 4px 20px rgba(107, 164, 191, 0.4),
+      0 2px 8px rgba(0, 0, 0, 0.1);
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
   [data-theme="dark"] .step-indicator-circle-current {
     background: linear-gradient(135deg, #6ab8d3 0%, #5ab3d1 100%);
-    border-color: rgba(126, 200, 227, 0.8);
-    box-shadow: 0 4px 16px rgba(126, 200, 227, 0.25);
+    border-color: rgba(126, 200, 227, 0.9);
+    box-shadow:
+      0 4px 20px rgba(126, 200, 227, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   .step-indicator-circle-completed {
-    background: rgba(34, 197, 94, 0.2);
-    border-color: rgba(34, 197, 94, 0.6);
+    background: transparent;
+    border-color: transparent;
     color: rgba(34, 197, 94, 1);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
   }
 
   [data-theme="dark"] .step-indicator-circle-completed {
-    background: rgba(34, 197, 94, 0.15);
-    border-color: rgba(34, 197, 94, 0.5);
+    background: transparent;
+    border-color: transparent;
   }
 
   .step-indicator-line {
@@ -924,16 +978,16 @@
   }
 
   .step-indicator-content {
-    @apply flex flex-col gap-1 flex-1;
-    padding-top: 6px;
+    @apply flex flex-col gap-1 flex-1 min-w-0;
+    padding-top: 2px;
   }
 
   .step-indicator-label {
-    @apply font-semibold transition-all duration-300;
+    @apply font-bold transition-all duration-300 text-left leading-tight;
   }
 
   .step-indicator-label-upcoming {
-    @apply text-sm;
+    @apply text-xs sm:text-sm;
     color: rgba(107, 164, 191, 0.5);
   }
 
@@ -942,7 +996,7 @@
   }
 
   .step-indicator-label-current {
-    @apply text-base;
+    @apply text-sm sm:text-base;
     color: rgba(107, 164, 191, 1);
   }
 
@@ -951,12 +1005,12 @@
   }
 
   .step-indicator-label-completed {
-    @apply text-sm;
+    @apply text-xs sm:text-sm;
     color: rgba(34, 197, 94, 0.9);
   }
 
   .step-indicator-description {
-    @apply text-xs font-medium;
+    @apply text-xs sm:text-sm font-medium text-left leading-snug;
     color: rgba(107, 164, 191, 0.7);
   }
 
@@ -965,7 +1019,7 @@
   }
 
   .step-indicator-time {
-    @apply text-xs font-medium;
+    @apply text-xs sm:text-sm font-medium text-left;
     color: rgba(107, 164, 191, 0.6);
   }
 

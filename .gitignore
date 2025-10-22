@@ -19,6 +19,13 @@ node_modules
 .vscode
 .idea
 
+# mkcert local HTTPS certificates
+packages/nextjs/certs/
+
+# local env files
+packages/nextjs/.env.local
+.env.local
+
 # cli
 dist
 sfe.txt
@@ -37,3 +44,6 @@ DEPLOYMENT_STATUS.md
 VERCEL_DEPLOYMENT.md
 .vercel
 image.png
+HTTPS_SETUP.md
+.gitignore
+integration_plan.md
