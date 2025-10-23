@@ -24,10 +24,6 @@ export const menuLinks: HeaderMenuLink[] = [
     label: "Register Chip",
     href: "/register",
   },
-  {
-    label: "Payment",
-    href: "/payment",
-  },
 ];
 
 export const HeaderMenuLinks = () => {

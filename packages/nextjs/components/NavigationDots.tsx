@@ -6,7 +6,8 @@ const navSteps = [
   { path: "/", label: "Home" },
   { path: "/register", label: "Register" },
   { path: "/approve", label: "Approve" },
-  { path: "/payment", label: "Payment" },
+  { path: "/configure", label: "Configure" },
+  { path: "/execute", label: "Execute" },
 ];
 
 export const NavigationDots = () => {

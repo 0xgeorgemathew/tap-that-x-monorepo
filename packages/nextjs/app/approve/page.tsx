@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, CreditCard, Loader2, Shield, Wallet } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Settings, Shield, Wallet } from "lucide-react";
 import { formatUnits, maxUint256 } from "viem";
 import { useAccount, useChainId, usePublicClient, useWriteContract } from "wagmi";
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
@@ -228,9 +228,9 @@ export default function ApprovePage() {
               </button>
             ) : (
               <>
-                <a href="/payment" className="glass-btn flex items-center justify-center gap-3 w-full">
-                  <CreditCard className="h-6 w-6" />
-                  <span>Go to Payment Page</span>
+                <a href="/configure" className="glass-btn flex items-center justify-center gap-3 w-full">
+                  <Settings className="h-6 w-6" />
+                  <span>Configure Chip Actions</span>
                 </a>
                 <button
                   onClick={handleRevoke}
