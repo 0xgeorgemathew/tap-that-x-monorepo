@@ -5,6 +5,8 @@ import "./DeployHelpers.s.sol";
 import { MockUSDC } from "../contracts/MockUSDC.sol";
 import { TapThatXRegistry } from "../contracts/core/TapThatXRegistry.sol";
 import { TapThatXProtocol } from "../contracts/core/TapThatXProtocol.sol";
+import { TapThatXConfiguration } from "../contracts/core/TapThatXConfiguration.sol";
+import { TapThatXExecutor } from "../contracts/core/TapThatXExecutor.sol";
 import { USDCTapPayment } from "../contracts/examples/USDCTapPayment.sol";
 
 /**
@@ -14,8 +16,10 @@ import { USDCTapPayment } from "../contracts/examples/USDCTapPayment.sol";
  * Deploys:
  *   1. TapThatXRegistry - Chip registration and ownership
  *   2. TapThatXProtocol - Generic chip-authorized execution engine
- *   3. MockUSDC - Test USDC (testnets only, uses real USDC on mainnet)
- *   4. USDCTapPayment - Example USDC payment implementation
+ *   3. TapThatXConfiguration - Store action configurations per chip
+ *   4. TapThatXExecutor - Execute pre-configured tap actions
+ *   5. MockUSDC - Test USDC (testnets only, uses real USDC on mainnet)
+ *   6. USDCTapPayment - Example USDC payment implementation
  *
  * Usage:
  *   yarn deploy                    # localhost (deploys MockUSDC)
@@ -69,6 +73,20 @@ contract Deploy is ScaffoldETHDeploy {
         // Register deployment for frontend
         deployments.push(Deployment({ name: "TapThatXProtocol", addr: address(protocol) }));
 
+        // Deploy TapThatXConfiguration
+        TapThatXConfiguration configuration = new TapThatXConfiguration(address(registry));
+        console.log("TapThatXConfiguration deployed at:", address(configuration));
+
+        // Register deployment for frontend
+        deployments.push(Deployment({ name: "TapThatXConfiguration", addr: address(configuration) }));
+
+        // Deploy TapThatXExecutor
+        TapThatXExecutor executor = new TapThatXExecutor(address(protocol), address(configuration));
+        console.log("TapThatXExecutor deployed at:", address(executor));
+
+        // Register deployment for frontend
+        deployments.push(Deployment({ name: "TapThatXExecutor", addr: address(executor) }));
+
         // Deploy USDCTapPayment
         USDCTapPayment payment = new USDCTapPayment(usdcAddress, address(protocol), address(registry));
         console.log("USDCTapPayment deployed at:", address(payment));
@@ -81,6 +99,8 @@ contract Deploy is ScaffoldETHDeploy {
         console.log("USDC Address:", usdcAddress);
         console.log("TapThatXRegistry:", address(registry));
         console.log("TapThatXProtocol:", address(protocol));
+        console.log("TapThatXConfiguration:", address(configuration));
+        console.log("TapThatXExecutor:", address(executor));
         console.log("USDCTapPayment:", address(payment));
         console.log("\nNext: yarn verify --network <network>");
     }

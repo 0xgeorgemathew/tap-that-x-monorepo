@@ -26,32 +26,24 @@ export default function RegisterPage() {
   const { signMessage, signTypedData, isLoading } = useHaloChip();
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [flowState, setFlowState] = useState<FlowState>("idle");
-  const [registeredChipAddress, setRegisteredChipAddress] = useState<string>("");
   const [detectedChip, setDetectedChip] = useState<string>("");
 
   const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
   const registryAddress = contracts?.TapThatXRegistry?.address;
   const registryAbi = contracts?.TapThatXRegistry?.abi;
 
-  // Query registered chip using wagmi's useReadContract hook (handles IndexedDB errors gracefully)
-  const { data: ownerChipData } = useReadContract({
+  // Query registered chips using wagmi's useReadContract hook (handles IndexedDB errors gracefully)
+  const { data: ownerChipsData } = useReadContract({
     address: registryAddress,
     abi: registryAbi,
-    functionName: "getOwnerChip",
+    functionName: "getOwnerChips",
     args: address ? [address] : undefined,
     query: {
       enabled: !!address && !!registryAddress && !!registryAbi,
     },
   });
 
-  // Update registered chip address when data changes
-  useEffect(() => {
-    if (ownerChipData && ownerChipData !== "0x0000000000000000000000000000000000000000") {
-      setRegisteredChipAddress(ownerChipData as string);
-    } else {
-      setRegisteredChipAddress("");
-    }
-  }, [ownerChipData]);
+  const registeredChips = (ownerChipsData as string[]) || [];
 
   // Handle transaction confirmation
   useEffect(() => {
@@ -59,7 +51,6 @@ export default function RegisterPage() {
       setStatusMessage("");
       setFlowState("success");
       setStatusMessage("Success! Chip registered on-chain.");
-      setRegisteredChipAddress(detectedChip);
     }
   }, [isConfirmed, detectedChip]);
 
@@ -158,14 +149,26 @@ export default function RegisterPage() {
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">Register Your Chip</h1>
 
-            {/* Registered Chip Pill */}
-            {registeredChipAddress && (
-              <div className="mt-3 flex justify-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 border border-success/30 backdrop-blur-sm">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-                  <span className="text-xs font-mono font-semibold text-success">
-                    {registeredChipAddress.slice(0, 6)}...{registeredChipAddress.slice(-4)}
+            {/* Registered Chips List */}
+            {registeredChips.length > 0 && (
+              <div className="mt-3 flex flex-col items-center gap-2">
+                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-success/10 border border-success/30">
+                  <CheckCircle2 className="h-3 w-3 text-success" />
+                  <span className="text-xs font-semibold text-success">
+                    {registeredChips.length} Chip{registeredChips.length > 1 ? "s" : ""} Registered
                   </span>
+                </div>
+                <div className="flex flex-wrap justify-center gap-1.5 max-w-md">
+                  {registeredChips.map(chip => (
+                    <div
+                      key={chip}
+                      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-base-200/50 border border-base-300/50 backdrop-blur-sm"
+                    >
+                      <span className="text-xs font-mono text-base-content/70">
+                        {chip.slice(0, 6)}...{chip.slice(-4)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

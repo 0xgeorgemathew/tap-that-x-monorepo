@@ -12,8 +12,9 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 contract TapThatXRegistry is Ownable, ReentrancyGuard, EIP712 {
     using ECDSA for bytes32;
 
-    mapping(address => address) public chipToOwner;
-    mapping(address => address) public ownerToChip;
+    mapping(address => address[]) private ownerToChips;
+    mapping(address => address[]) private chipToOwners;
+    mapping(address => mapping(address => bool)) public ownerHasChip;
 
     bytes32 private constant REGISTRATION_TYPEHASH =
         keccak256("ChipRegistration(address owner,address chipAddress)");
@@ -27,7 +28,7 @@ contract TapThatXRegistry is Ownable, ReentrancyGuard, EIP712 {
     /// @param chipSignature EIP-712 signature from the chip proving ownership
     function registerChip(address chipAddress, bytes memory chipSignature) external {
         require(chipAddress != address(0), "Invalid chip address");
-        // require(chipToOwner[chipAddress] == address(0), "Chip already registered");
+        require(!ownerHasChip[msg.sender][chipAddress], "Chip already registered to this owner");
 
         // Verify EIP-712 chip signature (chain-agnostic)
         bytes32 structHash = keccak256(abi.encode(REGISTRATION_TYPEHASH, msg.sender, chipAddress));
@@ -36,37 +37,50 @@ contract TapThatXRegistry is Ownable, ReentrancyGuard, EIP712 {
 
         require(signer == chipAddress, "Invalid chip signature");
 
-        chipToOwner[chipAddress] = msg.sender;
-        ownerToChip[msg.sender] = chipAddress;
-        
+        // Add chip to owner's collection
+        ownerToChips[msg.sender].push(chipAddress);
+
+        // Add owner to chip's collection
+        chipToOwners[chipAddress].push(msg.sender);
+
+        // Mark ownership
+        ownerHasChip[msg.sender][chipAddress] = true;
+
         emit ChipRegistered(chipAddress, msg.sender);
     }
 
-    /// @notice Get the owner of a registered chip
-    /// @param chip The chip address
-    /// @return address The owner address, or address(0) if not registered
-    function getOwner(address chip) external view returns (address) {
-        return chipToOwner[chip];
-    }
-
-    /// @notice Check if a chip is registered
-    /// @param chip The chip address
-    /// @return bool True if chip is registered
-    function isChipRegistered(address chip) external view returns (bool) {
-        return chipToOwner[chip] != address(0);
-    }
-
-    /// @notice Get the chip owned by an address
+    /// @notice Get all chips owned by an address
     /// @param owner The owner address
-    /// @return address The chip address, or address(0) if not registered
-    function getOwnerChip(address owner) external view returns (address) {
-        return ownerToChip[owner];
+    /// @return address[] Array of chip addresses
+    function getOwnerChips(address owner) external view returns (address[] memory) {
+        return ownerToChips[owner];
+    }
+
+    /// @notice Get all owners of a chip
+    /// @param chip The chip address
+    /// @return address[] Array of owner addresses
+    function getChipOwners(address chip) external view returns (address[] memory) {
+        return chipToOwners[chip];
+    }
+
+    /// @notice Check if an owner has a specific chip
+    /// @param owner The owner address
+    /// @param chip The chip address
+    /// @return bool True if owner has the chip
+    function hasChip(address owner, address chip) external view returns (bool) {
+        return ownerHasChip[owner][chip];
     }
 
     /// @notice Get the EIP-712 domain separator
     /// @return bytes32 The domain separator
     function getDomainSeparator() external view returns (bytes32) {
         return _domainSeparatorV4();
+    }
+
+    /// @notice Get the chain-agnostic domain separator used for chip registration
+    /// @return bytes32 The chain-agnostic domain separator
+    function getChainAgnosticDomainSeparator() external view returns (bytes32) {
+        return _chainAgnosticDomainSeparator();
     }
 
     /// @notice Chain-agnostic domain separator (excludes chainId)

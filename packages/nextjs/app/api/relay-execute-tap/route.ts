@@ -8,16 +8,15 @@ import { getAlchemyHttpUrl } from "~~/utils/scaffold-eth/networks";
 export const maxDuration = 30;
 
 // IMPORTANT: Store this in environment variables
-// Generate a new account and fund it with Sepolia ETH from faucet
 const RELAYER_PRIVATE_KEY = process.env.RELAYER_PRIVATE_KEY;
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { owner, transferCallData, chipSignature, timestamp, nonce, chainId } = body;
+    const { owner, chip, chipSignature, timestamp, nonce, chainId } = body;
 
     // Validate inputs
-    if (!owner || !transferCallData || !chipSignature || !timestamp || !nonce || !chainId) {
+    if (!owner || !chip || !chipSignature || !timestamp || !nonce || !chainId) {
       return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
     }
 
@@ -27,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     // Get contracts for the specified chain
     const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
-    if (!contracts?.USDCTapPayment) {
+    if (!contracts?.TapThatXExecutor) {
       return NextResponse.json({ error: "Contracts not deployed on this network" }, { status: 400 });
     }
 
@@ -47,14 +46,14 @@ export async function POST(req: NextRequest) {
       transport: http(rpcUrl),
     }).extend(publicActions);
 
-    // Call tapToPay on USDCTapPayment
+    // Call executeTap on TapThatXExecutor
     const hash = await client.writeContract({
-      address: contracts.USDCTapPayment.address,
-      abi: contracts.USDCTapPayment.abi,
-      functionName: "tapToPay",
+      address: contracts.TapThatXExecutor.address,
+      abi: contracts.TapThatXExecutor.abi,
+      functionName: "executeTap",
       args: [
         owner as `0x${string}`,
-        transferCallData as `0x${string}`,
+        chip as `0x${string}`,
         chipSignature as `0x${string}`,
         BigInt(timestamp),
         nonce as `0x${string}`, // bytes32
@@ -70,7 +69,10 @@ export async function POST(req: NextRequest) {
       blockNumber: receipt.blockNumber.toString(),
     });
   } catch (error) {
-    console.error("Relay error:", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Relay failed" }, { status: 500 });
+    console.error("Execute tap relay error:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Execution relay failed" },
+      { status: 500 },
+    );
   }
 }

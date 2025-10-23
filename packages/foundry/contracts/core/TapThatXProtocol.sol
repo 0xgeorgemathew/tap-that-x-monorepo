@@ -62,9 +62,7 @@ contract TapThatXProtocol is EIP712, ReentrancyGuard {
         address chip = _verifyChipAuth(owner, target, callData, value, timestamp, nonce, chipSignature);
 
         // Validate chip is registered to owner
-        address chipOwner = registry.getOwner(chip);
-        require(chipOwner != address(0), "Chip not registered");
-        require(chipOwner == owner, "Chip owner mismatch");
+        require(registry.hasChip(owner, chip), "Owner does not have chip");
 
         // Mark nonce as used
         usedNonces[nonce] = true;
@@ -138,6 +136,12 @@ contract TapThatXProtocol is EIP712, ReentrancyGuard {
     /// @return bytes32 The domain separator
     function getDomainSeparator() external view returns (bytes32) {
         return _domainSeparatorV4();
+    }
+
+    /// @notice Get the chain-agnostic domain separator used for call authorization
+    /// @return bytes32 The chain-agnostic domain separator
+    function getChainAgnosticDomainSeparator() external view returns (bytes32) {
+        return _chainAgnosticDomainSeparator();
     }
 
     /// @notice Chain-agnostic domain separator (excludes chainId)
