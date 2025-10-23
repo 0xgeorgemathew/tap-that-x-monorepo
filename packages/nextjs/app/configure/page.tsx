@@ -14,6 +14,17 @@ import {
 
 type FlowState = "idle" | "configuring" | "submitting" | "success" | "error";
 
+// ERC20 ABI for querying token decimals
+const ERC20_ABI = [
+  {
+    name: "decimals",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint8" }],
+  },
+] as const;
+
 export default function ConfigurePage() {
   const { address } = useAccount();
   const chainId = useChainId();
@@ -30,6 +41,7 @@ export default function ConfigurePage() {
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [tokenDecimals, setTokenDecimals] = useState<number>(18); // Default to 18 decimals
 
   const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
   const registryAddress = contracts?.TapThatXRegistry?.address;
@@ -64,6 +76,23 @@ export default function ConfigurePage() {
       enabled: !!address && !!selectedChip && !!configurationAddress && !!configurationAbi,
     },
   });
+
+  // Query token decimals dynamically
+  const { data: decimalsData } = useReadContract({
+    address: tokenAddress as `0x${string}`,
+    abi: ERC20_ABI,
+    functionName: "decimals",
+    query: {
+      enabled: !!tokenAddress && tokenAddress.startsWith("0x") && tokenAddress.length === 42,
+    },
+  });
+
+  // Update token decimals when fetched
+  useEffect(() => {
+    if (decimalsData !== undefined) {
+      setTokenDecimals(Number(decimalsData));
+    }
+  }, [decimalsData]);
 
   // Auto-select first chip if available
   useEffect(() => {
@@ -128,7 +157,7 @@ export default function ConfigurePage() {
           throw new Error("Please fill in all fields");
         }
 
-        const amountBigInt = formatTokenAmount(amount, 6); // Assuming 6 decimals for USDC
+        const amountBigInt = formatTokenAmount(amount, tokenDecimals);
         callDataResult = template.buildCallData({
           tokenAddress: tokenAddress as `0x${string}`,
           from: address,
@@ -273,6 +302,9 @@ export default function ConfigurePage() {
                     />
                     {mockUSDCAddress && (
                       <p className="text-xs text-base-content/50 mt-1">MockUSDC: {mockUSDCAddress}</p>
+                    )}
+                    {tokenAddress && decimalsData !== undefined && (
+                      <p className="text-xs text-success/70 mt-1">✓ Token decimals: {tokenDecimals}</p>
                     )}
                   </div>
 
