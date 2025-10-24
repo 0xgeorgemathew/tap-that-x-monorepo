@@ -690,6 +690,124 @@
     border: 1px solid rgba(126, 200, 227, 0.5);
   }
 
+  /* Address display utility - truncated address with mono font */
+  .address-display {
+    @apply font-mono text-xs sm:text-sm;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  /* Token Approval Pills */
+  .token-pill {
+    @apply flex items-center justify-between gap-3 p-3 sm:p-4 rounded-xl border transition-all duration-200;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(107, 164, 191, 0.3);
+  }
+
+  [data-theme="dark"] .token-pill {
+    background: rgba(26, 31, 46, 0.3);
+    border: 1px solid rgba(126, 200, 227, 0.3);
+  }
+
+  .token-pill-approved {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: rgba(16, 185, 129, 0.05);
+  }
+
+  [data-theme="dark"] .token-pill-approved {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: rgba(16, 185, 129, 0.08);
+  }
+
+  .token-pill-pending {
+    border-color: rgba(251, 191, 36, 0.5);
+    background: rgba(251, 191, 36, 0.05);
+  }
+
+  [data-theme="dark"] .token-pill-pending {
+    border-color: rgba(251, 191, 36, 0.5);
+    background: rgba(251, 191, 36, 0.08);
+  }
+
+  .token-pill-icon {
+    @apply w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0;
+    background: linear-gradient(135deg, rgba(107, 164, 191, 0.2) 0%, rgba(107, 164, 191, 0.1) 100%);
+    border: 2px solid rgba(107, 164, 191, 0.3);
+  }
+
+  [data-theme="dark"] .token-pill-icon {
+    background: linear-gradient(135deg, rgba(126, 200, 227, 0.2) 0%, rgba(126, 200, 227, 0.1) 100%);
+    border: 2px solid rgba(126, 200, 227, 0.3);
+  }
+
+  .token-pill-content {
+    @apply flex-1 min-w-0;
+  }
+
+  .token-pill-name {
+    @apply text-sm sm:text-base font-bold text-base-content;
+  }
+
+  .token-pill-address {
+    @apply text-xs text-base-content/60 font-mono mt-0.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .token-pill-status {
+    @apply text-xs font-semibold px-2 py-1 rounded-full;
+  }
+
+  .token-pill-status-approved {
+    @apply bg-success/20 text-success border border-success/30;
+  }
+
+  .token-pill-status-pending {
+    @apply bg-warning/20 text-warning border border-warning/30;
+  }
+
+  .token-pill-action {
+    @apply px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all;
+    background: rgba(107, 164, 191, 0.15);
+    border: 1px solid rgba(107, 164, 191, 0.3);
+    color: rgba(107, 164, 191, 1);
+  }
+
+  .token-pill-action:hover:not(:disabled) {
+    background: rgba(107, 164, 191, 0.25);
+    border-color: rgba(107, 164, 191, 0.5);
+    transform: scale(1.02);
+  }
+
+  [data-theme="dark"] .token-pill-action {
+    background: rgba(126, 200, 227, 0.15);
+    border: 1px solid rgba(126, 200, 227, 0.3);
+    color: rgba(126, 200, 227, 1);
+  }
+
+  [data-theme="dark"] .token-pill-action:hover:not(:disabled) {
+    background: rgba(126, 200, 227, 0.25);
+    border-color: rgba(126, 200, 227, 0.5);
+  }
+
+  .token-pill-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .token-pill-action-danger {
+    @apply bg-error/10 border-error/30 text-error;
+  }
+
+  .token-pill-action-danger:hover:not(:disabled) {
+    @apply bg-error/20 border-error/50;
+  }
+
   /* Glass toast notification - success popup */
   .glass-toast {
     @apply fixed top-20 left-1/2 -translate-x-1/2 px-5 py-3.5 rounded-2xl border;

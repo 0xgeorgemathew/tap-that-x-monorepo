@@ -5,12 +5,7 @@ import { AlertCircle, CheckCircle2, Loader2, Settings, Wallet } from "lucide-rea
 import { useAccount, useChainId, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
 import deployedContracts from "~~/contracts/deployedContracts";
-import {
-  actionTemplates,
-  erc20TransferTemplate, // eslint-disable-line @typescript-eslint/no-unused-vars
-  formatTokenAmount,
-  usdcTransferTemplate,
-} from "~~/utils/actionTemplates";
+import { actionTemplates, erc20TransferTemplate, formatTokenAmount } from "~~/utils/actionTemplates";
 
 type FlowState = "idle" | "configuring" | "submitting" | "success" | "error";
 
@@ -34,7 +29,7 @@ export default function ConfigurePage() {
   const [flowState, setFlowState] = useState<FlowState>("idle");
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [selectedChip, setSelectedChip] = useState<string>("");
-  const [selectedTemplate, setSelectedTemplate] = useState<string>(usdcTransferTemplate.id);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(erc20TransferTemplate.id);
 
   // Form fields for USDC/ERC20 transfer
   const [tokenAddress, setTokenAddress] = useState<string>("");
@@ -102,13 +97,6 @@ export default function ConfigurePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [registeredChips.length, selectedChip]);
 
-  // Pre-populate USDC address if available
-  useEffect(() => {
-    if (mockUSDCAddress && !tokenAddress) {
-      setTokenAddress(mockUSDCAddress);
-    }
-  }, [mockUSDCAddress, tokenAddress]);
-
   // Handle transaction confirmation
   useEffect(() => {
     if (isConfirmed) {
@@ -152,7 +140,7 @@ export default function ConfigurePage() {
 
       let callDataResult;
 
-      if (template.id === "usdc-transfer" || template.id === "erc20-transfer") {
+      if (template.id === "erc20-transfer") {
         if (!tokenAddress || !recipient || !amount) {
           throw new Error("Please fill in all fields");
         }
@@ -210,13 +198,15 @@ export default function ConfigurePage() {
     <div className="flex items-start justify-center p-4 sm:p-6 pb-24">
       <div className="w-full max-w-2xl">
         {/* Main Glass Card */}
-        <div className="glass-card p-4 sm:p-6 md:p-8 flex flex-col">
+        <div className="glass-card p-4 sm:p-6 md:p-8 flex flex-col max-h-[calc(100vh-8rem)] sm:max-h-none overflow-y-auto">
           {/* Header */}
           <div className="text-center mb-4 sm:mb-6">
-            <div className="round-icon w-20 h-20 sm:w-24 sm:h-24 mb-3 sm:mb-4">
+            <div className="round-icon w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mb-2 sm:mb-3 md:mb-4">
               <Settings className="h-12 w-12 sm:h-14 sm:w-14" />
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-base-content mb-2">Configure Tap Action</h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-base-content mb-1.5 sm:mb-2">
+              Configure Tap Action
+            </h1>
             <p className="text-sm sm:text-base text-base-content/70">Set up what happens when you tap your chip</p>
           </div>
 
@@ -250,7 +240,7 @@ export default function ConfigurePage() {
                   className="w-full px-4 py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50"
                 >
                   {registeredChips.map(chip => (
-                    <option key={chip} value={chip}>
+                    <option key={chip} value={chip} className="address-display">
                       {chip.slice(0, 6)}...{chip.slice(-4)}
                     </option>
                   ))}
@@ -264,7 +254,7 @@ export default function ConfigurePage() {
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-base-content">Current Configuration</p>
                     <p className="text-xs text-base-content/70 mt-1">{config.description}</p>
-                    <p className="text-xs text-base-content/50 mt-1 font-mono">
+                    <p className="text-xs text-base-content/50 mt-1 address-display">
                       Target: {config.targetContract.slice(0, 6)}...{config.targetContract.slice(-4)}
                     </p>
                     <p className="text-xs text-base-content/50">Status: {config.isActive ? "Active" : "Inactive"}</p>
@@ -289,7 +279,7 @@ export default function ConfigurePage() {
               </div>
 
               {/* Template-specific Fields */}
-              {(selectedTemplate === "usdc-transfer" || selectedTemplate === "erc20-transfer") && (
+              {selectedTemplate === "erc20-transfer" && (
                 <>
                   <div>
                     <label className="block text-sm font-semibold text-base-content mb-2">Token Address</label>
@@ -298,13 +288,35 @@ export default function ConfigurePage() {
                       value={tokenAddress}
                       onChange={e => setTokenAddress(e.target.value)}
                       placeholder="0x..."
-                      className="w-full px-4 py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-sm"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-base sm:text-sm"
                     />
-                    {mockUSDCAddress && (
-                      <p className="text-xs text-base-content/50 mt-1">MockUSDC: {mockUSDCAddress}</p>
-                    )}
+                    <div className="flex items-center justify-between mt-1.5">
+                      {mockUSDCAddress && (
+                        <button
+                          type="button"
+                          onClick={() => setTokenAddress(mockUSDCAddress)}
+                          className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
+                        >
+                          Use MockUSDC ({mockUSDCAddress.slice(0, 6)}...{mockUSDCAddress.slice(-4)})
+                        </button>
+                      )}
+                      {tokenAddress && (
+                        <button
+                          type="button"
+                          onClick={() => setTokenAddress("")}
+                          className="text-xs text-base-content/50 hover:text-error font-medium flex items-center gap-1"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
                     {tokenAddress && decimalsData !== undefined && (
-                      <p className="text-xs text-success/70 mt-1">✓ Token decimals: {tokenDecimals}</p>
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <span className="glass-badge text-success border-success/50">
+                          <CheckCircle2 className="h-3 w-3" />
+                          {tokenDecimals} decimals
+                        </span>
+                      </div>
                     )}
                   </div>
 
@@ -315,7 +327,7 @@ export default function ConfigurePage() {
                       value={recipient}
                       onChange={e => setRecipient(e.target.value)}
                       placeholder="0x..."
-                      className="w-full px-4 py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-sm"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-base sm:text-sm"
                     />
                   </div>
 
@@ -326,7 +338,7 @@ export default function ConfigurePage() {
                       value={amount}
                       onChange={e => setAmount(e.target.value)}
                       placeholder="10.00"
-                      className="w-full px-4 py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50 text-base sm:text-sm"
                     />
                   </div>
 
@@ -337,19 +349,20 @@ export default function ConfigurePage() {
                       value={description}
                       onChange={e => setDescription(e.target.value)}
                       placeholder="e.g., Send 10 USDC to Alice"
-                      className="w-full px-4 py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50 text-base sm:text-sm"
                     />
                   </div>
 
                   {/* Important Note about Approval */}
-                  <div className="glass-alert">
-                    <AlertCircle className="h-5 w-5 text-info" />
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-base-content">Important: Pre-approve Tokens</p>
-                      <p className="text-xs text-base-content/70 mt-1">
-                        You must approve TapThatXProtocol ({protocolAddress?.slice(0, 6)}...
-                        {protocolAddress?.slice(-4)}) to spend your tokens before executing taps.
-                      </p>
+                  <div className="glass-alert flex-col sm:flex-row items-start sm:items-center">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-info flex-shrink-0" />
+                      <p className="text-xs sm:text-sm font-semibold text-base-content">Token Approval Required</p>
+                    </div>
+                    <div className="mt-2 sm:mt-0 sm:ml-auto">
+                      <a href="/approve" className="text-xs text-primary font-medium hover:underline">
+                        Approve Now →
+                      </a>
                     </div>
                   </div>
                 </>
@@ -374,7 +387,7 @@ export default function ConfigurePage() {
               {/* Action Buttons */}
               <div className="flex gap-3 mt-6">
                 {flowState === "success" ? (
-                  <button onClick={resetFlow} className="glass-btn flex-1">
+                  <button onClick={resetFlow} className="glass-btn flex-1 text-sm sm:text-base">
                     Configure Another
                   </button>
                 ) : (
@@ -382,7 +395,7 @@ export default function ConfigurePage() {
                     <button
                       onClick={handleSaveConfiguration}
                       disabled={isTxPending || isConfirming || !address || !selectedChip}
-                      className="glass-btn flex-1 flex items-center justify-center gap-2"
+                      className="glass-btn flex-1 flex items-center justify-center gap-2 text-sm sm:text-base"
                     >
                       {isTxPending || isConfirming ? (
                         <>

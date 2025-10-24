@@ -22,6 +22,9 @@ node_modules
 # mkcert local HTTPS certificates
 packages/nextjs/certs/
 
+# cloudflare tunnel credentials
+packages/nextjs/.cloudflared/
+
 # local env files
 packages/nextjs/.env.local
 .env.local
@@ -47,3 +50,5 @@ image.png
 HTTPS_SETUP.md
 .gitignore
 integration_plan.md
+IMPLEMENTATION_PLAN.md
+packages/nextjs/tunnel-persistent.sh

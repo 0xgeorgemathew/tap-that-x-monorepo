@@ -55,29 +55,6 @@ const UNISWAP_V2_ROUTER_ABI = [
 ] as const;
 
 /**
- * USDC Transfer Template
- * Transfers USDC from owner to recipient using transferFrom
- */
-export const usdcTransferTemplate: ActionTemplate = {
-  id: "usdc-transfer",
-  name: "USDC Transfer",
-  description: "Send USDC to a recipient",
-  category: "payment",
-  buildCallData: (params: { tokenAddress: `0x${string}`; from: `0x${string}`; to: `0x${string}`; amount: bigint }) => {
-    const callData = encodeFunctionData({
-      abi: ERC20_ABI,
-      functionName: "transferFrom",
-      args: [params.from, params.to, params.amount],
-    });
-
-    return {
-      target: params.tokenAddress,
-      callData,
-    };
-  },
-};
-
-/**
  * Generic ERC20 Transfer Template
  * Works with any ERC20 token
  */
@@ -150,12 +127,7 @@ export const customActionTemplate: ActionTemplate = {
 /**
  * All available action templates
  */
-export const actionTemplates: ActionTemplate[] = [
-  usdcTransferTemplate,
-  erc20TransferTemplate,
-  uniswapSwapTemplate,
-  customActionTemplate,
-];
+export const actionTemplates: ActionTemplate[] = [erc20TransferTemplate, uniswapSwapTemplate, customActionTemplate];
 
 /**
  * Get a template by ID
