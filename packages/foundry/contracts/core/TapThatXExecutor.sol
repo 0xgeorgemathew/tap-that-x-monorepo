@@ -47,18 +47,16 @@ contract TapThatXExecutor is ReentrancyGuard {
         require(owner != address(0), "Invalid owner");
         require(chip != address(0), "Invalid chip");
 
-        // Fetch pre-configured action
         TapThatXConfiguration.ActionConfig memory config = configuration.getConfiguration(owner, chip);
 
         require(config.targetContract != address(0), "No configuration exists");
         require(config.isActive, "Configuration is inactive");
 
-        // Execute via protocol - protocol validates chip signature and ownership
         (success, returnData) = protocol.executeAuthorizedCall(
             owner,
             config.targetContract,
             config.staticCallData,
-            0, // No ETH value (extend if needed)
+            0,
             chipSignature,
             timestamp,
             nonce

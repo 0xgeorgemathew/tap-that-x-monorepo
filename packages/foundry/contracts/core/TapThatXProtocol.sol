@@ -11,7 +11,7 @@ import "./TapThatXAuth.sol";
 /// @dev Enables "Tap to Pay" for any blockchain interaction - not just payments
 contract TapThatXProtocol is EIP712, ReentrancyGuard {
     TapThatXRegistry public immutable registry;
-    uint256 public constant MAX_TIMESTAMP_WINDOW = 300; // 5 minutes
+    uint256 public constant MAX_TIMESTAMP_WINDOW = 300;
 
     mapping(bytes32 => bool) public usedNonces;
 
@@ -55,25 +55,18 @@ contract TapThatXProtocol is EIP712, ReentrancyGuard {
         require(target != address(0), "Invalid target");
         require(msg.value >= value, "Insufficient ETH sent");
 
-        // Check nonce hasn't been used
         require(!usedNonces[nonce], "Nonce already used");
 
-        // Verify chip authorization
         address chip = _verifyChipAuth(owner, target, callData, value, timestamp, nonce, chipSignature);
 
-        // Validate chip is registered to owner
         require(registry.hasChip(owner, chip), "Owner does not have chip");
 
-        // Mark nonce as used
         usedNonces[nonce] = true;
         emit NonceUsed(nonce);
 
-        // Execute the call
         (success, returnData) = target.call{ value: value }(callData);
 
         emit AuthorizedCallExecuted(owner, chip, target, callData, value, nonce, success);
-
-
 
         return (success, returnData);
     }
@@ -109,7 +102,6 @@ contract TapThatXProtocol is EIP712, ReentrancyGuard {
         bytes32 nonce,
         bytes memory signature
     ) internal view returns (address) {
-        // Create call auth struct
         TapThatXAuth.CallAuthorization memory auth = TapThatXAuth.CallAuthorization({
             owner: owner,
             target: target,
@@ -119,12 +111,10 @@ contract TapThatXProtocol is EIP712, ReentrancyGuard {
             nonce: nonce
         });
 
-        // Validate timestamp
         require(
             TapThatXAuth.validateTimestamp(timestamp, MAX_TIMESTAMP_WINDOW), "Authorization expired"
         );
 
-        // Recover chip address from signature (chain-agnostic)
         address chip = TapThatXAuth.recoverChipFromCallAuth(_chainAgnosticDomainSeparator(), auth, signature);
 
         require(chip != address(0), "Invalid chip signature");

@@ -2,6 +2,7 @@ import fs from "fs";
 import { createServer as createHttpServer } from "http";
 import { createServer as createHttpsServer } from "https";
 import next from "next";
+import os from "os";
 import path from "path";
 import { parse } from "url";
 import { fileURLToPath } from "url";
@@ -61,12 +62,17 @@ app.prepare().then(() => {
   server.listen(port, err => {
     if (err) throw err;
     const protocol = hasCerts ? "https" : "http";
+    const machineHostname = os.hostname();
+    const localHostname = machineHostname.endsWith(".local") ? machineHostname : `${machineHostname}.local`;
+
     console.log(`> Ready on ${protocol}://${hostname}:${port}`);
+    console.log(`> Also available at ${protocol}://${localHostname}:${port}`);
+
     if (!hasCerts) {
       console.log("> Running in HTTP mode. To enable HTTPS:");
       console.log("  1. Install mkcert: brew install mkcert");
       console.log("  2. Setup CA: mkcert -install");
-      console.log(`  3. Generate certs: cd ${certsDir} && mkcert localhost 127.0.0.1 ::1`);
+      console.log(`  3. Generate certs: cd ${certsDir} && mkcert localhost 127.0.0.1 ::1 ${localHostname}`);
     }
   });
 });

@@ -30,20 +30,14 @@ contract TapThatXRegistry is Ownable, ReentrancyGuard, EIP712 {
         require(chipAddress != address(0), "Invalid chip address");
         require(!ownerHasChip[msg.sender][chipAddress], "Chip already registered to this owner");
 
-        // Verify EIP-712 chip signature (chain-agnostic)
         bytes32 structHash = keccak256(abi.encode(REGISTRATION_TYPEHASH, msg.sender, chipAddress));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", _chainAgnosticDomainSeparator(), structHash));
         address signer = digest.recover(chipSignature);
 
         require(signer == chipAddress, "Invalid chip signature");
 
-        // Add chip to owner's collection
         ownerToChips[msg.sender].push(chipAddress);
-
-        // Add owner to chip's collection
         chipToOwners[chipAddress].push(msg.sender);
-
-        // Mark ownership
         ownerHasChip[msg.sender][chipAddress] = true;
 
         emit ChipRegistered(chipAddress, msg.sender);

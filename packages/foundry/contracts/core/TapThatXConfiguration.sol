@@ -10,13 +10,12 @@ contract TapThatXConfiguration {
     TapThatXRegistry public immutable registry;
 
     struct ActionConfig {
-        address targetContract;   // Contract to call (USDC, Uniswap, etc.)
-        bytes staticCallData;     // Pre-encoded function call with parameters
-        string description;       // Human-readable description
-        bool isActive;           // Enable/disable without deleting
+        address targetContract;
+        bytes staticCallData;
+        string description;
+        bool isActive;
     }
 
-    // owner => chip => configuration
     mapping(address => mapping(address => ActionConfig)) public configurations;
 
     event ConfigurationSet(
