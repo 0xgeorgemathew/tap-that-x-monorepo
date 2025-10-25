@@ -1,32 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@aave/core-v3/contracts/flashloan/base/FlashLoanSimpleReceiverBase.sol";
 import "@aave/core-v3/contracts/interfaces/IPool.sol";
+import "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
+import "@aave/core-v3/contracts/interfaces/IAaveOracle.sol";
 import "@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "../interfaces/IUniswapV2.sol";
 
 /// @title TapThatXAaveRebalancer
 /// @notice Flash loan-based Aave position rebalancer for NFC chip authorization
 /// @dev Integrates with TapThatX protocol - chip auth validated before calling
-contract TapThatXAaveRebalancer is FlashLoanSimpleReceiverBase, ReentrancyGuard {
-    /// @notice Base Sepolia Aave Pool Address Provider
-    address private constant POOL_ADDRESS_PROVIDER = 0xe20fCBdBfFC4Dd138cE8b2E6FBb6CB49777ad64D;
+contract TapThatXAaveRebalancer is ReentrancyGuard {
+    /// @notice Aave V3 Pool
+    IPool public immutable POOL;
 
     /// @notice Base Sepolia Uniswap V2 Router
     address private constant UNISWAP_V2_ROUTER = 0x1689E7B1F10000AE47eBfE339a4f69dECd19F602;
 
     /// @notice Base Sepolia Uniswap V2 Factory
-    address private constant UNISWAP_V2_FACTORY = 0x8909Dc15e40173Ff4699343b6eB8132c65e18eC6;
+    address private constant UNISWAP_V2_FACTORY = 0x7Ae58f10f7849cA6F5fB71b7f45CB416c9204b1e;
 
     /// @notice Configuration for a rebalancing operation
     struct RebalanceConfig {
-        address collateralAsset; // e.g., WETH
-        address debtAsset; // e.g., USDT
-        uint256 flashLoanAmount; // Amount to borrow via flash loan (e.g., 10 USDT)
-        uint256 minHealthFactor; // Minimum acceptable health factor (e.g., 1.5e18)
-        uint256 maxSlippage; // Max slippage in basis points (e.g., 100 = 1%)
+        address collateralAsset;
+        address debtAsset;
+        uint256 targetHealthFactor;
+        uint256 maxSlippage;
     }
 
     /// @notice Emitted when a rebalance is successfully executed
@@ -49,8 +51,72 @@ contract TapThatXAaveRebalancer is FlashLoanSimpleReceiverBase, ReentrancyGuard 
     error SwapOutputInsufficient();
     error HealthFactorNotImproved();
     error UnauthorizedFlashLoan();
+    error InsufficientApproval();
 
-    constructor() FlashLoanSimpleReceiverBase(IPoolAddressesProvider(POOL_ADDRESS_PROVIDER)) { }
+    /// @notice Constructor accepting direct Aave Pool address
+    /// @param poolAddress Address of the Aave V3 Pool contract
+    constructor(address poolAddress) {
+        POOL = IPool(poolAddress);
+    }
+
+    /// @notice Calculate optimal flash loan amount to reach target health factor
+    /// @dev Uses formula: debtRepaid = (targetHF × totalDebt - totalCollateral × LT) / (targetHF - costFactor × LT)
+    /// @param owner Position owner address
+    /// @param config Rebalancing configuration
+    /// @return flashLoanAmount Amount of debt asset to borrow via flash loan
+    function calculateOptimalFlashLoan(address owner, RebalanceConfig memory config)
+        public
+        view
+        returns (uint256 flashLoanAmount)
+    {
+        (
+            uint256 totalCollateralBase,
+            uint256 totalDebtBase,
+            ,
+            uint256 currentLiquidationThreshold,
+            ,
+            uint256 healthFactor
+        ) = POOL.getUserAccountData(owner);
+
+        if (healthFactor >= config.targetHealthFactor) {
+            return 0;
+        }
+
+        uint256 costFactorBps = 10000 + 9 + 30 + config.maxSlippage;
+
+        uint256 totalCollateral18 = totalCollateralBase * 1e10;
+        uint256 totalDebt18 = totalDebtBase * 1e10;
+        uint256 lt18 = (currentLiquidationThreshold * 1e18) / 10000;
+        uint256 costFactor18 = (costFactorBps * 1e18) / 10000;
+
+        uint256 term1 = (config.targetHealthFactor * totalDebt18) / 1e18;
+        uint256 term2 = (totalCollateral18 * lt18) / 1e18;
+
+        if (term1 <= term2) {
+            revert InsufficientCollateral();
+        }
+
+        uint256 numerator = term1 - term2;
+
+        uint256 term3 = (costFactor18 * lt18) / 1e18;
+
+        if (config.targetHealthFactor <= term3) {
+            revert InsufficientCollateral();
+        }
+
+        uint256 denominator = config.targetHealthFactor - term3;
+
+        uint256 debtRepaidUSD18 = (numerator * 1e18) / denominator;
+        uint256 debtRepaidUSD = debtRepaidUSD18 / 1e10;
+
+        address oracle = IPoolAddressesProvider(POOL.ADDRESSES_PROVIDER()).getPriceOracle();
+        uint256 debtAssetPrice = IAaveOracle(oracle).getAssetPrice(config.debtAsset);
+        uint256 debtDecimals = IERC20Metadata(config.debtAsset).decimals();
+
+        flashLoanAmount = (debtRepaidUSD * (10 ** debtDecimals)) / debtAssetPrice;
+
+        return flashLoanAmount;
+    }
 
     /// @notice Execute rebalancing of an Aave position via flash loan
     /// @dev Called by TapThatXProtocol after chip authorization validation
@@ -64,13 +130,18 @@ contract TapThatXAaveRebalancer is FlashLoanSimpleReceiverBase, ReentrancyGuard 
         (, , , , , uint256 healthFactorBefore) = POOL.getUserAccountData(owner);
 
         // Validate position needs rebalancing
-        if (healthFactorBefore >= config.minHealthFactor) revert PositionHealthy();
+        if (healthFactorBefore >= config.targetHealthFactor) revert PositionHealthy();
+
+        // Calculate optimal flash loan amount automatically
+        uint256 flashLoanAmount = calculateOptimalFlashLoan(owner, config);
+
+        if (flashLoanAmount == 0) revert PositionHealthy();
 
         // Encode params for flash loan callback
         bytes memory params = abi.encode(owner, config, healthFactorBefore);
 
-        // Initiate flash loan
-        POOL.flashLoanSimple(address(this), config.debtAsset, config.flashLoanAmount, params, 0);
+        // Initiate flash loan with calculated amount
+        POOL.flashLoanSimple(address(this), config.debtAsset, flashLoanAmount, params, 0);
     }
 
     /// @notice Flash loan callback - executes atomic rebalancing
@@ -87,59 +158,46 @@ contract TapThatXAaveRebalancer is FlashLoanSimpleReceiverBase, ReentrancyGuard 
         uint256 premium,
         address initiator,
         bytes calldata params
-    ) external override returns (bool) {
-        // Security: only accept flash loans we initiated
+    ) external returns (bool) {
         if (msg.sender != address(POOL)) revert UnauthorizedFlashLoan();
         if (initiator != address(this)) revert UnauthorizedFlashLoan();
 
         emit FlashLoanExecuted(asset, amount, premium);
 
-        // Decode params
         (address owner, RebalanceConfig memory config, uint256 healthFactorBefore) =
             abi.decode(params, (address, RebalanceConfig, uint256));
 
-        // Step 1: Repay user's debt using flash loan
         IERC20(config.debtAsset).approve(address(POOL), amount);
-        POOL.repay(config.debtAsset, amount, 2, owner); // 2 = variable rate
+        POOL.repay(config.debtAsset, amount, 2, owner);
 
-        // Step 2: Calculate and withdraw freed collateral
         uint256 totalRepayment = amount + premium;
         uint256 collateralToWithdraw = _calculateCollateralAmount(config, totalRepayment);
 
         if (collateralToWithdraw == 0) revert InsufficientCollateral();
 
-        // Get aToken address
         DataTypes.ReserveData memory reserveData = POOL.getReserveData(config.collateralAsset);
         address aToken = reserveData.aTokenAddress;
 
-        // Transfer aToken from user to this contract
         IERC20(aToken).transferFrom(owner, address(this), collateralToWithdraw);
-
-        // Burn aToken to receive underlying collateral
         POOL.withdraw(config.collateralAsset, collateralToWithdraw, address(this));
 
-        // Step 3: Swap collateral → debt asset on Uniswap V2
         uint256 swapOutput = _swapV2(config.collateralAsset, config.debtAsset, collateralToWithdraw, totalRepayment);
 
-        // Validate swap output covers flash loan repayment
         if (swapOutput < totalRepayment) revert SwapOutputInsufficient();
 
-        // Step 4: Approve Aave to pull flash loan repayment
         IERC20(config.debtAsset).approve(address(POOL), totalRepayment);
 
-        // Step 5: Transfer excess to user (if any)
         uint256 excess = swapOutput - totalRepayment;
         if (excess > 0) {
             IERC20(config.debtAsset).transfer(owner, excess);
         }
 
-        // Step 6: Validate health factor improvement
         (, , , , , uint256 healthFactorAfter) = POOL.getUserAccountData(owner);
         if (healthFactorAfter <= healthFactorBefore) revert HealthFactorNotImproved();
 
         emit RebalanceExecuted(owner, healthFactorBefore, healthFactorAfter, collateralToWithdraw, amount, excess);
 
-        return true; // Aave automatically pulls totalRepayment
+        return true;
     }
 
     /// @notice Calculate exact collateral amount needed to cover flash loan repayment
@@ -152,26 +210,20 @@ contract TapThatXAaveRebalancer is FlashLoanSimpleReceiverBase, ReentrancyGuard 
         view
         returns (uint256)
     {
-        // Get Uniswap V2 pair
         address pair = _getPair(config.collateralAsset, config.debtAsset);
         if (pair == address(0)) return 0;
 
-        // Get reserves
         (uint112 reserve0, uint112 reserve1,) = IUniswapV2Pair(pair).getReserves();
         address token0 = IUniswapV2Pair(pair).token0();
 
-        // Determine which reserve is which token
         (uint112 reserveCollateral, uint112 reserveDebt) = token0 == config.collateralAsset
             ? (reserve0, reserve1)
             : (reserve1, reserve0);
 
-        // Calculate amountIn needed for totalRepayment output
-        // Formula: amountIn = (reserveIn * amountOut * 1000) / ((reserveOut - amountOut) * 997) + 1
         uint256 numerator = uint256(reserveCollateral) * totalRepayment * 1000;
         uint256 denominator = (uint256(reserveDebt) - totalRepayment) * 997;
         uint256 amountIn = (numerator / denominator) + 1;
 
-        // Add slippage buffer (e.g., 1% = 100 basis points)
         uint256 slippageMultiplier = 10000 + config.maxSlippage;
         uint256 amountInWithSlippage = (amountIn * slippageMultiplier) / 10000;
 
@@ -179,78 +231,85 @@ contract TapThatXAaveRebalancer is FlashLoanSimpleReceiverBase, ReentrancyGuard 
     }
 
     /// @notice Swap collateral for debt asset on Uniswap V2
-    /// @param tokenIn Collateral asset (WETH)
-    /// @param tokenOut Debt asset (USDT)
+    /// @param tokenIn Collateral asset
+    /// @param tokenOut Debt asset
     /// @param amountIn Amount of collateral to swap
-    /// @param minAmountOut Minimum output required (flash loan repayment)
+    /// @param minAmountOut Minimum output required
     /// @return uint256 Actual output amount received
     function _swapV2(address tokenIn, address tokenOut, uint256 amountIn, uint256 minAmountOut)
         internal
         returns (uint256)
     {
-        // Build swap path
         address[] memory path = new address[](2);
         path[0] = tokenIn;
         path[1] = tokenOut;
 
-        // Approve router to spend tokenIn
         IERC20(tokenIn).approve(UNISWAP_V2_ROUTER, amountIn);
 
-        // Execute swap
         uint256[] memory amounts = IUniswapV2Router02(UNISWAP_V2_ROUTER).swapExactTokensForTokens(
             amountIn, minAmountOut, path, address(this), block.timestamp
         );
 
-        return amounts[1]; // Output amount
+        return amounts[1];
     }
 
     /// @notice Get Uniswap V2 pair address
     /// @param tokenA First token
     /// @param tokenB Second token
-    /// @return address Pair address (0x0 if not exists)
+    /// @return address Pair address
     function _getPair(address tokenA, address tokenB) internal view returns (address) {
         return IUniswapV2Factory(UNISWAP_V2_FACTORY).getPair(tokenA, tokenB);
     }
 
-    /// @notice Preview potential rebalancing outcome (view function)
+    /// @notice Preview potential rebalancing outcome
     /// @param owner Position owner
     /// @param config Rebalancing configuration
     /// @return currentHealthFactor Current health factor
     /// @return needsRebalancing Whether position is below threshold
+    /// @return estimatedFlashLoanAmount Calculated flash loan amount needed
     /// @return estimatedCollateralNeeded Estimated collateral to withdraw
     function previewRebalance(address owner, RebalanceConfig calldata config)
         external
         view
-        returns (uint256 currentHealthFactor, bool needsRebalancing, uint256 estimatedCollateralNeeded)
+        returns (
+            uint256 currentHealthFactor,
+            bool needsRebalancing,
+            uint256 estimatedFlashLoanAmount,
+            uint256 estimatedCollateralNeeded
+        )
     {
         (, , , , , currentHealthFactor) = POOL.getUserAccountData(owner);
-        needsRebalancing = currentHealthFactor < config.minHealthFactor;
+        needsRebalancing = currentHealthFactor < config.targetHealthFactor;
 
         if (needsRebalancing) {
-            uint256 totalRepayment = config.flashLoanAmount + (config.flashLoanAmount * 5) / 10000; // 0.05% premium
+            estimatedFlashLoanAmount = calculateOptimalFlashLoan(owner, config);
+            uint256 totalRepayment = estimatedFlashLoanAmount + (estimatedFlashLoanAmount * 9) / 10000;
             estimatedCollateralNeeded = _calculateCollateralAmount(config, totalRepayment);
         }
     }
-}
 
-/// @notice Uniswap V2 Router interface
-interface IUniswapV2Router02 {
-    function swapExactTokensForTokens(
-        uint256 amountIn,
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external returns (uint256[] memory amounts);
-}
+    /// @notice Check if owner has approved sufficient aToken spending
+    /// @param owner Position owner
+    /// @param collateralAsset Collateral asset address
+    /// @return hasApproval True if approval is sufficient
+    /// @return aTokenAddress The aToken address that needs approval
+    /// @return currentAllowance Current approval amount
+    function checkATokenApproval(address owner, address collateralAsset)
+        external
+        view
+        returns (bool hasApproval, address aTokenAddress, uint256 currentAllowance)
+    {
+        DataTypes.ReserveData memory reserveData = POOL.getReserveData(collateralAsset);
+        aTokenAddress = reserveData.aTokenAddress;
+        currentAllowance = IERC20(aTokenAddress).allowance(owner, address(this));
+        hasApproval = currentAllowance > 0;
+    }
 
-/// @notice Uniswap V2 Factory interface
-interface IUniswapV2Factory {
-    function getPair(address tokenA, address tokenB) external view returns (address pair);
-}
-
-/// @notice Uniswap V2 Pair interface
-interface IUniswapV2Pair {
-    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
-    function token0() external view returns (address);
+    /// @notice Get the aToken address for a given collateral asset
+    /// @param collateralAsset Collateral asset address
+    /// @return aTokenAddress The corresponding aToken address
+    function getATokenAddress(address collateralAsset) external view returns (address aTokenAddress) {
+        DataTypes.ReserveData memory reserveData = POOL.getReserveData(collateralAsset);
+        aTokenAddress = reserveData.aTokenAddress;
+    }
 }

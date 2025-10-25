@@ -5,646 +5,9 @@
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
-  31337: {
-    MockUSDC: {
-      address: "0x700b6a60ce7eaaea56f065753d8dcb9653dbad35",
-      abi: [
-        {
-          type: "constructor",
-          inputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "DOMAIN_SEPARATOR",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "allowance",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "spender",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "approve",
-          inputs: [
-            {
-              name: "spender",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "balanceOf",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "decimals",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint8",
-              internalType: "uint8",
-            },
-          ],
-          stateMutability: "pure",
-        },
-        {
-          type: "function",
-          name: "eip712Domain",
-          inputs: [],
-          outputs: [
-            {
-              name: "fields",
-              type: "bytes1",
-              internalType: "bytes1",
-            },
-            {
-              name: "name",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "version",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "chainId",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "verifyingContract",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "salt",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-            {
-              name: "extensions",
-              type: "uint256[]",
-              internalType: "uint256[]",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "faucet",
-          inputs: [
-            {
-              name: "to",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "mint",
-          inputs: [
-            {
-              name: "to",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "amount",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "name",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "string",
-              internalType: "string",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "nonces",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "owner",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "permit",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "spender",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "deadline",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "v",
-              type: "uint8",
-              internalType: "uint8",
-            },
-            {
-              name: "r",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-            {
-              name: "s",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "renounceOwnership",
-          inputs: [],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "symbol",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "string",
-              internalType: "string",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "totalSupply",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "transfer",
-          inputs: [
-            {
-              name: "to",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "transferFrom",
-          inputs: [
-            {
-              name: "from",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "to",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "transferOwnership",
-          inputs: [
-            {
-              name: "newOwner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "event",
-          name: "Approval",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "spender",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "EIP712DomainChanged",
-          inputs: [],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "OwnershipTransferred",
-          inputs: [
-            {
-              name: "previousOwner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "newOwner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "Transfer",
-          inputs: [
-            {
-              name: "from",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "to",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignature",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignatureLength",
-          inputs: [
-            {
-              name: "length",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignatureS",
-          inputs: [
-            {
-              name: "s",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InsufficientAllowance",
-          inputs: [
-            {
-              name: "spender",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "allowance",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "needed",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InsufficientBalance",
-          inputs: [
-            {
-              name: "sender",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "balance",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "needed",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InvalidApprover",
-          inputs: [
-            {
-              name: "approver",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InvalidReceiver",
-          inputs: [
-            {
-              name: "receiver",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InvalidSender",
-          inputs: [
-            {
-              name: "sender",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InvalidSpender",
-          inputs: [
-            {
-              name: "spender",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC2612ExpiredSignature",
-          inputs: [
-            {
-              name: "deadline",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC2612InvalidSigner",
-          inputs: [
-            {
-              name: "signer",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "InvalidAccountNonce",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "currentNonce",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "InvalidShortString",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "OwnableInvalidOwner",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "OwnableUnauthorizedAccount",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "StringTooLong",
-          inputs: [
-            {
-              name: "str",
-              type: "string",
-              internalType: "string",
-            },
-          ],
-        },
-      ],
-      inheritedFunctions: {},
-      deployedOnBlock: 1,
-    },
-  },
   84532: {
     MockUSDC: {
-      address: "0x8bafaf96ddadc6c51158c2247a67544d3668de4e",
+      address: "0x25ab34a7bacf0c90f638a11c9ce97faced872570",
       abi: [
         {
           type: "constructor",
@@ -1276,10 +639,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32706204,
+      deployedOnBlock: 32734815,
     },
     TapThatXRegistry: {
-      address: "0x70d38c5a75105f5a40a3fd3179f1a26c6b69739d",
+      address: "0x8f31304e90f4dc6ebd7eeebf02cc2c73f267c4fb",
       abi: [
         {
           type: "constructor",
@@ -1608,10 +971,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32706204,
+      deployedOnBlock: 32791228,
     },
     TapThatXProtocol: {
-      address: "0x956ace42020017d38deb207f41811cd8b23ba47f",
+      address: "0xd7413eeaeb3e6e5efeffcebe4cdbaac90f1ef1cb",
       abi: [
         {
           type: "constructor",
@@ -1963,171 +1326,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32706204,
-    },
-    USDCTapPayment: {
-      address: "0x28f55cc0bbcbec14c412d0735dd54858082e89df",
-      abi: [
-        {
-          type: "constructor",
-          inputs: [
-            {
-              name: "_usdc",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "_protocol",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "_registry",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "checkAllowance",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "amount",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getApprovalTarget",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "protocol",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "contract TapThatXProtocol",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "registry",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "contract TapThatXRegistry",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "tapToPay",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "transferCallData",
-              type: "bytes",
-              internalType: "bytes",
-            },
-            {
-              name: "chipSignature",
-              type: "bytes",
-              internalType: "bytes",
-            },
-            {
-              name: "timestamp",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "nonce",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "usdc",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "contract IERC20",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "event",
-          name: "TapPaymentExecuted",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "nonce",
-              type: "bytes32",
-              indexed: false,
-              internalType: "bytes32",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "error",
-          name: "ReentrancyGuardReentrantCall",
-          inputs: [],
-        },
-      ],
-      inheritedFunctions: {},
-      deployedOnBlock: 32706205,
+      deployedOnBlock: 32791228,
     },
     TapThatXConfiguration: {
-      address: "0x5daec1f0209b7d1a6540c616431acc4ec4e99e39",
+      address: "0xf8520a1c705c3e05f181572429c67e13ac5f9f6d",
       abi: [
         {
           type: "constructor",
@@ -2393,10 +1595,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32706204,
+      deployedOnBlock: 32791228,
     },
     TapThatXExecutor: {
-      address: "0xd101251d635cd6e0336dc243fc53253db4ac8201",
+      address: "0xcb3517e91a74a19a3dc61407981a465c345c3a9a",
       abi: [
         {
           type: "constructor",
@@ -2604,1814 +1806,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32706204,
-    },
-  },
-  11155111: {
-    MockUSDC: {
-      address: "0xa7d1b9ad3401678177c5c67c842943d17d750f7d",
-      abi: [
-        {
-          type: "constructor",
-          inputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "DOMAIN_SEPARATOR",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "allowance",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "spender",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "approve",
-          inputs: [
-            {
-              name: "spender",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "balanceOf",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "decimals",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint8",
-              internalType: "uint8",
-            },
-          ],
-          stateMutability: "pure",
-        },
-        {
-          type: "function",
-          name: "eip712Domain",
-          inputs: [],
-          outputs: [
-            {
-              name: "fields",
-              type: "bytes1",
-              internalType: "bytes1",
-            },
-            {
-              name: "name",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "version",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "chainId",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "verifyingContract",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "salt",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-            {
-              name: "extensions",
-              type: "uint256[]",
-              internalType: "uint256[]",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "faucet",
-          inputs: [
-            {
-              name: "to",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "mint",
-          inputs: [
-            {
-              name: "to",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "amount",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "name",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "string",
-              internalType: "string",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "nonces",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "owner",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "permit",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "spender",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "deadline",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "v",
-              type: "uint8",
-              internalType: "uint8",
-            },
-            {
-              name: "r",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-            {
-              name: "s",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "renounceOwnership",
-          inputs: [],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "symbol",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "string",
-              internalType: "string",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "totalSupply",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "transfer",
-          inputs: [
-            {
-              name: "to",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "transferFrom",
-          inputs: [
-            {
-              name: "from",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "to",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "transferOwnership",
-          inputs: [
-            {
-              name: "newOwner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "event",
-          name: "Approval",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "spender",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "EIP712DomainChanged",
-          inputs: [],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "OwnershipTransferred",
-          inputs: [
-            {
-              name: "previousOwner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "newOwner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "Transfer",
-          inputs: [
-            {
-              name: "from",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "to",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignature",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignatureLength",
-          inputs: [
-            {
-              name: "length",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignatureS",
-          inputs: [
-            {
-              name: "s",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InsufficientAllowance",
-          inputs: [
-            {
-              name: "spender",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "allowance",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "needed",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InsufficientBalance",
-          inputs: [
-            {
-              name: "sender",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "balance",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "needed",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InvalidApprover",
-          inputs: [
-            {
-              name: "approver",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InvalidReceiver",
-          inputs: [
-            {
-              name: "receiver",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InvalidSender",
-          inputs: [
-            {
-              name: "sender",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC20InvalidSpender",
-          inputs: [
-            {
-              name: "spender",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC2612ExpiredSignature",
-          inputs: [
-            {
-              name: "deadline",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ERC2612InvalidSigner",
-          inputs: [
-            {
-              name: "signer",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "InvalidAccountNonce",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "currentNonce",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "InvalidShortString",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "OwnableInvalidOwner",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "OwnableUnauthorizedAccount",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "StringTooLong",
-          inputs: [
-            {
-              name: "str",
-              type: "string",
-              internalType: "string",
-            },
-          ],
-        },
-      ],
-      inheritedFunctions: {},
-      deployedOnBlock: 9469362,
-    },
-    TapThatXRegistry: {
-      address: "0xc26019f380d049f54ed54d6173e97d69a928d872",
-      abi: [
-        {
-          type: "constructor",
-          inputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "eip712Domain",
-          inputs: [],
-          outputs: [
-            {
-              name: "fields",
-              type: "bytes1",
-              internalType: "bytes1",
-            },
-            {
-              name: "name",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "version",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "chainId",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "verifyingContract",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "salt",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-            {
-              name: "extensions",
-              type: "uint256[]",
-              internalType: "uint256[]",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getChainAgnosticDomainSeparator",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getChipOwners",
-          inputs: [
-            {
-              name: "chip",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "address[]",
-              internalType: "address[]",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getDomainSeparator",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getOwnerChips",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "address[]",
-              internalType: "address[]",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "hasChip",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "owner",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "ownerHasChip",
-          inputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "registerChip",
-          inputs: [
-            {
-              name: "chipAddress",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "chipSignature",
-              type: "bytes",
-              internalType: "bytes",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "renounceOwnership",
-          inputs: [],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "transferOwnership",
-          inputs: [
-            {
-              name: "newOwner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "event",
-          name: "ChipRegistered",
-          inputs: [
-            {
-              name: "chip",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "owner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "EIP712DomainChanged",
-          inputs: [],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "OwnershipTransferred",
-          inputs: [
-            {
-              name: "previousOwner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "newOwner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignature",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignatureLength",
-          inputs: [
-            {
-              name: "length",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignatureS",
-          inputs: [
-            {
-              name: "s",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "InvalidShortString",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "OwnableInvalidOwner",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "OwnableUnauthorizedAccount",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ReentrancyGuardReentrantCall",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "StringTooLong",
-          inputs: [
-            {
-              name: "str",
-              type: "string",
-              internalType: "string",
-            },
-          ],
-        },
-      ],
-      inheritedFunctions: {},
-      deployedOnBlock: 9469362,
-    },
-    TapThatXProtocol: {
-      address: "0x145aaf42569bb83276a11cf7d27458bae0861b3f",
-      abi: [
-        {
-          type: "constructor",
-          inputs: [
-            {
-              name: "_registry",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "receive",
-          stateMutability: "payable",
-        },
-        {
-          type: "function",
-          name: "MAX_TIMESTAMP_WINDOW",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "eip712Domain",
-          inputs: [],
-          outputs: [
-            {
-              name: "fields",
-              type: "bytes1",
-              internalType: "bytes1",
-            },
-            {
-              name: "name",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "version",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "chainId",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "verifyingContract",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "salt",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-            {
-              name: "extensions",
-              type: "uint256[]",
-              internalType: "uint256[]",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "executeAuthorizedCall",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "target",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "callData",
-              type: "bytes",
-              internalType: "bytes",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "chipSignature",
-              type: "bytes",
-              internalType: "bytes",
-            },
-            {
-              name: "timestamp",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "nonce",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          outputs: [
-            {
-              name: "success",
-              type: "bool",
-              internalType: "bool",
-            },
-            {
-              name: "returnData",
-              type: "bytes",
-              internalType: "bytes",
-            },
-          ],
-          stateMutability: "payable",
-        },
-        {
-          type: "function",
-          name: "getChainAgnosticDomainSeparator",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getDomainSeparator",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "registry",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "contract TapThatXRegistry",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "usedNonces",
-          inputs: [
-            {
-              name: "",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "verifyChipAuth",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "target",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "callData",
-              type: "bytes",
-              internalType: "bytes",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "timestamp",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "nonce",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-            {
-              name: "signature",
-              type: "bytes",
-              internalType: "bytes",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "event",
-          name: "AuthorizedCallExecuted",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "target",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "callData",
-              type: "bytes",
-              indexed: false,
-              internalType: "bytes",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "nonce",
-              type: "bytes32",
-              indexed: false,
-              internalType: "bytes32",
-            },
-            {
-              name: "success",
-              type: "bool",
-              indexed: false,
-              internalType: "bool",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "EIP712DomainChanged",
-          inputs: [],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "NonceUsed",
-          inputs: [
-            {
-              name: "nonce",
-              type: "bytes32",
-              indexed: true,
-              internalType: "bytes32",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignature",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignatureLength",
-          inputs: [
-            {
-              name: "length",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "ECDSAInvalidSignatureS",
-          inputs: [
-            {
-              name: "s",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "InvalidShortString",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "ReentrancyGuardReentrantCall",
-          inputs: [],
-        },
-        {
-          type: "error",
-          name: "StringTooLong",
-          inputs: [
-            {
-              name: "str",
-              type: "string",
-              internalType: "string",
-            },
-          ],
-        },
-      ],
-      inheritedFunctions: {},
-      deployedOnBlock: 9469362,
-    },
-    TapThatXConfiguration: {
-      address: "0xccfc3ffdcc07f8c8c633566918ce8020feb3fd00",
-      abi: [
-        {
-          type: "constructor",
-          inputs: [
-            {
-              name: "_registry",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "configurations",
-          inputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "targetContract",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "staticCallData",
-              type: "bytes",
-              internalType: "bytes",
-            },
-            {
-              name: "description",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "isActive",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "getConfiguration",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "tuple",
-              internalType: "struct TapThatXConfiguration.ActionConfig",
-              components: [
-                {
-                  name: "targetContract",
-                  type: "address",
-                  internalType: "address",
-                },
-                {
-                  name: "staticCallData",
-                  type: "bytes",
-                  internalType: "bytes",
-                },
-                {
-                  name: "description",
-                  type: "string",
-                  internalType: "string",
-                },
-                {
-                  name: "isActive",
-                  type: "bool",
-                  internalType: "bool",
-                },
-              ],
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "isConfigured",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "registry",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "contract TapThatXRegistry",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "removeConfiguration",
-          inputs: [
-            {
-              name: "chip",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "setConfiguration",
-          inputs: [
-            {
-              name: "chip",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "targetContract",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "staticCallData",
-              type: "bytes",
-              internalType: "bytes",
-            },
-            {
-              name: "description",
-              type: "string",
-              internalType: "string",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "toggleConfiguration",
-          inputs: [
-            {
-              name: "chip",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "event",
-          name: "ConfigurationRemoved",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "ConfigurationSet",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "target",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "description",
-              type: "string",
-              indexed: false,
-              internalType: "string",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "ConfigurationToggled",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "isActive",
-              type: "bool",
-              indexed: false,
-              internalType: "bool",
-            },
-          ],
-          anonymous: false,
-        },
-      ],
-      inheritedFunctions: {},
-      deployedOnBlock: 9469362,
-    },
-    TapThatXExecutor: {
-      address: "0x276b67314d90625fe5b6d0375bff8b32f0b8c716",
-      abi: [
-        {
-          type: "constructor",
-          inputs: [
-            {
-              name: "_protocol",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "_configuration",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "canExecute",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "configuration",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "contract TapThatXConfiguration",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "executeTap",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "chipSignature",
-              type: "bytes",
-              internalType: "bytes",
-            },
-            {
-              name: "timestamp",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "nonce",
-              type: "bytes32",
-              internalType: "bytes32",
-            },
-          ],
-          outputs: [
-            {
-              name: "success",
-              type: "bool",
-              internalType: "bool",
-            },
-            {
-              name: "returnData",
-              type: "bytes",
-              internalType: "bytes",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "previewTap",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "tuple",
-              internalType: "struct TapThatXConfiguration.ActionConfig",
-              components: [
-                {
-                  name: "targetContract",
-                  type: "address",
-                  internalType: "address",
-                },
-                {
-                  name: "staticCallData",
-                  type: "bytes",
-                  internalType: "bytes",
-                },
-                {
-                  name: "description",
-                  type: "string",
-                  internalType: "string",
-                },
-                {
-                  name: "isActive",
-                  type: "bool",
-                  internalType: "bool",
-                },
-              ],
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "protocol",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "contract TapThatXProtocol",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "event",
-          name: "TapExecuted",
-          inputs: [
-            {
-              name: "owner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "chip",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "target",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "nonce",
-              type: "bytes32",
-              indexed: false,
-              internalType: "bytes32",
-            },
-            {
-              name: "success",
-              type: "bool",
-              indexed: false,
-              internalType: "bool",
-            },
-            {
-              name: "description",
-              type: "string",
-              indexed: false,
-              internalType: "string",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "error",
-          name: "ReentrancyGuardReentrantCall",
-          inputs: [],
-        },
-      ],
-      inheritedFunctions: {},
-      deployedOnBlock: 9469362,
+      deployedOnBlock: 32791228,
     },
     USDCTapPayment: {
-      address: "0x820fb15f2ea91600c6be331907dce575f9b82297",
+      address: "0x78a78272e4f41748967c67a02d8f5ca5e83aacdc",
       abi: [
         {
           type: "constructor",
@@ -4423,11 +1821,6 @@ const deployedContracts = {
             },
             {
               name: "_protocol",
-              type: "address",
-              internalType: "address",
-            },
-            {
-              name: "_registry",
               type: "address",
               internalType: "address",
             },
@@ -4480,19 +1873,6 @@ const deployedContracts = {
               name: "",
               type: "address",
               internalType: "contract TapThatXProtocol",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "registry",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "contract TapThatXRegistry",
             },
           ],
           stateMutability: "view",
@@ -4569,7 +1949,720 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9469362,
+      deployedOnBlock: 32734815,
+    },
+    TapThatXAaveRebalancer: {
+      address: "0xc1d09ae277eb647213b4b6cc21640dbf7c06b0ed",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "poolAddress",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "POOL",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract IPool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "calculateOptimalFlashLoan",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "config",
+              type: "tuple",
+              internalType: "struct TapThatXAaveRebalancer.RebalanceConfig",
+              components: [
+                {
+                  name: "collateralAsset",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "debtAsset",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "targetHealthFactor",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "maxSlippage",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          outputs: [
+            {
+              name: "flashLoanAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "checkATokenApproval",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "collateralAsset",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "hasApproval",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "aTokenAddress",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "currentAllowance",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "executeOperation",
+          inputs: [
+            {
+              name: "asset",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "premium",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "initiator",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "params",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "executeRebalance",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "config",
+              type: "tuple",
+              internalType: "struct TapThatXAaveRebalancer.RebalanceConfig",
+              components: [
+                {
+                  name: "collateralAsset",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "debtAsset",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "targetHealthFactor",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "maxSlippage",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getATokenAddress",
+          inputs: [
+            {
+              name: "collateralAsset",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "aTokenAddress",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "previewRebalance",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "config",
+              type: "tuple",
+              internalType: "struct TapThatXAaveRebalancer.RebalanceConfig",
+              components: [
+                {
+                  name: "collateralAsset",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "debtAsset",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "targetHealthFactor",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "maxSlippage",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          outputs: [
+            {
+              name: "currentHealthFactor",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "needsRebalancing",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "estimatedFlashLoanAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "estimatedCollateralNeeded",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "FlashLoanExecuted",
+          inputs: [
+            {
+              name: "asset",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "premium",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "RebalanceExecuted",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "healthFactorBefore",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "healthFactorAfter",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "collateralWithdrawn",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "debtRepaid",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "excessReturned",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "HealthFactorNotImproved",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "InsufficientApproval",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "InsufficientCollateral",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "InvalidAddress",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "PositionHealthy",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "ReentrancyGuardReentrantCall",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "SwapOutputInsufficient",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "UnauthorizedFlashLoan",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 32791228,
+    },
+    TapThatXAavePositionCloser: {
+      address: "0x4ff1727f867f805434fbd743bbddf6f89a482ac6",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "poolAddress",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "POOL",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract IPool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "calculateFlashLoanAmount",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "debtAsset",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "flashLoanAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "checkATokenApproval",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "collateralAsset",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "hasApproval",
+              type: "bool",
+              internalType: "bool",
+            },
+            {
+              name: "aTokenAddress",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "currentAllowance",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "closePosition",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "config",
+              type: "tuple",
+              internalType: "struct TapThatXAavePositionCloser.CloseConfig",
+              components: [
+                {
+                  name: "collateralAsset",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "debtAsset",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "maxSlippage",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "executeOperation",
+          inputs: [
+            {
+              name: "asset",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "premium",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "initiator",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "params",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getATokenAddress",
+          inputs: [
+            {
+              name: "collateralAsset",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "aTokenAddress",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "previewClose",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "config",
+              type: "tuple",
+              internalType: "struct TapThatXAavePositionCloser.CloseConfig",
+              components: [
+                {
+                  name: "collateralAsset",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "debtAsset",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "maxSlippage",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          outputs: [
+            {
+              name: "currentDebt",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "currentCollateral",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "estimatedCollateralToSwap",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "estimatedCollateralReturned",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "FlashLoanExecuted",
+          inputs: [
+            {
+              name: "asset",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "premium",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PositionClosed",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "debtRepaid",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "collateralWithdrawn",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "collateralSwapped",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "excessReturned",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "InvalidAddress",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "NoCollateralToWithdraw",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "NoDebtToClose",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "PositionNotFullyClosed",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "ReentrancyGuardReentrantCall",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "SwapOutputInsufficient",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "UnauthorizedFlashLoan",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 32791228,
     },
   },
 } as const;

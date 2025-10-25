@@ -9,6 +9,7 @@ import { TapThatXConfiguration } from "../contracts/core/TapThatXConfiguration.s
 import { TapThatXExecutor } from "../contracts/core/TapThatXExecutor.sol";
 import { USDCTapPayment } from "../contracts/examples/USDCTapPayment.sol";
 import { TapThatXAaveRebalancer } from "../contracts/extensions/TapThatXAaveRebalancer.sol";
+import { TapThatXAavePositionCloser } from "../contracts/extensions/TapThatXAavePositionCloser.sol";
 
 /**
  * @notice Universal deploy script for Tap That X Protocol - works on all chains
@@ -22,6 +23,7 @@ import { TapThatXAaveRebalancer } from "../contracts/extensions/TapThatXAaveReba
  *   5. MockUSDC - Test USDC (testnets only, uses real USDC on mainnet)
  *   6. USDCTapPayment - Example USDC payment implementation
  *   7. TapThatXAaveRebalancer - Aave position rebalancer (Base Sepolia only)
+ *   8. TapThatXAavePositionCloser - Aave position closer (Base Sepolia only)
  *
  * Usage:
  *   yarn deploy                    # localhost (deploys MockUSDC)
@@ -67,11 +69,16 @@ contract Deploy is ScaffoldETHDeploy {
 
         // Deploy TapThatXAaveRebalancer (Base Sepolia only)
         if (block.chainid == 84532) {
-            TapThatXAaveRebalancer rebalancer = new TapThatXAaveRebalancer();
-            console.log("TapThatXAaveRebalancer deployed at:", address(rebalancer));
+            // Base Sepolia Aave V3 Pool address
+            address aavePool = 0x8bAB6d1b75f19e9eD9fCe8b9BD338844fF79aE27;
 
-            // Register deployment for frontend
+            TapThatXAaveRebalancer rebalancer = new TapThatXAaveRebalancer(aavePool);
+            console.log("TapThatXAaveRebalancer deployed at:", address(rebalancer));
             deployments.push(Deployment({ name: "TapThatXAaveRebalancer", addr: address(rebalancer) }));
+
+            TapThatXAavePositionCloser closer = new TapThatXAavePositionCloser(aavePool);
+            console.log("TapThatXAavePositionCloser deployed at:", address(closer));
+            deployments.push(Deployment({ name: "TapThatXAavePositionCloser", addr: address(closer) }));
         }
 
         console.log("\n=== Tap That X Protocol Deployed ===");

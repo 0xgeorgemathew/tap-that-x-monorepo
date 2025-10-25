@@ -38,15 +38,24 @@ export default function ConfigurePage() {
   const [description, setDescription] = useState<string>("");
   const [tokenDecimals, setTokenDecimals] = useState<number>(18); // Default to 18 decimals
 
+  // Form fields for Aave Rebalancer
+  const [targetHealthFactor, setTargetHealthFactor] = useState<string>("1.5");
+  const [maxSlippage, setMaxSlippage] = useState<string>("100"); // 100 basis points = 1%
+
   const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
   const registryAddress = contracts?.TapThatXRegistry?.address;
   const registryAbi = contracts?.TapThatXRegistry?.abi;
   const configurationAddress = contracts?.TapThatXConfiguration?.address;
   const configurationAbi = contracts?.TapThatXConfiguration?.abi;
   const protocolAddress = contracts?.TapThatXProtocol?.address;
+  const rebalancerAddress = contracts?.TapThatXAaveRebalancer?.address;
 
   // Get USDC address for this chain
   const mockUSDCAddress = contracts?.MockUSDC?.address;
+
+  // Hardcoded Base Sepolia addresses
+  const WETH = "0x4200000000000000000000000000000000000006";
+  const USDT = "0x0a215D8ba66387DCA84B284D18c3B4ec3de6E54a";
 
   // Query registered chips
   const { data: ownerChipsData } = useReadContract({
@@ -152,12 +161,41 @@ export default function ConfigurePage() {
           to: recipient as `0x${string}`,
           amount: amountBigInt,
         });
+      } else if (template.id === "aave-rebalance") {
+        if (!rebalancerAddress) {
+          throw new Error("Aave Rebalancer not deployed on this network (Base Sepolia only)");
+        }
+
+        if (!targetHealthFactor || !maxSlippage) {
+          throw new Error("Please fill in all fields");
+        }
+
+        // Parse values
+        const targetHealthFactorBigInt = BigInt(parseFloat(targetHealthFactor) * 1e18); // 1.5 => 1.5e18
+        const maxSlippageBigInt = BigInt(maxSlippage); // 100 = 1%
+
+        callDataResult = template.buildCallData({
+          rebalancerAddress: rebalancerAddress as `0x${string}`,
+          owner: address,
+          collateralAsset: WETH as `0x${string}`,
+          debtAsset: USDT as `0x${string}`,
+          targetHealthFactor: targetHealthFactorBigInt,
+          maxSlippage: maxSlippageBigInt,
+        });
       } else {
         throw new Error("Template not yet implemented");
       }
 
-      const finalDescription =
-        description || `Send ${amount} tokens to ${recipient.slice(0, 6)}...${recipient.slice(-4)}`;
+      let finalDescription = description;
+      if (!finalDescription) {
+        if (template.id === "erc20-transfer") {
+          finalDescription = `Send ${amount} tokens to ${recipient.slice(0, 6)}...${recipient.slice(-4)}`;
+        } else if (template.id === "aave-rebalance") {
+          finalDescription = `Rebalance Aave position to HF ${targetHealthFactor}`;
+        } else {
+          finalDescription = "Custom action";
+        }
+      }
 
       setFlowState("submitting");
       setStatusMessage("Please confirm the transaction in your wallet...");
@@ -365,6 +403,93 @@ export default function ConfigurePage() {
                       </a>
                     </div>
                   </div>
+                </>
+              )}
+
+              {/* Aave Rebalancer Fields */}
+              {selectedTemplate === "aave-rebalance" && (
+                <>
+                  {!rebalancerAddress && (
+                    <div className="glass-alert">
+                      <AlertCircle className="h-5 w-5 text-warning" />
+                      <span className="text-sm font-semibold text-base-content">
+                        Aave Rebalancer is only available on Base Sepolia (Chain ID: 84532)
+                      </span>
+                    </div>
+                  )}
+
+                  {rebalancerAddress && (
+                    <>
+                      <div className="glass-alert">
+                        <CheckCircle2 className="h-5 w-5 text-success" />
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-base-content">Smart Rebalancer</p>
+                          <p className="text-xs text-base-content/70 mt-1">
+                            Automatically calculates optimal flash loan amount to reach your target health factor
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-base-content mb-2">
+                          Target Health Factor
+                        </label>
+                        <input
+                          type="text"
+                          value={targetHealthFactor}
+                          onChange={e => setTargetHealthFactor(e.target.value)}
+                          placeholder="1.5"
+                          className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50 text-base sm:text-sm"
+                        />
+                        <p className="text-xs text-base-content/50 mt-1">
+                          Target health factor to reach (1.0 = liquidation, 1.5+ recommended, flash loan calculated
+                          automatically)
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-base-content mb-2">
+                          Max Slippage (basis points)
+                        </label>
+                        <input
+                          type="text"
+                          value={maxSlippage}
+                          onChange={e => setMaxSlippage(e.target.value)}
+                          placeholder="100"
+                          className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50 text-base sm:text-sm"
+                        />
+                        <p className="text-xs text-base-content/50 mt-1">100 basis points = 1% slippage</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-base-content mb-2">
+                          Description (optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={description}
+                          onChange={e => setDescription(e.target.value)}
+                          placeholder="e.g., Emergency rebalance to avoid liquidation"
+                          className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg bg-base-200/50 border border-base-300/50 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/50 text-base sm:text-sm"
+                        />
+                      </div>
+
+                      {/* Important Note about aToken Approval */}
+                      <div className="glass-alert flex-col items-start">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-warning flex-shrink-0" />
+                          <p className="text-xs sm:text-sm font-semibold text-base-content">aWETH Approval Required</p>
+                        </div>
+                        <p className="text-xs text-base-content/70 mt-2">
+                          You must approve the Aave Rebalancer contract to spend your aWETH tokens. Visit Aave UI to
+                          approve, or use the contract directly:
+                        </p>
+                        <code className="text-xs text-base-content/50 mt-1 address-display">
+                          Rebalancer: {rebalancerAddress?.slice(0, 10)}...{rebalancerAddress?.slice(-8)}
+                        </code>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 

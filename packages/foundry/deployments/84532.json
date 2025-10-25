@@ -1,9 +1,9 @@
 {
-  "0x28f55cC0BbcBEC14C412d0735dD54858082e89Df": "USDCTapPayment",
-  "0x5Daec1F0209B7D1a6540C616431aCc4eC4E99E39": "TapThatXConfiguration",
-  "0x70d38c5a75105f5A40A3fD3179f1a26c6b69739D": "TapThatXRegistry",
-  "0x8baFAF96DDadc6c51158c2247a67544d3668dE4e": "MockUSDC",
-  "0x956aCe42020017D38Deb207F41811Cd8B23Ba47f": "TapThatXProtocol",
-  "0xD101251D635CD6E0336dc243fc53253db4aC8201": "TapThatXExecutor",
+  "0x4FF1727F867F805434fBD743bBdDf6f89a482aC6": "TapThatXAavePositionCloser",
+  "0x8F31304e90f4dC6EbD7eEEBf02CC2c73f267C4FB": "TapThatXRegistry",
+  "0xD7413eeaEB3E6e5EfeffCEBE4CdBaac90f1Ef1cB": "TapThatXProtocol",
+  "0xc1d09aE277eb647213b4b6Cc21640dbF7c06B0ED": "TapThatXAaveRebalancer",
+  "0xcB3517E91a74a19A3Dc61407981A465c345C3a9A": "TapThatXExecutor",
+  "0xf8520A1c705C3E05f181572429c67E13aC5F9f6d": "TapThatXConfiguration",
   "networkName": "base-sepolia"
 }

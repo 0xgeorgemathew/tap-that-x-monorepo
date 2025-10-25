@@ -124,10 +124,76 @@ export const customActionTemplate: ActionTemplate = {
   },
 };
 
+// Aave Rebalancer ABI for executeRebalance function
+const AAVE_REBALANCER_ABI = [
+  {
+    name: "executeRebalance",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "owner", type: "address" },
+      {
+        name: "config",
+        type: "tuple",
+        components: [
+          { name: "collateralAsset", type: "address" },
+          { name: "debtAsset", type: "address" },
+          { name: "targetHealthFactor", type: "uint256" },
+          { name: "maxSlippage", type: "uint256" },
+        ],
+      },
+    ],
+    outputs: [],
+  },
+] as const;
+
+/**
+ * Aave Position Rebalancer Template
+ * Rebalance Aave position via flash loan (automatically calculates optimal flash loan amount)
+ */
+export const aaveRebalanceTemplate: ActionTemplate = {
+  id: "aave-rebalance",
+  name: "Aave Position Rebalancer",
+  description: "Rebalance Aave position to target health factor (auto-calculates flash loan)",
+  category: "defi",
+  buildCallData: (params: {
+    rebalancerAddress: `0x${string}`;
+    owner: `0x${string}`;
+    collateralAsset: `0x${string}`;
+    debtAsset: `0x${string}`;
+    targetHealthFactor: bigint;
+    maxSlippage: bigint;
+  }) => {
+    const callData = encodeFunctionData({
+      abi: AAVE_REBALANCER_ABI,
+      functionName: "executeRebalance",
+      args: [
+        params.owner,
+        {
+          collateralAsset: params.collateralAsset,
+          debtAsset: params.debtAsset,
+          targetHealthFactor: params.targetHealthFactor,
+          maxSlippage: params.maxSlippage,
+        },
+      ],
+    });
+
+    return {
+      target: params.rebalancerAddress,
+      callData,
+    };
+  },
+};
+
 /**
  * All available action templates
  */
-export const actionTemplates: ActionTemplate[] = [erc20TransferTemplate, uniswapSwapTemplate, customActionTemplate];
+export const actionTemplates: ActionTemplate[] = [
+  erc20TransferTemplate,
+  uniswapSwapTemplate,
+  aaveRebalanceTemplate,
+  customActionTemplate,
+];
 
 /**
  * Get a template by ID
