@@ -17,6 +17,9 @@ contract TapThatXAavePositionCloser is ReentrancyGuard {
     /// @notice Aave V3 Pool
     IPool public immutable POOL;
 
+    /// @notice TapThatX Protocol address (authorized caller)
+    address public immutable TAPTHATX_PROTOCOL;
+
     /// @notice Base Sepolia Uniswap V2 Router
     address private constant UNISWAP_V2_ROUTER = 0x1689E7B1F10000AE47eBfE339a4f69dECd19F602;
 
@@ -49,11 +52,15 @@ contract TapThatXAavePositionCloser is ReentrancyGuard {
     error SwapOutputInsufficient();
     error UnauthorizedFlashLoan();
     error PositionNotFullyClosed();
+    error Unauthorized();
 
-    /// @notice Constructor accepting direct Aave Pool address
+    /// @notice Constructor accepting Aave Pool and TapThatX Protocol addresses
     /// @param poolAddress Address of the Aave V3 Pool contract
-    constructor(address poolAddress) {
+    /// @param protocolAddress Address of the TapThatX Protocol contract
+    constructor(address poolAddress, address protocolAddress) {
+        if (poolAddress == address(0) || protocolAddress == address(0)) revert InvalidAddress();
         POOL = IPool(poolAddress);
+        TAPTHATX_PROTOCOL = protocolAddress;
     }
 
     /// @notice Calculate flash loan amount needed (user's total debt in specific asset)
@@ -80,6 +87,9 @@ contract TapThatXAavePositionCloser is ReentrancyGuard {
     /// @param owner The position owner (must have approved aToken spending)
     /// @param config Closing parameters
     function closePosition(address owner, CloseConfig calldata config) external nonReentrant {
+        // Access control: only protocol or position owner can execute
+        if (msg.sender != TAPTHATX_PROTOCOL && msg.sender != owner) revert Unauthorized();
+
         if (owner == address(0)) revert InvalidAddress();
         if (config.collateralAsset == address(0) || config.debtAsset == address(0)) revert InvalidAddress();
 

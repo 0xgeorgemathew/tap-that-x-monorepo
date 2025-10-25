@@ -642,7 +642,7 @@ const deployedContracts = {
       deployedOnBlock: 32734815,
     },
     TapThatXRegistry: {
-      address: "0x8f31304e90f4dc6ebd7eeebf02cc2c73f267c4fb",
+      address: "0xa33488f23e58ae7f2c6979f1c4403338900e7c63",
       abi: [
         {
           type: "constructor",
@@ -971,10 +971,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32791228,
+      deployedOnBlock: 32816273,
     },
     TapThatXProtocol: {
-      address: "0xd7413eeaeb3e6e5efeffcebe4cdbaac90f1ef1cb",
+      address: "0x0275bfd8680570a91a4d405393604572c65c4237",
       abi: [
         {
           type: "constructor",
@@ -1326,10 +1326,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32791228,
+      deployedOnBlock: 32816273,
     },
     TapThatXConfiguration: {
-      address: "0xf8520a1c705c3e05f181572429c67e13ac5f9f6d",
+      address: "0xe0cc4c2e6667add7aef8f38c744e791f2825b14b",
       abi: [
         {
           type: "constructor",
@@ -1595,10 +1595,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32791228,
+      deployedOnBlock: 32816273,
     },
     TapThatXExecutor: {
-      address: "0xcb3517e91a74a19a3dc61407981a465c345c3a9a",
+      address: "0x9af4811f8e68057eaf2b2b15181c25a0532c5a94",
       abi: [
         {
           type: "constructor",
@@ -1806,7 +1806,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32791228,
+      deployedOnBlock: 32816273,
     },
     USDCTapPayment: {
       address: "0x78a78272e4f41748967c67a02d8f5ca5e83aacdc",
@@ -1952,13 +1952,18 @@ const deployedContracts = {
       deployedOnBlock: 32734815,
     },
     TapThatXAaveRebalancer: {
-      address: "0xc1d09ae277eb647213b4b6cc21640dbf7c06b0ed",
+      address: "0xbff2a5227022087023e8ae45b76a417a2c3f0b18",
       abi: [
         {
           type: "constructor",
           inputs: [
             {
               name: "poolAddress",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "protocolAddress",
               type: "address",
               internalType: "address",
             },
@@ -1974,6 +1979,19 @@ const deployedContracts = {
               name: "",
               type: "address",
               internalType: "contract IPool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "TAPTHATX_PROTOCOL",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -2322,21 +2340,31 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "Unauthorized",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "UnauthorizedFlashLoan",
           inputs: [],
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32791228,
+      deployedOnBlock: 32816273,
     },
     TapThatXAavePositionCloser: {
-      address: "0x4ff1727f867f805434fbd743bbddf6f89a482ac6",
+      address: "0xc200711ebf43131e1d00fcdb724f1799e1bc9158",
       abi: [
         {
           type: "constructor",
           inputs: [
             {
               name: "poolAddress",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "protocolAddress",
               type: "address",
               internalType: "address",
             },
@@ -2352,6 +2380,19 @@ const deployedContracts = {
               name: "",
               type: "address",
               internalType: "contract IPool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "TAPTHATX_PROTOCOL",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -2657,12 +2698,17 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "Unauthorized",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "UnauthorizedFlashLoan",
           inputs: [],
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 32791228,
+      deployedOnBlock: 32816273,
     },
   },
 } as const;

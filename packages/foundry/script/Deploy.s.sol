@@ -72,11 +72,11 @@ contract Deploy is ScaffoldETHDeploy {
             // Base Sepolia Aave V3 Pool address
             address aavePool = 0x8bAB6d1b75f19e9eD9fCe8b9BD338844fF79aE27;
 
-            TapThatXAaveRebalancer rebalancer = new TapThatXAaveRebalancer(aavePool);
+            TapThatXAaveRebalancer rebalancer = new TapThatXAaveRebalancer(aavePool, address(protocol));
             console.log("TapThatXAaveRebalancer deployed at:", address(rebalancer));
             deployments.push(Deployment({ name: "TapThatXAaveRebalancer", addr: address(rebalancer) }));
 
-            TapThatXAavePositionCloser closer = new TapThatXAavePositionCloser(aavePool);
+            TapThatXAavePositionCloser closer = new TapThatXAavePositionCloser(aavePool, address(protocol));
             console.log("TapThatXAavePositionCloser deployed at:", address(closer));
             deployments.push(Deployment({ name: "TapThatXAavePositionCloser", addr: address(closer) }));
         }

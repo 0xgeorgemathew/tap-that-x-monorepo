@@ -17,6 +17,9 @@ contract TapThatXAaveRebalancer is ReentrancyGuard {
     /// @notice Aave V3 Pool
     IPool public immutable POOL;
 
+    /// @notice TapThatX Protocol address (authorized caller)
+    address public immutable TAPTHATX_PROTOCOL;
+
     /// @notice Base Sepolia Uniswap V2 Router
     address private constant UNISWAP_V2_ROUTER = 0x1689E7B1F10000AE47eBfE339a4f69dECd19F602;
 
@@ -52,11 +55,15 @@ contract TapThatXAaveRebalancer is ReentrancyGuard {
     error HealthFactorNotImproved();
     error UnauthorizedFlashLoan();
     error InsufficientApproval();
+    error Unauthorized();
 
-    /// @notice Constructor accepting direct Aave Pool address
+    /// @notice Constructor accepting Aave Pool and TapThatX Protocol addresses
     /// @param poolAddress Address of the Aave V3 Pool contract
-    constructor(address poolAddress) {
+    /// @param protocolAddress Address of the TapThatX Protocol contract
+    constructor(address poolAddress, address protocolAddress) {
+        if (poolAddress == address(0) || protocolAddress == address(0)) revert InvalidAddress();
         POOL = IPool(poolAddress);
+        TAPTHATX_PROTOCOL = protocolAddress;
     }
 
     /// @notice Calculate optimal flash loan amount to reach target health factor
@@ -123,6 +130,9 @@ contract TapThatXAaveRebalancer is ReentrancyGuard {
     /// @param owner The position owner (must have approved aToken spending)
     /// @param config Rebalancing parameters
     function executeRebalance(address owner, RebalanceConfig calldata config) external nonReentrant {
+        // Access control: only protocol or position owner can execute
+        if (msg.sender != TAPTHATX_PROTOCOL && msg.sender != owner) revert Unauthorized();
+
         if (owner == address(0)) revert InvalidAddress();
         if (config.collateralAsset == address(0) || config.debtAsset == address(0)) revert InvalidAddress();
 

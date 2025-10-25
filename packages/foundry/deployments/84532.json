@@ -1,9 +1,9 @@
 {
-  "0x4FF1727F867F805434fBD743bBdDf6f89a482aC6": "TapThatXAavePositionCloser",
-  "0x8F31304e90f4dC6EbD7eEEBf02CC2c73f267C4FB": "TapThatXRegistry",
-  "0xD7413eeaEB3E6e5EfeffCEBE4CdBaac90f1Ef1cB": "TapThatXProtocol",
-  "0xc1d09aE277eb647213b4b6Cc21640dbF7c06B0ED": "TapThatXAaveRebalancer",
-  "0xcB3517E91a74a19A3Dc61407981A465c345C3a9A": "TapThatXExecutor",
-  "0xf8520A1c705C3E05f181572429c67E13aC5F9f6d": "TapThatXConfiguration",
+  "0x0275bfd8680570a91A4d405393604572C65C4237": "TapThatXProtocol",
+  "0x9aF4811f8e68057eAF2b2b15181C25A0532C5A94": "TapThatXExecutor",
+  "0xBFf2A5227022087023e8aE45b76A417a2C3F0b18": "TapThatXAaveRebalancer",
+  "0xE0CC4c2e6667add7AEf8f38C744e791f2825B14b": "TapThatXConfiguration",
+  "0xa33488F23E58AE7f2C6979F1c4403338900e7C63": "TapThatXRegistry",
+  "0xc200711Ebf43131E1d00fCdB724F1799E1Bc9158": "TapThatXAavePositionCloser",
   "networkName": "base-sepolia"
 }
