@@ -36,8 +36,6 @@ contract Deploy is ScaffoldETHDeploy {
 
     function run() external ScaffoldEthDeployerRunner {
 
-       
-
         // Deploy TapThatXRegistry
         TapThatXRegistry registry = new TapThatXRegistry();
         console.log("TapThatXRegistry deployed at:", address(registry));
