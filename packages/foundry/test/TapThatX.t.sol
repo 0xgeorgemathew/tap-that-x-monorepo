@@ -31,7 +31,7 @@ contract TapThatXTest is Test {
         configuration = new TapThatXConfiguration(address(registry));
         executor = new TapThatXExecutor(address(protocol), address(configuration));
         usdc = new MockUSDC();
-        usdcPayment = new USDCTapPayment(address(usdc), address(protocol), address(registry));
+        usdcPayment = new USDCTapPayment(address(usdc), address(protocol));
 
         // Fund test accounts
         usdc.transfer(owner, 10000 * 10 ** 6); // 10k USDC

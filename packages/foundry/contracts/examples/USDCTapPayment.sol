@@ -4,7 +4,6 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "../core/TapThatXProtocol.sol";
-import "../core/TapThatXRegistry.sol";
 
 /// @title USDCTapPayment
 /// @notice Example implementation showing how to use Tap That X protocol for USDC payments
@@ -12,20 +11,17 @@ import "../core/TapThatXRegistry.sol";
 contract USDCTapPayment is ReentrancyGuard {
     IERC20 public immutable usdc;
     TapThatXProtocol public immutable protocol;
-    TapThatXRegistry public immutable registry;
 
     event TapPaymentExecuted(
-        address indexed owner,  bytes32 nonce
+        address indexed owner, bytes32 nonce
     );
 
-    constructor(address _usdc, address _protocol, address _registry) {
+    constructor(address _usdc, address _protocol) {
         require(_usdc != address(0), "Invalid USDC address");
         require(_protocol != address(0), "Invalid protocol address");
-        require(_registry != address(0), "Invalid registry address");
 
         usdc = IERC20(_usdc);
         protocol = TapThatXProtocol(payable(_protocol));
-        registry = TapThatXRegistry(_registry);
     }
 
     /// @notice Execute USDC payment using pre-approved allowance
@@ -58,9 +54,7 @@ contract USDCTapPayment is ReentrancyGuard {
 
         require(success, "Protocol execution failed");
 
-       
-
-        emit TapPaymentExecuted(owner,nonce);
+        emit TapPaymentExecuted(owner, nonce);
     }
 
     /// @notice Helper to check if owner has approved sufficient USDC

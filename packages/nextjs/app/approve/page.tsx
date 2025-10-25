@@ -11,10 +11,13 @@ interface TokenApprovalStatus {
   tokenAddress: string;
   tokenSymbol: string;
   tokenDecimals: number;
+  spenderAddress: string;
+  spenderName: string;
   currentAllowance: bigint;
   isApproved: boolean;
   isUnlimited: boolean;
   isLoading: boolean;
+  actionType: "erc20-transfer" | "aave-rebalance" | "unknown";
 }
 
 export default function ApprovePage() {
@@ -31,6 +34,10 @@ export default function ApprovePage() {
 
   const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
   const PROTOCOL_ADDRESS = contracts?.TapThatXProtocol?.address;
+  const REBALANCER_ADDRESS = contracts?.TapThatXAaveRebalancer?.address;
+
+  // Hardcoded Base Sepolia WETH address
+  const WETH = "0x4200000000000000000000000000000000000006";
 
   // Detect tokens from user configurations and check approval status
   useEffect(() => {
@@ -48,9 +55,14 @@ export default function ApprovePage() {
           args: [address],
         })) as string[];
 
-        const tokensSet = new Set<string>();
+        const approvalsList: Array<{
+          tokenAddress: string;
+          spenderAddress: string;
+          spenderName: string;
+          actionType: "erc20-transfer" | "aave-rebalance" | "unknown";
+        }> = [];
 
-        // For each chip, get configuration and extract token address
+        // For each chip, get configuration and determine approval requirements
         for (const chip of chips) {
           const config = (await publicClient.readContract({
             address: contracts.TapThatXConfiguration.address,
@@ -61,75 +73,138 @@ export default function ApprovePage() {
 
           // Check if config exists (target contract is not zero address)
           if (config.targetContract !== "0x0000000000000000000000000000000000000000") {
-            // For ERC20 transfers, targetContract IS the token address
-            tokensSet.add(config.targetContract);
+            // Check if targetContract is the Aave Rebalancer
+            if (REBALANCER_ADDRESS && config.targetContract.toLowerCase() === REBALANCER_ADDRESS.toLowerCase()) {
+              // This is an Aave rebalance action - need to approve aWETH to rebalancer
+              approvalsList.push({
+                tokenAddress: "", // Will be fetched from rebalancer
+                spenderAddress: REBALANCER_ADDRESS,
+                spenderName: "Aave Rebalancer",
+                actionType: "aave-rebalance",
+              });
+            } else {
+              // This is an ERC20 transfer - need to approve token to protocol
+              approvalsList.push({
+                tokenAddress: config.targetContract,
+                spenderAddress: PROTOCOL_ADDRESS,
+                spenderName: "TapThatX Protocol",
+                actionType: "erc20-transfer",
+              });
+            }
           }
         }
 
-        setDetectedTokens(tokensSet);
+        // Remove duplicates based on tokenAddress + spenderAddress combination
+        const uniqueApprovals = approvalsList.filter(
+          (approval, index, self) =>
+            index ===
+            self.findIndex(
+              a =>
+                a.tokenAddress.toLowerCase() === approval.tokenAddress.toLowerCase() &&
+                a.spenderAddress.toLowerCase() === approval.spenderAddress.toLowerCase(),
+            ),
+        );
 
-        // Fetch approval status for each detected token
+        setDetectedTokens(new Set(uniqueApprovals.map(a => a.tokenAddress || a.spenderAddress)));
+
+        // Fetch approval status for each approval requirement
         const approvals: TokenApprovalStatus[] = [];
-        for (const tokenAddress of tokensSet) {
+        for (const approval of uniqueApprovals) {
           try {
+            let tokenAddress = approval.tokenAddress;
+            let tokenSymbol = "Unknown";
+            let tokenDecimals = 18;
+
+            // If Aave rebalance, fetch aWETH address from rebalancer
+            if (approval.actionType === "aave-rebalance") {
+              tokenAddress = (await publicClient.readContract({
+                address: approval.spenderAddress as `0x${string}`,
+                abi: [
+                  {
+                    name: "getATokenAddress",
+                    type: "function",
+                    stateMutability: "view",
+                    inputs: [{ name: "collateralAsset", type: "address" }],
+                    outputs: [{ name: "aTokenAddress", type: "address" }],
+                  },
+                ],
+                functionName: "getATokenAddress",
+                args: [WETH as `0x${string}`],
+              })) as string;
+            }
+
             // Fetch allowance
             const allowance = (await publicClient.readContract({
               address: tokenAddress as `0x${string}`,
               abi: contracts.MockUSDC.abi, // Generic ERC20 ABI
               functionName: "allowance",
-              args: [address, PROTOCOL_ADDRESS],
+              args: [address, approval.spenderAddress],
             })) as bigint;
 
             // Fetch token symbol
-            const symbol = (await publicClient.readContract({
-              address: tokenAddress as `0x${string}`,
-              abi: [
-                {
-                  name: "symbol",
-                  type: "function",
-                  stateMutability: "view",
-                  inputs: [],
-                  outputs: [{ name: "", type: "string" }],
-                },
-              ],
-              functionName: "symbol",
-            })) as string;
+            try {
+              tokenSymbol = (await publicClient.readContract({
+                address: tokenAddress as `0x${string}`,
+                abi: [
+                  {
+                    name: "symbol",
+                    type: "function",
+                    stateMutability: "view",
+                    inputs: [],
+                    outputs: [{ name: "", type: "string" }],
+                  },
+                ],
+                functionName: "symbol",
+              })) as string;
+            } catch {
+              tokenSymbol = approval.actionType === "aave-rebalance" ? "aWETH" : "Unknown";
+            }
 
             // Fetch token decimals
-            const decimals = (await publicClient.readContract({
-              address: tokenAddress as `0x${string}`,
-              abi: [
-                {
-                  name: "decimals",
-                  type: "function",
-                  stateMutability: "view",
-                  inputs: [],
-                  outputs: [{ name: "", type: "uint8" }],
-                },
-              ],
-              functionName: "decimals",
-            })) as number;
+            try {
+              tokenDecimals = (await publicClient.readContract({
+                address: tokenAddress as `0x${string}`,
+                abi: [
+                  {
+                    name: "decimals",
+                    type: "function",
+                    stateMutability: "view",
+                    inputs: [],
+                    outputs: [{ name: "", type: "uint8" }],
+                  },
+                ],
+                functionName: "decimals",
+              })) as number;
+            } catch {
+              tokenDecimals = 18;
+            }
 
             approvals.push({
               tokenAddress,
-              tokenSymbol: symbol,
-              tokenDecimals: decimals,
+              tokenSymbol,
+              tokenDecimals,
+              spenderAddress: approval.spenderAddress,
+              spenderName: approval.spenderName,
               currentAllowance: allowance,
               isApproved: allowance > 0n,
               isUnlimited: allowance === maxUint256,
               isLoading: false,
+              actionType: approval.actionType,
             });
           } catch (err) {
-            console.error(`Failed to fetch data for token ${tokenAddress}:`, err);
-            // Add with default values if token data fetch fails
+            console.error(`Failed to fetch approval data:`, err);
+            // Add with default values if fetch fails
             approvals.push({
-              tokenAddress,
+              tokenAddress: approval.tokenAddress,
               tokenSymbol: "Unknown",
               tokenDecimals: 18,
+              spenderAddress: approval.spenderAddress,
+              spenderName: approval.spenderName,
               currentAllowance: 0n,
               isApproved: false,
               isUnlimited: false,
               isLoading: false,
+              actionType: approval.actionType,
             });
           }
         }
@@ -144,13 +219,17 @@ export default function ApprovePage() {
     };
 
     detectConfiguredTokens();
-  }, [address, publicClient, contracts, PROTOCOL_ADDRESS]);
+  }, [address, publicClient, contracts, PROTOCOL_ADDRESS, REBALANCER_ADDRESS]);
 
-  const handleApproveToken = async (tokenAddress: string) => {
-    if (!address || !PROTOCOL_ADDRESS) return;
+  const handleApproveToken = async (tokenAddress: string, spenderAddress: string) => {
+    if (!address) return;
 
     try {
-      setTokenApprovals(prev => prev.map(t => (t.tokenAddress === tokenAddress ? { ...t, isLoading: true } : t)));
+      setTokenApprovals(prev =>
+        prev.map(t =>
+          t.tokenAddress === tokenAddress && t.spenderAddress === spenderAddress ? { ...t, isLoading: true } : t,
+        ),
+      );
       setError("");
       setStatusMessage("Please confirm approval in your wallet...");
 
@@ -159,7 +238,7 @@ export default function ApprovePage() {
           address: tokenAddress as `0x${string}`,
           abi: contracts.MockUSDC.abi,
           functionName: "approve",
-          args: [PROTOCOL_ADDRESS, maxUint256],
+          args: [spenderAddress as `0x${string}`, maxUint256],
         },
         {
           onSuccess: () => {
@@ -168,7 +247,7 @@ export default function ApprovePage() {
             setTimeout(() => {
               setTokenApprovals(prev =>
                 prev.map(t =>
-                  t.tokenAddress === tokenAddress
+                  t.tokenAddress === tokenAddress && t.spenderAddress === spenderAddress
                     ? { ...t, isApproved: true, isUnlimited: true, currentAllowance: maxUint256, isLoading: false }
                     : t,
                 ),
@@ -179,7 +258,9 @@ export default function ApprovePage() {
             setError(`Approval failed: ${err.message}`);
             setStatusMessage("");
             setTokenApprovals(prev =>
-              prev.map(t => (t.tokenAddress === tokenAddress ? { ...t, isLoading: false } : t)),
+              prev.map(t =>
+                t.tokenAddress === tokenAddress && t.spenderAddress === spenderAddress ? { ...t, isLoading: false } : t,
+              ),
             );
           },
         },
@@ -187,15 +268,23 @@ export default function ApprovePage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to approve");
       setStatusMessage("");
-      setTokenApprovals(prev => prev.map(t => (t.tokenAddress === tokenAddress ? { ...t, isLoading: false } : t)));
+      setTokenApprovals(prev =>
+        prev.map(t =>
+          t.tokenAddress === tokenAddress && t.spenderAddress === spenderAddress ? { ...t, isLoading: false } : t,
+        ),
+      );
     }
   };
 
-  const handleRevokeToken = async (tokenAddress: string) => {
-    if (!address || !PROTOCOL_ADDRESS) return;
+  const handleRevokeToken = async (tokenAddress: string, spenderAddress: string) => {
+    if (!address) return;
 
     try {
-      setTokenApprovals(prev => prev.map(t => (t.tokenAddress === tokenAddress ? { ...t, isLoading: true } : t)));
+      setTokenApprovals(prev =>
+        prev.map(t =>
+          t.tokenAddress === tokenAddress && t.spenderAddress === spenderAddress ? { ...t, isLoading: true } : t,
+        ),
+      );
       setError("");
       setStatusMessage("Please confirm revocation in your wallet...");
 
@@ -204,7 +293,7 @@ export default function ApprovePage() {
           address: tokenAddress as `0x${string}`,
           abi: contracts.MockUSDC.abi,
           functionName: "approve",
-          args: [PROTOCOL_ADDRESS, 0n],
+          args: [spenderAddress as `0x${string}`, 0n],
         },
         {
           onSuccess: () => {
@@ -212,7 +301,7 @@ export default function ApprovePage() {
             setTimeout(() => {
               setTokenApprovals(prev =>
                 prev.map(t =>
-                  t.tokenAddress === tokenAddress
+                  t.tokenAddress === tokenAddress && t.spenderAddress === spenderAddress
                     ? { ...t, isApproved: false, isUnlimited: false, currentAllowance: 0n, isLoading: false }
                     : t,
                 ),
@@ -223,7 +312,9 @@ export default function ApprovePage() {
             setError(`Revocation failed: ${err.message}`);
             setStatusMessage("");
             setTokenApprovals(prev =>
-              prev.map(t => (t.tokenAddress === tokenAddress ? { ...t, isLoading: false } : t)),
+              prev.map(t =>
+                t.tokenAddress === tokenAddress && t.spenderAddress === spenderAddress ? { ...t, isLoading: false } : t,
+              ),
             );
           },
         },
@@ -231,7 +322,11 @@ export default function ApprovePage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to revoke");
       setStatusMessage("");
-      setTokenApprovals(prev => prev.map(t => (t.tokenAddress === tokenAddress ? { ...t, isLoading: false } : t)));
+      setTokenApprovals(prev =>
+        prev.map(t =>
+          t.tokenAddress === tokenAddress && t.spenderAddress === spenderAddress ? { ...t, isLoading: false } : t,
+        ),
+      );
     }
   };
 
@@ -307,7 +402,7 @@ export default function ApprovePage() {
 
               {tokenApprovals.map(token => (
                 <div
-                  key={token.tokenAddress}
+                  key={`${token.tokenAddress}-${token.spenderAddress}`}
                   className={`token-pill ${token.isApproved ? "token-pill-approved" : "token-pill-pending"}`}
                 >
                   {/* Token Icon */}
@@ -334,6 +429,7 @@ export default function ApprovePage() {
                     <p className="token-pill-address">
                       {token.tokenAddress.slice(0, 10)}...{token.tokenAddress.slice(-8)}
                     </p>
+                    <p className="text-xs text-base-content/60 mt-1">Spender: {token.spenderName}</p>
                     {token.isApproved && !token.isUnlimited && (
                       <p className="text-xs text-base-content/50 mt-1">
                         Allowance: {formatUnits(token.currentAllowance, token.tokenDecimals)} {token.tokenSymbol}
@@ -345,7 +441,7 @@ export default function ApprovePage() {
                   <div className="flex flex-col gap-2">
                     {!token.isApproved ? (
                       <button
-                        onClick={() => handleApproveToken(token.tokenAddress)}
+                        onClick={() => handleApproveToken(token.tokenAddress, token.spenderAddress)}
                         disabled={token.isLoading || isPending}
                         className="token-pill-action"
                       >
@@ -360,7 +456,7 @@ export default function ApprovePage() {
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleRevokeToken(token.tokenAddress)}
+                        onClick={() => handleRevokeToken(token.tokenAddress, token.spenderAddress)}
                         disabled={token.isLoading || isPending}
                         className="token-pill-action token-pill-action-danger"
                       >
@@ -384,8 +480,8 @@ export default function ApprovePage() {
           {tokenApprovals.length > 0 && (
             <div className="mt-4 p-3 rounded-lg bg-base-200/30 border border-base-300/30">
               <p className="text-xs text-base-content/60 leading-relaxed">
-                💡 Approvals allow TapThatXProtocol to transfer tokens on your behalf when you execute taps. You can
-                revoke approvals anytime.
+                💡 Approvals allow the specified contracts to transfer tokens on your behalf when you execute taps. Each
+                action type may require different approvals. You can revoke approvals anytime.
               </p>
             </div>
           )}

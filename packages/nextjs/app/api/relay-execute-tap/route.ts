@@ -46,7 +46,27 @@ export async function POST(req: NextRequest) {
       transport: http(rpcUrl),
     }).extend(publicActions);
 
-    // Call executeTap on TapThatXExecutor
+    // Detect if this is an Aave rebalancer action by checking the target contract
+    const config = await client.readContract({
+      address: contracts.TapThatXConfiguration.address,
+      abi: contracts.TapThatXConfiguration.abi,
+      functionName: "getConfiguration",
+      args: [owner as `0x${string}`, chip as `0x${string}`],
+    });
+
+    // Check if target is Aave rebalancer (needs much more gas due to flash loan complexity)
+    // Flash loan operations are extremely gas-intensive:
+    // - Flash loan callback execution
+    // - Aave debt repayment + interest calculations
+    // - aToken withdrawal and burning
+    // - Uniswap V2 swap (multiple token transfers)
+    // - Flash loan repayment
+    // Default estimation often underestimates, causing OutOfGas errors during swap
+    const isAaveRebalancer =
+      contracts.TapThatXAaveRebalancer &&
+      (config as any).targetContract?.toLowerCase() === contracts.TapThatXAaveRebalancer.address?.toLowerCase();
+
+    // Call executeTap on TapThatXExecutor with appropriate gas limit
     const hash = await client.writeContract({
       address: contracts.TapThatXExecutor.address,
       abi: contracts.TapThatXExecutor.abi,
@@ -58,6 +78,7 @@ export async function POST(req: NextRequest) {
         BigInt(timestamp),
         nonce as `0x${string}`, // bytes32
       ],
+      gas: isAaveRebalancer ? BigInt(1_500_000) : undefined, // 1.5M gas for Aave, auto for others
     });
 
     // Wait for transaction receipt
