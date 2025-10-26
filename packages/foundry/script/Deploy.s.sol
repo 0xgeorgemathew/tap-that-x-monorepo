@@ -11,27 +11,30 @@ import { USDCTapPayment } from "../contracts/examples/USDCTapPayment.sol";
 import { TapThatXAaveRebalancer } from "../contracts/extensions/TapThatXAaveRebalancer.sol";
 import { TapThatXAavePositionCloser } from "../contracts/extensions/TapThatXAavePositionCloser.sol";
 import { TapThatXBridgeETHViaWETH } from "../contracts/extensions/TapThatXBridgeETHViaWETH.sol";
+import { TapThatXPaymentTerminal } from "../contracts/extensions/TapThatXPaymentTerminal.sol";
 
 /**
  * @notice Chain-specific deploy script for Tap That X Protocol
- * @dev Supports Sepolia (bridge testing) and Base Sepolia (full features)
+ * @dev Supports Sepolia (bridge testing + PYUSD) and Base Sepolia (full features)
  *
- * Sepolia (11155111) - Bridge Testing ONLY:
+ * Sepolia (11155111):
  *   1. TapThatXRegistry - Chip registration and ownership
  *   2. TapThatXProtocol - Generic chip-authorized execution engine
  *   3. TapThatXConfiguration - Store action configurations per chip
  *   4. TapThatXExecutor - Execute pre-configured tap actions
- *   5. TapThatXBridgeETHViaWETH - Bridge ETH via WETH to OP + Base Sepolia
+ *   5. TapThatXPaymentTerminal - Payment terminal with PYUSD (0xcac524bca292aaade2df8a05cc58f0a65b1b3bb9)
+ *   6. TapThatXBridgeETHViaWETH - Bridge ETH via WETH to OP + Base Sepolia
  *
- * Base Sepolia (84532) - All Features (except bridge):
+ * Base Sepolia (84532):
  *   1-4. Core contracts (same as above)
  *   5. MockUSDC - Test USDC for ERC20 transfers
- *   6. TapThatXAaveRebalancer - Aave position rebalancer
- *   7. TapThatXAavePositionCloser - Aave position closer
+ *   6. TapThatXPaymentTerminal - Payment terminal with MockUSDC
+ *   7. TapThatXAaveRebalancer - Aave position rebalancer
+ *   8. TapThatXAavePositionCloser - Aave position closer
  *
  * Usage:
- *   forge script script/Deploy.s.sol --rpc-url sepolia --broadcast      # Sepolia (bridge only)
- *   forge script script/Deploy.s.sol --rpc-url base-sepolia --broadcast # Base Sepolia (full)
+ *   forge script script/Deploy.s.sol --rpc-url sepolia --broadcast      # Sepolia
+ *   forge script script/Deploy.s.sol --rpc-url base-sepolia --broadcast # Base Sepolia
  */
 contract Deploy is ScaffoldETHDeploy {
     // Production USDC addresses for mainnet chains
@@ -71,6 +74,19 @@ contract Deploy is ScaffoldETHDeploy {
 
         // Register deployment for frontend
         deployments.push(Deployment({ name: "TapThatXExecutor", addr: address(executor) }));
+
+        // Deploy TapThatXPaymentTerminal (both chains)
+        TapThatXPaymentTerminal paymentTerminal = new TapThatXPaymentTerminal(address(registry), address(protocol));
+        console.log("TapThatXPaymentTerminal deployed at:", address(paymentTerminal));
+        deployments.push(Deployment({ name: "TapThatXPaymentTerminal", addr: address(paymentTerminal) }));
+
+        // Reference PYUSD token for Sepolia
+        if (block.chainid == 11155111) {
+            // PYUSD on Sepolia (6 decimals)
+            address PYUSD_SEPOLIA = 0xCaC524BcA292aaade2DF8A05cC58F0a65B1B3bB9;
+            console.log("PYUSD (Sepolia) at:", PYUSD_SEPOLIA);
+            deployments.push(Deployment({ name: "PyUSD", addr: PYUSD_SEPOLIA }));
+        }
 
         // Deploy TapThatXBridgeETHViaWETH (Sepolia only - for bridging to OP + Base)
         if (block.chainid == 11155111) {
@@ -117,6 +133,10 @@ contract Deploy is ScaffoldETHDeploy {
         console.log("TapThatXProtocol:", address(protocol));
         console.log("TapThatXConfiguration:", address(configuration));
         console.log("TapThatXExecutor:", address(executor));
+        console.log("TapThatXPaymentTerminal:", address(paymentTerminal));
+        if (block.chainid == 11155111) {
+            console.log("PYUSD (Sepolia):", 0xCaC524BcA292aaade2DF8A05cC58F0a65B1B3bB9);
+        }
         console.log("\nNext: yarn verify --network <network>");
     }
 }

@@ -31,6 +31,8 @@ const scaffoldConfig = {
   // If you want to use a different RPC for a specific network, you can add it here.
   // The key is the chain ID, and the value is the HTTP RPC URL
   rpcOverrides: {
+    [chains.sepolia.id]:
+      "https://small-radial-replica.ethereum-sepolia.quiknode.pro/47ca53cab2d39a5fabf79a2e1f421f4c15c6de80/",
     // Example:
     // [chains.mainnet.id]: "https://mainnet.rpc.buidlguidl.com",
   },

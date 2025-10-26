@@ -2733,7 +2733,7 @@ const deployedContracts = {
   },
   11155111: {
     TapThatXRegistry: {
-      address: "0x74751f1c4d8536612c60b1ad2e6d0ef9432310b6",
+      address: "0xb44048b72f1e6eb511f1970e98f7ac3e2502e2d4",
       abi: [
         {
           type: "constructor",
@@ -3062,10 +3062,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9491071,
+      deployedOnBlock: 9495082,
     },
     TapThatXProtocol: {
-      address: "0xf2880c8319003dd2fe6d8bf814e57600b15a6fc0",
+      address: "0x9401d9b4388a8ee42f9255b009d9cab5cc325e70",
       abi: [
         {
           type: "constructor",
@@ -3417,10 +3417,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9491072,
+      deployedOnBlock: 9495082,
     },
     TapThatXConfiguration: {
-      address: "0x4c52089bec29102c3eea4da12406fed707a1541d",
+      address: "0x6dc59b9a013bdda49459a57fab54bdde5745fbdb",
       abi: [
         {
           type: "constructor",
@@ -3701,10 +3701,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9491072,
+      deployedOnBlock: 9495082,
     },
     TapThatXExecutor: {
-      address: "0x61fa6dcd53e2b3eed1461a5cc5853232f559f582",
+      address: "0x889c085f3294cd8381fcd16c41eab99e96f7fb60",
       abi: [
         {
           type: "constructor",
@@ -3917,10 +3917,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9491072,
+      deployedOnBlock: 9495082,
     },
     TapThatXBridgeETHViaWETH: {
-      address: "0xe261c6c9abe4c9b14630d85a092f0a9484631182",
+      address: "0xfe4f58a325fe8dc6952b2ee286910c439378ff27",
       abi: [
         {
           type: "constructor",
@@ -4066,7 +4066,386 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9491072,
+      deployedOnBlock: 9495082,
+    },
+    TapThatXPaymentTerminal: {
+      address: "0xfdc0967d0433b9238db5bb511ccbbbc6cc63a74f",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "_registry",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_protocol",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "MAX_TIMESTAMP_WINDOW",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "eip712Domain",
+          inputs: [],
+          outputs: [
+            {
+              name: "fields",
+              type: "bytes1",
+              internalType: "bytes1",
+            },
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "version",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "chainId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "verifyingContract",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "extensions",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "executePayment",
+          inputs: [
+            {
+              name: "auth",
+              type: "tuple",
+              internalType: "struct TapThatXPaymentTerminal.PaymentAuthorization",
+              components: [
+                {
+                  name: "payer",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "payerChip",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "payee",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "payeeChip",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "token",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "amount",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "timestamp",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "nonce",
+                  type: "bytes32",
+                  internalType: "bytes32",
+                },
+              ],
+            },
+            {
+              name: "payerSignature",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getChainAgnosticDomainSeparator",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "protocol",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract TapThatXProtocol",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "registry",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract TapThatXRegistry",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "usedNonces",
+          inputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "verifyPaymentAuth",
+          inputs: [
+            {
+              name: "auth",
+              type: "tuple",
+              internalType: "struct TapThatXPaymentTerminal.PaymentAuthorization",
+              components: [
+                {
+                  name: "payer",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "payerChip",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "payee",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "payeeChip",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "token",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "amount",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "timestamp",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "nonce",
+                  type: "bytes32",
+                  internalType: "bytes32",
+                },
+              ],
+            },
+            {
+              name: "signature",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "EIP712DomainChanged",
+          inputs: [],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "NonceUsed",
+          inputs: [
+            {
+              name: "nonce",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PaymentExecuted",
+          inputs: [
+            {
+              name: "payer",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "payerChip",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "payee",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "payeeChip",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "token",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "nonce",
+              type: "bytes32",
+              indexed: false,
+              internalType: "bytes32",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "ECDSAInvalidSignature",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "ECDSAInvalidSignatureLength",
+          inputs: [
+            {
+              name: "length",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "ECDSAInvalidSignatureS",
+          inputs: [
+            {
+              name: "s",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "InvalidShortString",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "ReentrancyGuardReentrantCall",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "StringTooLong",
+          inputs: [
+            {
+              name: "str",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 9495082,
     },
   },
 } as const;
