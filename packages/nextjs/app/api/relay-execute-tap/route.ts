@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createWalletClient, http, publicActions } from "viem";
+import { createWalletClient, formatEther, http, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import * as chains from "viem/chains";
 import deployedContracts from "~~/contracts/deployedContracts";
@@ -13,7 +13,7 @@ const RELAYER_PRIVATE_KEY = process.env.RELAYER_PRIVATE_KEY;
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { owner, chip, chipSignature, timestamp, nonce, chainId } = body;
+    const { owner, chip, chipSignature, timestamp, nonce, chainId, value } = body;
 
     // Validate inputs
     if (!owner || !chip || !chipSignature || !timestamp || !nonce || !chainId) {
@@ -66,6 +66,32 @@ export async function POST(req: NextRequest) {
       contracts.TapThatXAaveRebalancer &&
       (config as any).targetContract?.toLowerCase() === contracts.TapThatXAaveRebalancer.address?.toLowerCase();
 
+    // Check if target is bridge extension (dual bridge operations need high gas)
+    // Bridge extension operations are gas-intensive due to:
+    // - WETH.transferFrom + withdraw
+    // - Two L1StandardBridge.bridgeETHTo calls (OP + Base)
+    // - Multiple EVM state changes across cross-chain messaging
+    const isBridgeExtension =
+      contracts.TapThatXBridgeETHViaWETH &&
+      (config as any).targetContract?.toLowerCase() === contracts.TapThatXBridgeETHViaWETH.address?.toLowerCase();
+
+    // Check relayer balance if value is being sent
+    const valueToSend = value ? BigInt(value) : 0n;
+    if (valueToSend > 0n) {
+      const balance = await client.getBalance({ address: account.address });
+      const estimatedGas = BigInt(1_500_000) * (await client.getGasPrice());
+      const totalNeeded = valueToSend + estimatedGas;
+
+      if (balance < totalNeeded) {
+        return NextResponse.json(
+          {
+            error: `Insufficient relayer balance. Need ${formatEther(totalNeeded)} ETH (${formatEther(valueToSend)} bridge + ${formatEther(estimatedGas)} gas), have ${formatEther(balance)} ETH`,
+          },
+          { status: 500 },
+        );
+      }
+    }
+
     // Call executeTap on TapThatXExecutor with appropriate gas limit
     const hash = await client.writeContract({
       address: contracts.TapThatXExecutor.address,
@@ -78,7 +104,12 @@ export async function POST(req: NextRequest) {
         BigInt(timestamp),
         nonce as `0x${string}`, // bytes32
       ],
-      gas: isAaveRebalancer ? BigInt(1_500_000) : undefined, // 1.5M gas for Aave, auto for others
+      value: valueToSend, // Will be 0n for bridge extension (WETH is pulled, not ETH sent)
+      gas: isAaveRebalancer
+        ? BigInt(1_500_000) // 1.5M gas for Aave flash loans
+        : isBridgeExtension
+          ? BigInt(3_000_000) // 3M gas for dual bridge operations (OP bridge: ~913k, Base bridge: ~650k, safety margin)
+          : undefined, // Auto-estimate for others
     });
 
     // Wait for transaction receipt

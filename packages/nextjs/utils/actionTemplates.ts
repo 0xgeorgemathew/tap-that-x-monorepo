@@ -9,7 +9,7 @@ export interface ActionTemplate {
   name: string;
   description: string;
   category: "payment" | "defi" | "custom";
-  buildCallData: (params: any) => { target: `0x${string}`; callData: `0x${string}` };
+  buildCallData: (params: any) => { target: `0x${string}`; callData: `0x${string}`; value?: bigint };
 }
 
 // ERC20 ABI for common functions
@@ -73,6 +73,7 @@ export const erc20TransferTemplate: ActionTemplate = {
     return {
       target: params.tokenAddress,
       callData,
+      value: 0n,
     };
   },
 };
@@ -103,6 +104,7 @@ export const uniswapSwapTemplate: ActionTemplate = {
     return {
       target: params.routerAddress,
       callData,
+      value: 0n,
     };
   },
 };
@@ -116,10 +118,11 @@ export const customActionTemplate: ActionTemplate = {
   name: "Custom Action",
   description: "Custom contract interaction (advanced)",
   category: "custom",
-  buildCallData: (params: { target: `0x${string}`; callData: `0x${string}` }) => {
+  buildCallData: (params: { target: `0x${string}`; callData: `0x${string}`; value?: bigint }) => {
     return {
       target: params.target,
       callData: params.callData,
+      value: params.value || 0n,
     };
   },
 };
@@ -181,6 +184,54 @@ export const aaveRebalanceTemplate: ActionTemplate = {
     return {
       target: params.rebalancerAddress,
       callData,
+      value: 0n,
+    };
+  },
+};
+
+// TapThatXBridgeETHViaWETH ABI (unwrap WETH and bridge to both OP + Base Sepolia)
+// Automatically bridges maximum available WETH, owner receives on both L2s
+const BRIDGE_ETH_VIA_WETH_ABI = [
+  {
+    name: "unwrapAndBridgeDual",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "minGasLimitOP", type: "uint32" },
+      { name: "minGasLimitBase", type: "uint32" },
+    ],
+    outputs: [],
+  },
+] as const;
+
+/**
+ * Bridge ETH via WETH Template
+ * Unwraps user's WETH and bridges to both Base Sepolia + OP Sepolia (gasless)
+ * Automatically bridges maximum available WETH (minimum of balance and allowance)
+ * User receives ETH on both L2s at the same address
+ */
+export const bridgeETHTemplate: ActionTemplate = {
+  id: "bridge-eth-sepolia-to-l2",
+  name: "Bridge WETH to Base + OP Sepolia",
+  description: "Unwrap and bridge all available WETH to both L2s (gasless)",
+  category: "defi",
+  buildCallData: (params: {
+    bridgeExtensionAddress: `0x${string}`;
+    owner: `0x${string}`;
+    minGasLimitOP?: number;
+    minGasLimitBase?: number;
+  }) => {
+    const callData = encodeFunctionData({
+      abi: BRIDGE_ETH_VIA_WETH_ABI,
+      functionName: "unwrapAndBridgeDual",
+      args: [params.owner, params.minGasLimitOP || 200000, params.minGasLimitBase || 200000],
+    });
+
+    return {
+      target: params.bridgeExtensionAddress,
+      callData,
+      value: 0n, // No ETH sent - WETH is pulled from user via approval!
     };
   },
 };
@@ -192,6 +243,7 @@ export const actionTemplates: ActionTemplate[] = [
   erc20TransferTemplate,
   uniswapSwapTemplate,
   aaveRebalanceTemplate,
+  bridgeETHTemplate,
   customActionTemplate,
 ];
 

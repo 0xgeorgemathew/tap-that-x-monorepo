@@ -9,11 +9,16 @@ export function useGaslessRelay() {
     chipSignature: string;
     timestamp: number;
     nonce: string;
+    value?: bigint;
   }) => {
     const response = await fetch("/api/relay-execute-tap", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...executeData, chainId }),
+      body: JSON.stringify({
+        ...executeData,
+        value: executeData.value?.toString(),
+        chainId,
+      }),
     });
 
     if (!response.ok) {
