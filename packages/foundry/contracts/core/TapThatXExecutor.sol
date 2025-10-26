@@ -43,7 +43,7 @@ contract TapThatXExecutor is ReentrancyGuard {
         bytes memory chipSignature,
         uint256 timestamp,
         bytes32 nonce
-    ) external nonReentrant returns (bool success, bytes memory returnData) {
+    ) external payable nonReentrant returns (bool success, bytes memory returnData) {
         require(owner != address(0), "Invalid owner");
         require(chip != address(0), "Invalid chip");
 
@@ -51,12 +51,13 @@ contract TapThatXExecutor is ReentrancyGuard {
 
         require(config.targetContract != address(0), "No configuration exists");
         require(config.isActive, "Configuration is inactive");
+        require(msg.value >= config.value, "Insufficient ETH sent");
 
-        (success, returnData) = protocol.executeAuthorizedCall(
+        (success, returnData) = protocol.executeAuthorizedCall{value: config.value}(
             owner,
             config.targetContract,
             config.staticCallData,
-            0,
+            config.value,
             chipSignature,
             timestamp,
             nonce

@@ -7,6 +7,30 @@ import { useAccount, useChainId, usePublicClient, useWriteContract } from "wagmi
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
 import deployedContracts from "~~/contracts/deployedContracts";
 
+// Generic ERC20 ABI for cross-chain compatibility
+const ERC20_ABI = [
+  {
+    name: "allowance",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    name: "approve",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+] as const;
+
 interface TokenApprovalStatus {
   tokenAddress: string;
   tokenSymbol: string;
@@ -27,7 +51,6 @@ export default function ApprovePage() {
   const { writeContract, isPending } = useWriteContract();
 
   const [tokenApprovals, setTokenApprovals] = useState<TokenApprovalStatus[]>([]);
-  const [detectedTokens, setDetectedTokens] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -69,12 +92,32 @@ export default function ApprovePage() {
             abi: contracts.TapThatXConfiguration.abi,
             functionName: "getConfiguration",
             args: [address, chip],
-          })) as { targetContract: string; staticCallData: string; description: string; isActive: boolean };
+          })) as {
+            targetContract: string;
+            staticCallData: string;
+            value: bigint;
+            description: string;
+            isActive: boolean;
+          };
 
           // Check if config exists (target contract is not zero address)
           if (config.targetContract !== "0x0000000000000000000000000000000000000000") {
-            // Check if targetContract is the Aave Rebalancer
-            if (REBALANCER_ADDRESS && config.targetContract.toLowerCase() === REBALANCER_ADDRESS.toLowerCase()) {
+            // Check if targetContract is the Bridge Extension
+            const BRIDGE_EXTENSION_ADDRESS = contracts?.TapThatXBridgeETHViaWETH?.address;
+            const WETH_SEPOLIA = "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9";
+
+            if (
+              BRIDGE_EXTENSION_ADDRESS &&
+              config.targetContract.toLowerCase() === BRIDGE_EXTENSION_ADDRESS.toLowerCase()
+            ) {
+              // This is a bridge via WETH action - need to approve WETH to extension
+              approvalsList.push({
+                tokenAddress: WETH_SEPOLIA,
+                spenderAddress: BRIDGE_EXTENSION_ADDRESS,
+                spenderName: "Bridge Extension",
+                actionType: "erc20-transfer",
+              });
+            } else if (REBALANCER_ADDRESS && config.targetContract.toLowerCase() === REBALANCER_ADDRESS.toLowerCase()) {
               // This is an Aave rebalance action - need to approve aWETH to rebalancer
               approvalsList.push({
                 tokenAddress: "", // Will be fetched from rebalancer
@@ -94,6 +137,28 @@ export default function ApprovePage() {
           }
         }
 
+        // Always add WETH → Bridge Extension approval if bridge is deployed
+        const BRIDGE_EXTENSION_ADDRESS = contracts?.TapThatXBridgeETHViaWETH?.address;
+        const WETH_SEPOLIA = "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9";
+
+        if (BRIDGE_EXTENSION_ADDRESS) {
+          // Check if already in list
+          const alreadyHasBridgeApproval = approvalsList.some(
+            a =>
+              a.tokenAddress.toLowerCase() === WETH_SEPOLIA.toLowerCase() &&
+              a.spenderAddress.toLowerCase() === BRIDGE_EXTENSION_ADDRESS.toLowerCase(),
+          );
+
+          if (!alreadyHasBridgeApproval) {
+            approvalsList.push({
+              tokenAddress: WETH_SEPOLIA,
+              spenderAddress: BRIDGE_EXTENSION_ADDRESS,
+              spenderName: "Bridge Extension",
+              actionType: "erc20-transfer",
+            });
+          }
+        }
+
         // Remove duplicates based on tokenAddress + spenderAddress combination
         const uniqueApprovals = approvalsList.filter(
           (approval, index, self) =>
@@ -104,8 +169,6 @@ export default function ApprovePage() {
                 a.spenderAddress.toLowerCase() === approval.spenderAddress.toLowerCase(),
             ),
         );
-
-        setDetectedTokens(new Set(uniqueApprovals.map(a => a.tokenAddress || a.spenderAddress)));
 
         // Fetch approval status for each approval requirement
         const approvals: TokenApprovalStatus[] = [];
@@ -136,7 +199,7 @@ export default function ApprovePage() {
             // Fetch allowance
             const allowance = (await publicClient.readContract({
               address: tokenAddress as `0x${string}`,
-              abi: contracts.MockUSDC.abi, // Generic ERC20 ABI
+              abi: ERC20_ABI,
               functionName: "allowance",
               args: [address, approval.spenderAddress],
             })) as bigint;
@@ -219,7 +282,8 @@ export default function ApprovePage() {
     };
 
     detectConfiguredTokens();
-  }, [address, publicClient, contracts, PROTOCOL_ADDRESS, REBALANCER_ADDRESS]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, chainId, PROTOCOL_ADDRESS, REBALANCER_ADDRESS]);
 
   const handleApproveToken = async (tokenAddress: string, spenderAddress: string) => {
     if (!address) return;
@@ -236,7 +300,7 @@ export default function ApprovePage() {
       writeContract(
         {
           address: tokenAddress as `0x${string}`,
-          abi: contracts.MockUSDC.abi,
+          abi: ERC20_ABI,
           functionName: "approve",
           args: [spenderAddress as `0x${string}`, maxUint256],
         },
@@ -291,7 +355,7 @@ export default function ApprovePage() {
       writeContract(
         {
           address: tokenAddress as `0x${string}`,
-          abi: contracts.MockUSDC.abi,
+          abi: ERC20_ABI,
           functionName: "approve",
           args: [spenderAddress as `0x${string}`, 0n],
         },
@@ -370,19 +434,12 @@ export default function ApprovePage() {
             </div>
           )}
 
-          {/* No Configurations Found */}
-          {!isLoading && address && contracts && detectedTokens.size === 0 && (
+          {/* No Approvals Needed */}
+          {!isLoading && address && contracts && tokenApprovals.length === 0 && (
             <div className="text-center py-8 space-y-3">
-              <AlertCircle className="h-12 w-12 text-base-content/40 mx-auto" />
-              <p className="text-base-content/70 font-medium">No token configurations found</p>
-              <p className="text-xs text-base-content/50">Configure a chip action first to enable approvals</p>
-              <a
-                href="/configure"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary text-sm font-semibold hover:bg-primary/20 transition-all"
-              >
-                <Settings className="h-4 w-4" />
-                Configure Chip
-              </a>
+              <CheckCircle2 className="h-12 w-12 text-success/60 mx-auto" />
+              <p className="text-base-content/70 font-medium">No approvals needed</p>
+              <p className="text-xs text-base-content/50">All configured tokens are already approved</p>
             </div>
           )}
 
@@ -505,6 +562,25 @@ export default function ApprovePage() {
             <div className="mt-4 glass-alert-error">
               <AlertCircle className="h-5 w-5 text-error" />
               <span className="text-sm font-semibold text-base-content">{error}</span>
+            </div>
+          )}
+
+          {/* Info Note - Wrap ETH Alert */}
+          {tokenApprovals.some(t => t.tokenSymbol === "WETH") && (
+            <div className="mt-4 p-3 rounded-lg bg-info/10 border border-info/30">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-info flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-base-content">Wrap ETH First</p>
+                  <p className="text-xs text-base-content/70 mt-1">
+                    Before approving WETH, you must wrap your ETH. This enables bridging to BOTH OP Sepolia and Base
+                    Sepolia.
+                  </p>
+                  <p className="text-xs text-base-content/50 mt-1 font-mono">
+                    WETH Sepolia: 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 

@@ -12,6 +12,7 @@ contract TapThatXConfiguration {
     struct ActionConfig {
         address targetContract;
         bytes staticCallData;
+        uint256 value;
         string description;
         bool isActive;
     }
@@ -33,11 +34,13 @@ contract TapThatXConfiguration {
     /// @param chip The chip address to configure
     /// @param targetContract The contract address to call on tap
     /// @param staticCallData Pre-encoded function call data
+    /// @param value ETH value to send with the call
     /// @param description Human-readable description of the action
     function setConfiguration(
         address chip,
         address targetContract,
         bytes calldata staticCallData,
+        uint256 value,
         string calldata description
     ) external {
         require(chip != address(0), "Invalid chip address");
@@ -48,6 +51,7 @@ contract TapThatXConfiguration {
         configurations[msg.sender][chip] = ActionConfig({
             targetContract: targetContract,
             staticCallData: staticCallData,
+            value: value,
             description: description,
             isActive: true
         });

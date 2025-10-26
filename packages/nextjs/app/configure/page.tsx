@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Settings, Wallet } from "lucide-react";
+import { parseEther } from "viem";
 import { useAccount, useChainId, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
 import deployedContracts from "~~/contracts/deployedContracts";
@@ -41,6 +42,10 @@ export default function ConfigurePage() {
   // Form fields for Aave Rebalancer
   const [targetHealthFactor, setTargetHealthFactor] = useState<string>("1.5");
   const [maxSlippage, setMaxSlippage] = useState<string>("100"); // 100 basis points = 1%
+
+  // Form fields for Bridge ETH
+  // const [bridgeRecipient, setBridgeRecipient] = useState<string>("");
+  const [isWrapping, setIsWrapping] = useState<boolean>(false);
 
   const contracts = deployedContracts[chainId as keyof typeof deployedContracts] as any;
   const registryAddress = contracts?.TapThatXRegistry?.address;
@@ -115,6 +120,35 @@ export default function ConfigurePage() {
     }
   }, [isConfirmed, refetchConfig]);
 
+  const handleWrapETH = () => {
+    if (!address) return;
+
+    const WETH_SEPOLIA = "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9";
+    const WETH_ABI = [
+      {
+        name: "deposit",
+        type: "function",
+        stateMutability: "payable",
+        inputs: [],
+        outputs: [],
+      },
+    ] as const;
+
+    setIsWrapping(true);
+    writeContract(
+      {
+        address: WETH_SEPOLIA,
+        abi: WETH_ABI,
+        functionName: "deposit",
+        value: parseEther("0.04"),
+      },
+      {
+        onSuccess: () => setIsWrapping(false),
+        onError: () => setIsWrapping(false),
+      },
+    );
+  };
+
   const handleSaveConfiguration = async () => {
     if (!address) {
       setStatusMessage("Please connect your wallet first");
@@ -182,6 +216,20 @@ export default function ConfigurePage() {
           targetHealthFactor: targetHealthFactorBigInt,
           maxSlippage: maxSlippageBigInt,
         });
+      } else if (template.id === "bridge-eth-sepolia-to-l2") {
+        const bridgeExtensionAddress = contracts?.TapThatXBridgeETHViaWETH?.address;
+
+        if (!bridgeExtensionAddress) {
+          throw new Error("Bridge extension not deployed on this network (Sepolia only)");
+        }
+
+        // Owner receives ETH on both L2s - no separate recipient needed
+        callDataResult = template.buildCallData({
+          bridgeExtensionAddress: bridgeExtensionAddress as `0x${string}`,
+          owner: address,
+          minGasLimitOP: 200000,
+          minGasLimitBase: 200000,
+        });
       } else {
         throw new Error("Template not yet implemented");
       }
@@ -192,6 +240,8 @@ export default function ConfigurePage() {
           finalDescription = `Send ${amount} tokens to ${recipient.slice(0, 6)}...${recipient.slice(-4)}`;
         } else if (template.id === "aave-rebalance") {
           finalDescription = `Rebalance Aave position to HF ${targetHealthFactor}`;
+        } else if (template.id === "bridge-eth-sepolia-to-l2") {
+          finalDescription = `Bridge all WETH to Base + OP Sepolia`;
         } else {
           finalDescription = "Custom action";
         }
@@ -205,7 +255,13 @@ export default function ConfigurePage() {
           address: configurationAddress,
           abi: configurationAbi,
           functionName: "setConfiguration",
-          args: [selectedChip as `0x${string}`, callDataResult.target, callDataResult.callData, finalDescription],
+          args: [
+            selectedChip as `0x${string}`,
+            callDataResult.target,
+            callDataResult.callData,
+            callDataResult.value || 0n,
+            finalDescription,
+          ],
         },
         {
           onError: err => {
@@ -229,7 +285,7 @@ export default function ConfigurePage() {
   };
 
   const config = existingConfig as
-    | { targetContract: string; staticCallData: string; description: string; isActive: boolean }
+    | { targetContract: string; staticCallData: string; value: bigint; description: string; isActive: boolean }
     | undefined;
 
   return (
@@ -491,6 +547,42 @@ export default function ConfigurePage() {
                     </>
                   )}
                 </>
+              )}
+
+              {/* Bridge ETH via WETH Fields */}
+              {selectedTemplate === "bridge-eth-sepolia-to-l2" && (
+                <div className="space-y-4">
+                  <div className="glass-alert">
+                    <AlertCircle className="h-5 w-5 text-info" />
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-base-content">Auto-Bridge to Base + OP Sepolia</p>
+                      <p className="text-xs text-base-content/70 mt-1">
+                        Bridges all available WETH to both L2s. You receive ETH at your same address on both chains.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Quick Wrap Utility */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleWrapETH}
+                      disabled={!address || isWrapping}
+                      className="px-3 py-1.5 text-xs rounded-lg bg-base-300/50 hover:bg-base-300 text-base-content disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 transition-colors"
+                    >
+                      {isWrapping ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Wrapping...
+                        </>
+                      ) : (
+                        <>
+                          <Wallet className="h-3 w-3" />
+                          Wrap 0.04 ETH to WETH
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               )}
 
               {/* Status Messages */}

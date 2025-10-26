@@ -315,6 +315,7 @@ contract TapThatXTest is Test {
             chipAddress,
             address(usdc),
             callData,
+            0,
             "Send 50 USDC to merchant"
         );
 
@@ -342,7 +343,7 @@ contract TapThatXTest is Test {
         address nonOwner = vm.addr(999);
         vm.prank(nonOwner);
         vm.expectRevert("Not chip owner");
-        configuration.setConfiguration(chipAddress, address(usdc), callData, "Fake config");
+        configuration.setConfiguration(chipAddress, address(usdc), callData, 0, "Fake config");
     }
 
     /// @notice Test toggle configuration
@@ -392,7 +393,7 @@ contract TapThatXTest is Test {
         );
 
         vm.prank(owner);
-        configuration.setConfiguration(chipAddress, address(usdc), callData, "Send 50 USDC to merchant");
+        configuration.setConfiguration(chipAddress, address(usdc), callData, 0, "Send 50 USDC to merchant");
 
         // Approve USDC to protocol
         vm.prank(owner);

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Wallet, Zap } from "lucide-react";
+import { formatEther } from "viem";
 import { useAccount, useChainId, usePublicClient } from "wagmi";
 import { StepIndicator } from "~~/components/StepIndicator";
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
@@ -33,6 +34,7 @@ export default function ExecutePage() {
   const [actionPreview, setActionPreview] = useState<{
     targetContract: string;
     description: string;
+    value: bigint;
     isActive: boolean;
   } | null>(null);
 
@@ -82,7 +84,7 @@ export default function ExecutePage() {
         abi: contracts.TapThatXConfiguration.abi,
         functionName: "getConfiguration",
         args: [address, detectedChipAddress],
-      })) as { targetContract: string; staticCallData: string; description: string; isActive: boolean };
+      })) as { targetContract: string; staticCallData: string; value: bigint; description: string; isActive: boolean };
 
       if (config.targetContract === "0x0000000000000000000000000000000000000000") {
         setFlowState("error");
@@ -130,7 +132,7 @@ export default function ExecutePage() {
           owner: address,
           target: config.targetContract as `0x${string}`,
           callData: config.staticCallData as `0x${string}`,
-          value: BigInt(0),
+          value: config.value,
           timestamp: BigInt(timestamp),
           nonce,
         },
@@ -149,6 +151,7 @@ export default function ExecutePage() {
         chipSignature: chipSig.signature,
         timestamp,
         nonce,
+        value: config.value,
       });
 
       setStatusMessage("");
@@ -233,6 +236,11 @@ export default function ExecutePage() {
                   <p className="text-xs text-base-content/50 mt-1 font-mono">
                     Target: {actionPreview.targetContract.slice(0, 6)}...{actionPreview.targetContract.slice(-4)}
                   </p>
+                  {actionPreview.value && actionPreview.value > 0n && (
+                    <p className="text-sm font-semibold text-success mt-2">
+                      💰 ETH Value: {formatEther(actionPreview.value)} ETH
+                    </p>
+                  )}
                 </div>
               </div>
             )}
