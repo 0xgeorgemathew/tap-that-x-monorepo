@@ -9,7 +9,6 @@ import { NfcTapZone } from "~~/components/payment/NfcTapZone";
 import { NumericKeypad } from "~~/components/payment/NumericKeypad";
 import { PaymentReceipt } from "~~/components/payment/PaymentReceipt";
 import { TerminalDisplay } from "~~/components/payment/TerminalDisplay";
-import { TerminalStatusBar } from "~~/components/payment/TerminalStatusBar";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { useHaloChip } from "~~/hooks/useHaloChip";
 import { usePaymentTerminal } from "~~/hooks/usePaymentTerminal";
@@ -352,42 +351,6 @@ export default function PaymentTerminalPage() {
     <div className="gradient-bg min-h-screen flex items-center justify-center p-3 md:p-6 lg:p-8 pb-24">
       <div className="payment-terminal-housing">
         <div className="payment-terminal-screen">
-          <TerminalStatusBar />
-
-          {/* Step Progress */}
-          <div className="terminal-steps">
-            <div className={`terminal-step ${currentStep === "amount" ? "terminal-step-active" : ""}`}>
-              <div className="terminal-step-circle">1</div>
-              <div className="terminal-step-label">Amount</div>
-            </div>
-            <div
-              className={`terminal-step-line ${currentStep !== "amount" ? "terminal-step-line-complete" : ""}`}
-            ></div>
-            <div
-              className={`terminal-step ${currentStep === "merchant" ? "terminal-step-active" : ""} ${currentStep === "customer" || currentStep === "complete" ? "terminal-step-complete" : ""}`}
-            >
-              <div className="terminal-step-circle">
-                {currentStep === "customer" || currentStep === "complete" ? (
-                  <Check className="h-3 w-3 md:h-4 md:w-4" />
-                ) : (
-                  "2"
-                )}
-              </div>
-              <div className="terminal-step-label">Merchant</div>
-            </div>
-            <div
-              className={`terminal-step-line ${currentStep === "customer" || currentStep === "complete" ? "terminal-step-line-complete" : ""}`}
-            ></div>
-            <div
-              className={`terminal-step ${currentStep === "customer" ? "terminal-step-active" : ""} ${currentStep === "complete" ? "terminal-step-complete" : ""}`}
-            >
-              <div className="terminal-step-circle">
-                {currentStep === "complete" ? <Check className="h-3 w-3 md:h-4 md:w-4" /> : "3"}
-              </div>
-              <div className="terminal-step-label">Customer</div>
-            </div>
-          </div>
-
           <TerminalDisplay amount={amount} isActive={parseFloat(amount || "0") > 0} />
 
           {/* Main Content Area */}
