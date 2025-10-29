@@ -17,6 +17,7 @@ type FlowState =
   | "idle"
   | "entering-amount"
   | "merchant-tapping"
+  | "merchant-confirmed"
   | "customer-tapping"
   | "processing"
   | "success"
@@ -76,6 +77,7 @@ export default function PaymentTerminalPage() {
   const [flowState, setFlowState] = useState<FlowState>("entering-amount");
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [currentStep, setCurrentStep] = useState<TerminalStep>("amount");
+  const [countdown, setCountdown] = useState(10);
 
   const [amount, setAmount] = useState("");
   const [allowance, setAllowance] = useState<bigint>(0n);
@@ -132,6 +134,28 @@ export default function PaymentTerminalPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, flowState, allowance, amount]);
+
+  // Countdown timer after merchant tap
+  useEffect(() => {
+    if (flowState === "merchant-confirmed") {
+      const interval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            // Countdown complete, transition to customer step
+            clearInterval(interval);
+            setCurrentStep("customer");
+            setFlowState("idle");
+            setStatusMessage("");
+            checkAllowance();
+            return 10;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [flowState, checkAllowance]);
 
   const handleNumberClick = (num: string) => {
     if (flowState !== "entering-amount") return;
@@ -236,11 +260,9 @@ export default function PaymentTerminalPage() {
 
       setMerchantAddress(address);
       setMerchantChipAddress(merchantChip);
-      setCurrentStep("customer");
-      setFlowState("idle");
-      setStatusMessage("");
-
-      await checkAllowance();
+      setCountdown(10);
+      setFlowState("merchant-confirmed");
+      setStatusMessage("Merchant confirmed! Preparing for customer...");
     } catch (error) {
       console.error("Merchant tap error:", error);
       setFlowState("error");
@@ -426,18 +448,31 @@ export default function PaymentTerminalPage() {
             {/* Merchant Tap Step */}
             {currentStep === "merchant" && flowState !== "success" && (
               <>
-                <NfcTapZone
-                  isActive={flowState === "idle"}
-                  isProcessing={flowState === "merchant-tapping"}
-                  label="MERCHANT: TAP YOUR CHIP"
-                  subLabel={`Charge $${amount} ${PAYMENT_TOKEN_SYMBOL}`}
-                  onClick={handleMerchantTap}
-                  disabled={flowState !== "idle"}
-                />
+                {flowState === "merchant-confirmed" ? (
+                  <div className="space-y-4">
+                    <div className="flex flex-col items-center justify-center p-8 rounded-xl bg-success/10 border-2 border-success/30">
+                      <Check className="h-12 w-12 md:h-16 md:w-16 text-success mb-4" />
+                      <div className="text-2xl md:text-3xl font-bold text-success mb-2">✓ Merchant Confirmed</div>
+                      <div className="text-sm md:text-base text-base-content/70 mb-4">Customer tap in:</div>
+                      <div className="text-6xl md:text-8xl font-bold text-primary">{countdown}</div>
+                      <div className="text-xs md:text-sm text-base-content/50 mt-2">seconds</div>
+                    </div>
+                  </div>
+                ) : (
+                  <NfcTapZone
+                    isActive={flowState === "idle"}
+                    isProcessing={flowState === "merchant-tapping"}
+                    label="MERCHANT: TAP YOUR CHIP"
+                    subLabel={`Charge $${amount} ${PAYMENT_TOKEN_SYMBOL}`}
+                    onClick={handleMerchantTap}
+                    disabled={flowState !== "idle"}
+                  />
+                )}
                 <button
                   onClick={() => {
                     setCurrentStep("amount");
                     setFlowState("entering-amount");
+                    setCountdown(10);
                   }}
                   className="terminal-btn terminal-btn-primary"
                 >
