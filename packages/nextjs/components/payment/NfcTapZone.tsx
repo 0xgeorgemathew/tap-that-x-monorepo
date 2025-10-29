@@ -29,7 +29,7 @@ export function NfcTapZone({
         <div className="nfc-wave nfc-wave-3"></div>
       </div>
 
-      <div className="nfc-tap-zone-icon">{isProcessing ? <Loader2 className="animate-spin" /> : <Nfc />}</div>
+      <div className="nfc-tap-zone-icon-centered">{isProcessing ? <Loader2 className="animate-spin" /> : <Nfc />}</div>
 
       <div className="nfc-tap-zone-text">
         <div className="nfc-tap-zone-label">{label}</div>

@@ -1472,7 +1472,8 @@
 
   /* NFC Tap Zone */
   .nfc-tap-zone {
-    @apply relative flex flex-col items-center justify-center py-8 md:py-10 lg:py-12 px-4 md:px-6 transition-all duration-300;
+    @apply relative flex flex-col items-center py-8 md:py-10 lg:py-12 px-4 md:px-6 transition-all duration-300;
+    width: 100%;
     background: rgba(107, 164, 191, 0.08);
     border: 2px dashed rgba(107, 164, 191, 0.4);
     border-radius: 20px;
@@ -1540,6 +1541,8 @@
 
   .nfc-wave {
     @apply absolute rounded-full border-2;
+    left: 50%;
+    top: 35%;
     border-color: rgba(107, 164, 191, 0.3);
     animation: nfc-wave-pulse 2s ease-out infinite;
   }
@@ -1593,40 +1596,45 @@
 
   @keyframes nfc-wave-pulse {
     0% {
-      transform: scale(0.5);
+      transform: translate(-50%, -50%) scale(0.5);
       opacity: 1;
     }
     100% {
-      transform: scale(2);
+      transform: translate(-50%, -50%) scale(2);
       opacity: 0;
     }
   }
 
-  .nfc-tap-zone-icon {
-    @apply relative z-10 mb-3 md:mb-4;
+  .nfc-tap-zone-icon-centered {
+    @apply absolute z-10;
+    left: 50%;
+    top: 35%;
+    transform: translate(-50%, -50%);
     color: rgba(107, 164, 191, 0.8);
   }
 
-  .nfc-tap-zone-icon svg {
+  .nfc-tap-zone-icon-centered svg {
     @apply w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16;
   }
 
-  .nfc-tap-zone-active .nfc-tap-zone-icon {
+  .nfc-tap-zone-active .nfc-tap-zone-icon-centered {
     color: rgba(107, 164, 191, 1);
     filter: drop-shadow(0 0 8px rgba(107, 164, 191, 0.5));
   }
 
-  [data-theme="dark"] .nfc-tap-zone-icon {
+  [data-theme="dark"] .nfc-tap-zone-icon-centered {
     color: rgba(126, 200, 227, 0.7);
   }
 
-  [data-theme="dark"] .nfc-tap-zone-active .nfc-tap-zone-icon {
+  [data-theme="dark"] .nfc-tap-zone-active .nfc-tap-zone-icon-centered {
     color: rgba(126, 200, 227, 1);
     filter: drop-shadow(0 0 10px rgba(126, 200, 227, 0.4));
   }
 
   .nfc-tap-zone-text {
     @apply relative z-10 text-center;
+    margin-top: auto;
+    padding-bottom: 0.5rem;
   }
 
   .nfc-tap-zone-label {

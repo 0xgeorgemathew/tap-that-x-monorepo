@@ -159,6 +159,39 @@ export default function ApprovePage() {
           }
         }
 
+        // Always add Payment Terminal token approval if terminal is deployed
+        const TERMINAL_ADDRESS = contracts?.TapThatXPaymentTerminal?.address;
+
+        if (TERMINAL_ADDRESS) {
+          let paymentTokenAddress: string | undefined;
+
+          if (chainId === 11155111) {
+            // Sepolia - PYUSD
+            paymentTokenAddress = "0xCaC524BcA292aaade2DF8A05cC58F0a65B1B3bB9";
+          } else if (chainId === 84532) {
+            // Base Sepolia - USDC
+            paymentTokenAddress = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
+          }
+
+          if (paymentTokenAddress) {
+            // Check if already in list
+            const alreadyHasTerminalApproval = approvalsList.some(
+              a =>
+                a.tokenAddress.toLowerCase() === paymentTokenAddress.toLowerCase() &&
+                a.spenderAddress.toLowerCase() === TERMINAL_ADDRESS.toLowerCase(),
+            );
+
+            if (!alreadyHasTerminalApproval) {
+              approvalsList.push({
+                tokenAddress: paymentTokenAddress,
+                spenderAddress: TERMINAL_ADDRESS,
+                spenderName: "Payment Terminal",
+                actionType: "erc20-transfer",
+              });
+            }
+          }
+        }
+
         // Remove duplicates based on tokenAddress + spenderAddress combination
         const uniqueApprovals = approvalsList.filter(
           (approval, index, self) =>

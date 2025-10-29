@@ -2,7 +2,6 @@
 pragma solidity ^0.8.19;
 
 import "./DeployHelpers.s.sol";
-import { MockUSDC } from "../contracts/MockUSDC.sol";
 import { TapThatXRegistry } from "../contracts/core/TapThatXRegistry.sol";
 import { TapThatXProtocol } from "../contracts/core/TapThatXProtocol.sol";
 import { TapThatXConfiguration } from "../contracts/core/TapThatXConfiguration.sol";
@@ -27,8 +26,8 @@ import { TapThatXPaymentTerminal } from "../contracts/extensions/TapThatXPayment
  *
  * Base Sepolia (84532):
  *   1-4. Core contracts (same as above)
- *   5. MockUSDC - Test USDC for ERC20 transfers
- *   6. TapThatXPaymentTerminal - Payment terminal with MockUSDC
+ *   5. USDC - Reference to real USDC testnet token (0x036cbd...)
+ *   6. TapThatXPaymentTerminal - Payment terminal with USDC
  *   7. TapThatXAaveRebalancer - Aave position rebalancer
  *   8. TapThatXAavePositionCloser - Aave position closer
  *
@@ -106,11 +105,11 @@ contract Deploy is ScaffoldETHDeploy {
             deployments.push(Deployment({ name: "TapThatXBridgeETHViaWETH", addr: address(bridgeExtension) }));
         }
 
-        // Deploy MockUSDC (Base Sepolia only - for ERC20 transfer testing)
+        // Reference USDC (Base Sepolia only - real USDC testnet token)
         if (block.chainid == 84532) {
-            MockUSDC usdc = new MockUSDC();
-            console.log("MockUSDC deployed at:", address(usdc));
-            deployments.push(Deployment({ name: "MockUSDC", addr: address(usdc) }));
+            address USDC_BASE_SEPOLIA = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
+            console.log("USDC (Base Sepolia) at:", USDC_BASE_SEPOLIA);
+            deployments.push(Deployment({ name: "USDC", addr: USDC_BASE_SEPOLIA }));
         }
 
         // Deploy TapThatXAaveRebalancer (Base Sepolia only)

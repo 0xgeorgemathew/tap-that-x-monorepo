@@ -64,8 +64,14 @@ export default function PaymentTerminalPage() {
   const TERMINAL_ADDRESS = contracts?.TapThatXPaymentTerminal?.address;
   const REGISTRY_ADDRESS = contracts?.TapThatXRegistry?.address;
 
-  const PYUSD_ADDRESS =
-    chainId === 11155111 ? "0xCaC524BcA292aaade2DF8A05cC58F0a65B1B3bB9" : contracts?.MockUSDC?.address;
+  const PAYMENT_TOKEN_ADDRESS =
+    chainId === 11155111
+      ? "0xCaC524BcA292aaade2DF8A05cC58F0a65B1B3bB9" // PYUSD on Sepolia
+      : chainId === 84532
+        ? "0x036CbD53842c5426634e7929541eC2318f3dCF7e" // USDC on Base Sepolia
+        : undefined; // Not supported on other chains
+
+  const PAYMENT_TOKEN_SYMBOL = chainId === 11155111 ? "PYUSD" : chainId === 84532 ? "USDC" : "TOKEN";
 
   const [flowState, setFlowState] = useState<FlowState>("entering-amount");
   const [statusMessage, setStatusMessage] = useState<string>("");
@@ -86,11 +92,11 @@ export default function PaymentTerminalPage() {
   const { writeContract } = useWriteContract();
 
   const checkAllowance = useCallback(async () => {
-    if (!address || !PYUSD_ADDRESS || !TERMINAL_ADDRESS || !publicClient) return;
+    if (!address || !PAYMENT_TOKEN_ADDRESS || !TERMINAL_ADDRESS || !publicClient) return;
 
     try {
       const currentAllowance = (await publicClient.readContract({
-        address: PYUSD_ADDRESS as `0x${string}`,
+        address: PAYMENT_TOKEN_ADDRESS as `0x${string}`,
         abi: ERC20_ABI,
         functionName: "allowance",
         args: [address, TERMINAL_ADDRESS],
@@ -100,7 +106,7 @@ export default function PaymentTerminalPage() {
     } catch (error) {
       console.error("Error checking allowance:", error);
     }
-  }, [address, PYUSD_ADDRESS, TERMINAL_ADDRESS, publicClient]);
+  }, [address, PAYMENT_TOKEN_ADDRESS, TERMINAL_ADDRESS, publicClient]);
 
   useEffect(() => {
     if (currentStep === "customer" && address) {
@@ -132,22 +138,22 @@ export default function PaymentTerminalPage() {
   };
 
   const handleApprovePYUSD = async () => {
-    if (!address || !PYUSD_ADDRESS || !TERMINAL_ADDRESS) return;
+    if (!address || !PAYMENT_TOKEN_ADDRESS || !TERMINAL_ADDRESS) return;
 
     try {
       setFlowState("approving");
-      setStatusMessage("Approving PYUSD spending...");
+      setStatusMessage("Approving token spending...");
 
       writeContract(
         {
-          address: PYUSD_ADDRESS as `0x${string}`,
+          address: PAYMENT_TOKEN_ADDRESS as `0x${string}`,
           abi: ERC20_ABI,
           functionName: "approve",
           args: [TERMINAL_ADDRESS as `0x${string}`, maxUint256],
         },
         {
           onSuccess: async () => {
-            setStatusMessage("PYUSD approved!");
+            setStatusMessage("Token approved!");
             setFlowState("idle");
             await checkAllowance();
             setTimeout(() => setStatusMessage(""), 2000);
@@ -173,7 +179,7 @@ export default function PaymentTerminalPage() {
       return;
     }
 
-    if (!contracts || !TERMINAL_ADDRESS || !REGISTRY_ADDRESS || !PYUSD_ADDRESS) {
+    if (!contracts || !TERMINAL_ADDRESS || !REGISTRY_ADDRESS || !PAYMENT_TOKEN_ADDRESS) {
       setStatusMessage(`Payment terminal not deployed on this network (chain ${chainId})`);
       setFlowState("error");
       return;
@@ -230,7 +236,7 @@ export default function PaymentTerminalPage() {
       return;
     }
 
-    if (!contracts || !TERMINAL_ADDRESS || !REGISTRY_ADDRESS || !PYUSD_ADDRESS) {
+    if (!contracts || !TERMINAL_ADDRESS || !REGISTRY_ADDRESS || !PAYMENT_TOKEN_ADDRESS) {
       setStatusMessage(`Payment terminal not deployed on this network`);
       setFlowState("error");
       return;
@@ -273,7 +279,7 @@ export default function PaymentTerminalPage() {
       }
 
       const customerBalance = (await publicClient.readContract({
-        address: PYUSD_ADDRESS,
+        address: PAYMENT_TOKEN_ADDRESS,
         abi: ERC20_ABI,
         functionName: "balanceOf",
         args: [customerWallet],
@@ -283,14 +289,12 @@ export default function PaymentTerminalPage() {
 
       if (customerBalance < amountWei) {
         setFlowState("error");
-        setStatusMessage(
-          `Insufficient PYUSD balance. Need ${amount} PYUSD, have ${formatUnits(customerBalance, 6)} PYUSD`,
-        );
+        setStatusMessage(`Insufficient balance. Need ${amount}, have ${formatUnits(customerBalance, 6)}`);
         return;
       }
 
       const customerAllowance = (await publicClient.readContract({
-        address: PYUSD_ADDRESS,
+        address: PAYMENT_TOKEN_ADDRESS,
         abi: ERC20_ABI,
         functionName: "allowance",
         args: [customerWallet, TERMINAL_ADDRESS],
@@ -298,7 +302,7 @@ export default function PaymentTerminalPage() {
 
       if (customerAllowance < amountWei) {
         setFlowState("error");
-        setStatusMessage("Customer has not approved PYUSD spending. Please approve at /approve.");
+        setStatusMessage("Customer has not approved token spending. Please approve at /approve.");
         return;
       }
 
@@ -310,7 +314,7 @@ export default function PaymentTerminalPage() {
         payerChipAddress: customerChip,
         payeeAddress: merchantAddress as `0x${string}`,
         payeeChipAddress: merchantChipAddress as `0x${string}`,
-        tokenAddress: PYUSD_ADDRESS,
+        tokenAddress: PAYMENT_TOKEN_ADDRESS,
         amount: amountWei,
       });
 
@@ -337,7 +341,7 @@ export default function PaymentTerminalPage() {
     setTxHash("");
   };
 
-  const handleProceedToMerchant = () => {
+  const handleProceedToMerchant = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       setStatusMessage("Please enter a valid amount");
       setTimeout(() => setStatusMessage(""), 2000);
@@ -345,6 +349,11 @@ export default function PaymentTerminalPage() {
     }
     setCurrentStep("merchant");
     setFlowState("idle");
+
+    // Auto-trigger NFC scan for merchant chip
+    setTimeout(() => {
+      handleMerchantTap();
+    }, 300);
   };
 
   return (
@@ -398,7 +407,7 @@ export default function PaymentTerminalPage() {
                   isActive={flowState === "idle"}
                   isProcessing={flowState === "merchant-tapping"}
                   label="MERCHANT: TAP YOUR CHIP"
-                  subLabel={`Charge $${amount} PYUSD`}
+                  subLabel={`Charge $${amount} ${PAYMENT_TOKEN_SYMBOL}`}
                   onClick={handleMerchantTap}
                   disabled={flowState !== "idle"}
                 />
@@ -421,7 +430,7 @@ export default function PaymentTerminalPage() {
                 {address && allowance < parseUnits(amount || "0", 6) && (
                   <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-warning/10 border-2 border-warning/30 space-y-2 md:space-y-3">
                     <p className="text-xs md:text-sm font-semibold text-warning">
-                      Customer needs to approve PYUSD spending first
+                      Customer needs to approve {PAYMENT_TOKEN_SYMBOL} spending first
                     </p>
                     <button
                       onClick={handleApprovePYUSD}
@@ -433,7 +442,7 @@ export default function PaymentTerminalPage() {
                         color: "rgba(251, 191, 36, 1)",
                       }}
                     >
-                      {flowState === "approving" ? "Approving..." : "Approve PYUSD"}
+                      {flowState === "approving" ? "Approving..." : `Approve ${PAYMENT_TOKEN_SYMBOL}`}
                     </button>
                   </div>
                 )}
@@ -442,7 +451,7 @@ export default function PaymentTerminalPage() {
                   isActive={flowState === "idle"}
                   isProcessing={flowState === "customer-tapping" || flowState === "processing"}
                   label="CUSTOMER: TAP TO PAY"
-                  subLabel={`$${amount} PYUSD`}
+                  subLabel={`$${amount} ${PAYMENT_TOKEN_SYMBOL}`}
                   onClick={handleCustomerTap}
                   disabled={flowState !== "idle"}
                 />
