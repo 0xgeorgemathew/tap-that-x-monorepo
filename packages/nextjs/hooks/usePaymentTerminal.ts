@@ -1,6 +1,7 @@
 "use client";
 
 import { useHaloChip } from "./useHaloChip";
+import type { PublicClient } from "viem";
 import { useChainId } from "wagmi";
 
 export interface PaymentAuthorizationParams {
@@ -12,7 +13,7 @@ export interface PaymentAuthorizationParams {
   amount: bigint;
 }
 
-export function usePaymentTerminal(terminalContractAddress: `0x${string}`) {
+export function usePaymentTerminal(terminalContractAddress: `0x${string}`, publicClient?: PublicClient) {
   const chainId = useChainId();
   const { signTypedData } = useHaloChip();
 
@@ -20,8 +21,15 @@ export function usePaymentTerminal(terminalContractAddress: `0x${string}`) {
    * Execute payment by having customer chip sign authorization and relay to contract
    */
   const executePayment = async (params: PaymentAuthorizationParams) => {
-    // Generate timestamp and nonce
-    const timestamp = Math.floor(Date.now() / 1000);
+    // Generate timestamp from blockchain (not client system time)
+    let timestamp: number;
+    if (publicClient) {
+      const block = await publicClient.getBlock();
+      timestamp = Number(block.timestamp);
+    } else {
+      // Fallback to system time if publicClient not available
+      timestamp = Math.floor(Date.now() / 1000);
+    }
     const nonce = `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)))
       .map(b => b.toString(16).padStart(2, "0"))
       .join("")}` as `0x${string}`;

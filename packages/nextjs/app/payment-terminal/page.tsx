@@ -76,7 +76,7 @@ export default function PaymentTerminalPage() {
   const [txHash, setTxHash] = useState<string>("");
 
   const { signMessage } = useHaloChip();
-  const { executePayment } = usePaymentTerminal(TERMINAL_ADDRESS as `0x${string}`);
+  const { executePayment } = usePaymentTerminal(TERMINAL_ADDRESS as `0x${string}`, publicClient);
   const { writeContract } = useWriteContract();
 
   // Payment steps for UI
@@ -254,17 +254,34 @@ export default function PaymentTerminalPage() {
       const customerChipData = await signMessage({ message: "init", format: "text" });
       const customerChip = customerChipData.address as `0x${string}`;
 
-      // Validate customer chip is registered
+      // Lookup customer wallet address from registry
+      const chipOwners = (await publicClient.readContract({
+        address: REGISTRY_ADDRESS,
+        abi: contracts.TapThatXRegistry.abi,
+        functionName: "getChipOwners",
+        args: [customerChip],
+      })) as `0x${string}`[];
+
+      if (!chipOwners || chipOwners.length === 0) {
+        setFlowState("error");
+        setStatusMessage(`Customer chip not registered (${customerChip.slice(0, 10)}...). Register at /register.`);
+        updateStepStatus(2, "error");
+        return;
+      }
+
+      const customerWallet = chipOwners[0]; // Use first owner as payer
+
+      // Validate customer chip ownership
       const customerHasChip = (await publicClient.readContract({
         address: REGISTRY_ADDRESS,
         abi: contracts.TapThatXRegistry.abi,
         functionName: "hasChip",
-        args: [address, customerChip],
+        args: [customerWallet, customerChip],
       })) as boolean;
 
       if (!customerHasChip) {
         setFlowState("error");
-        setStatusMessage(`Customer chip not registered (${customerChip.slice(0, 10)}...). Register at /register.`);
+        setStatusMessage(`Customer chip not properly registered. Please re-register at /register.`);
         updateStepStatus(2, "error");
         return;
       }
@@ -274,7 +291,7 @@ export default function PaymentTerminalPage() {
         address: PYUSD_ADDRESS,
         abi: ERC20_ABI,
         functionName: "balanceOf",
-        args: [address],
+        args: [customerWallet],
       })) as bigint;
 
       const amountWei = parseUnits(amount, 6); // PYUSD has 6 decimals
@@ -293,7 +310,7 @@ export default function PaymentTerminalPage() {
         address: PYUSD_ADDRESS,
         abi: ERC20_ABI,
         functionName: "allowance",
-        args: [address, TERMINAL_ADDRESS],
+        args: [customerWallet, TERMINAL_ADDRESS],
       })) as bigint;
 
       if (customerAllowance < amountWei) {
@@ -308,7 +325,7 @@ export default function PaymentTerminalPage() {
       setStatusMessage("Processing payment on blockchain...");
 
       const result = await executePayment({
-        payerAddress: address,
+        payerAddress: customerWallet,
         payerChipAddress: customerChip,
         payeeAddress: merchantAddress as `0x${string}`,
         payeeChipAddress: merchantChipAddress as `0x${string}`,

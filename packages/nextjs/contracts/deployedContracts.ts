@@ -2733,7 +2733,7 @@ const deployedContracts = {
   },
   11155111: {
     TapThatXRegistry: {
-      address: "0xb44048b72f1e6eb511f1970e98f7ac3e2502e2d4",
+      address: "0x449d66a5edebc2a835da3b8e945a304e903bdde7",
       abi: [
         {
           type: "constructor",
@@ -3062,10 +3062,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9495082,
+      deployedOnBlock: 9495774,
     },
     TapThatXProtocol: {
-      address: "0x9401d9b4388a8ee42f9255b009d9cab5cc325e70",
+      address: "0x11bd6db34b86239ade32e74029d98b4d6064b754",
       abi: [
         {
           type: "constructor",
@@ -3417,10 +3417,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9495082,
+      deployedOnBlock: 9495774,
     },
     TapThatXConfiguration: {
-      address: "0x6dc59b9a013bdda49459a57fab54bdde5745fbdb",
+      address: "0x31a792495ff1acebc22b449ebe9efbfeb7289eb8",
       abi: [
         {
           type: "constructor",
@@ -3701,10 +3701,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9495082,
+      deployedOnBlock: 9495774,
     },
     TapThatXExecutor: {
-      address: "0x889c085f3294cd8381fcd16c41eab99e96f7fb60",
+      address: "0x419184067e0c40d3622717be5df4758dfd3d7242",
       abi: [
         {
           type: "constructor",
@@ -3917,10 +3917,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9495082,
+      deployedOnBlock: 9495774,
     },
     TapThatXBridgeETHViaWETH: {
-      address: "0xfe4f58a325fe8dc6952b2ee286910c439378ff27",
+      address: "0x0f917750db157d65c6c14e5ce5828a250569afe1",
       abi: [
         {
           type: "constructor",
@@ -4066,10 +4066,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9495082,
+      deployedOnBlock: 9495774,
     },
     TapThatXPaymentTerminal: {
-      address: "0xfdc0967d0433b9238db5bb511ccbbbc6cc63a74f",
+      address: "0x91d05d5b8913bcda59f1923dc6831b108154df22",
       abi: [
         {
           type: "constructor",
@@ -4445,7 +4445,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9495082,
+      deployedOnBlock: 9495774,
     },
   },
 } as const;
