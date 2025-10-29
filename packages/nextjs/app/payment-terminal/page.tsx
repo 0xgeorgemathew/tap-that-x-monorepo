@@ -1,19 +1,30 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, DollarSign, Loader2, Nfc, Shield, User } from "lucide-react";
+import { AlertCircle, Check } from "lucide-react";
 import { formatUnits, maxUint256, parseUnits } from "viem";
 import { useAccount, useChainId, usePublicClient, useWriteContract } from "wagmi";
 import { UnifiedNavigation } from "~~/components/UnifiedNavigation";
-import { ChipOwnerDisplay } from "~~/components/payment/ChipOwnerDisplay";
-import { PaymentStep } from "~~/components/payment/PaymentStep";
-import { PaymentStepIndicator } from "~~/components/payment/PaymentStepIndicator";
-import { PaymentStep as PaymentStepType } from "~~/components/payment/types";
+import { NfcTapZone } from "~~/components/payment/NfcTapZone";
+import { NumericKeypad } from "~~/components/payment/NumericKeypad";
+import { PaymentReceipt } from "~~/components/payment/PaymentReceipt";
+import { TerminalDisplay } from "~~/components/payment/TerminalDisplay";
+import { TerminalStatusBar } from "~~/components/payment/TerminalStatusBar";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { useHaloChip } from "~~/hooks/useHaloChip";
 import { usePaymentTerminal } from "~~/hooks/usePaymentTerminal";
 
-type FlowState = "idle" | "merchant-tapping" | "customer-tapping" | "processing" | "success" | "error" | "approving";
+type FlowState =
+  | "idle"
+  | "entering-amount"
+  | "merchant-tapping"
+  | "customer-tapping"
+  | "processing"
+  | "success"
+  | "error"
+  | "approving";
+
+type TerminalStep = "amount" | "merchant" | "customer" | "complete";
 
 const ERC20_ABI = [
   {
@@ -54,54 +65,27 @@ export default function PaymentTerminalPage() {
   const TERMINAL_ADDRESS = contracts?.TapThatXPaymentTerminal?.address;
   const REGISTRY_ADDRESS = contracts?.TapThatXRegistry?.address;
 
-  // Hard-coded PYUSD addresses per chain
   const PYUSD_ADDRESS =
-    chainId === 11155111
-      ? "0xCaC524BcA292aaade2DF8A05cC58F0a65B1B3bB9" // PYUSD on Sepolia
-      : contracts?.MockUSDC?.address; // MockUSDC on Base Sepolia
+    chainId === 11155111 ? "0xCaC524BcA292aaade2DF8A05cC58F0a65B1B3bB9" : contracts?.MockUSDC?.address;
 
-  const [flowState, setFlowState] = useState<FlowState>("idle");
+  const [flowState, setFlowState] = useState<FlowState>("entering-amount");
   const [statusMessage, setStatusMessage] = useState<string>("");
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState<TerminalStep>("amount");
 
-  // Form state
   const [amount, setAmount] = useState("");
   const [allowance, setAllowance] = useState<bigint>(0n);
 
-  // Merchant state (Step 1)
   const [merchantAddress, setMerchantAddress] = useState<string>("");
   const [merchantChipAddress, setMerchantChipAddress] = useState<string>("");
+  const [customerAddress, setCustomerAddress] = useState<string>("");
 
-  // Transaction result
   const [txHash, setTxHash] = useState<string>("");
+  const [txTimestamp, setTxTimestamp] = useState<Date>(new Date());
 
   const { signMessage } = useHaloChip();
   const { executePayment } = usePaymentTerminal(TERMINAL_ADDRESS as `0x${string}`, publicClient);
   const { writeContract } = useWriteContract();
 
-  // Payment steps for UI
-  const [steps, setSteps] = useState<PaymentStepType[]>([
-    {
-      id: 1,
-      title: "Merchant Setup",
-      description: "Enter amount and tap merchant chip",
-      status: "active",
-    },
-    {
-      id: 2,
-      title: "Customer Payment",
-      description: "Customer taps chip to authorize payment",
-      status: "idle",
-    },
-  ]);
-
-  const updateStepStatus = (stepId: number, status: PaymentStepType["status"]) => {
-    setSteps(prevSteps => prevSteps.map(step => (step.id === stepId ? { ...step, status } : step)));
-  };
-
-  /**
-   * Check current PYUSD allowance
-   */
   const checkAllowance = useCallback(async () => {
     if (!address || !PYUSD_ADDRESS || !TERMINAL_ADDRESS || !publicClient) return;
 
@@ -119,16 +103,35 @@ export default function PaymentTerminalPage() {
     }
   }, [address, PYUSD_ADDRESS, TERMINAL_ADDRESS, publicClient]);
 
-  // Check allowance on mount and when address/step changes
   useEffect(() => {
-    if (currentStep === 2 && address) {
+    if (currentStep === "customer" && address) {
       checkAllowance();
     }
   }, [currentStep, address, checkAllowance]);
 
-  /**
-   * Approve PYUSD spending for payment terminal
-   */
+  const handleNumberClick = (num: string) => {
+    if (flowState !== "entering-amount") return;
+
+    if (num === "." && amount.includes(".")) return;
+
+    if (amount.includes(".")) {
+      const decimals = amount.split(".")[1];
+      if (decimals.length >= 2) return;
+    }
+
+    setAmount(prev => prev + num);
+  };
+
+  const handleBackspace = () => {
+    if (flowState !== "entering-amount") return;
+    setAmount(prev => prev.slice(0, -1));
+  };
+
+  const handleClear = () => {
+    if (flowState !== "entering-amount") return;
+    setAmount("");
+  };
+
   const handleApprovePYUSD = async () => {
     if (!address || !PYUSD_ADDRESS || !TERMINAL_ADDRESS) return;
 
@@ -145,10 +148,10 @@ export default function PaymentTerminalPage() {
         },
         {
           onSuccess: async () => {
-            setStatusMessage("PYUSD approved! You can now accept payments.");
+            setStatusMessage("PYUSD approved!");
             setFlowState("idle");
             await checkAllowance();
-            setTimeout(() => setStatusMessage(""), 3000);
+            setTimeout(() => setStatusMessage(""), 2000);
           },
           onError: error => {
             console.error("Approval error:", error);
@@ -164,9 +167,6 @@ export default function PaymentTerminalPage() {
     }
   };
 
-  /**
-   * Step 1: Merchant enters amount and taps chip
-   */
   const handleMerchantTap = async () => {
     if (!address || !publicClient) {
       setStatusMessage("Please connect your wallet first");
@@ -183,19 +183,20 @@ export default function PaymentTerminalPage() {
     if (!amount || parseFloat(amount) <= 0) {
       setStatusMessage("Please enter a valid amount");
       setFlowState("error");
+      setTimeout(() => {
+        setStatusMessage("");
+        setFlowState("entering-amount");
+      }, 2000);
       return;
     }
 
     try {
       setFlowState("merchant-tapping");
       setStatusMessage("Merchant: Tap your NFC chip...");
-      updateStepStatus(1, "loading");
 
-      // Detect merchant chip
       const merchantChipData = await signMessage({ message: "init", format: "text" });
       const merchantChip = merchantChipData.address as `0x${string}`;
 
-      // Validate merchant chip is registered
       const merchantHasChip = (await publicClient.readContract({
         address: REGISTRY_ADDRESS,
         abi: contracts.TapThatXRegistry.abi,
@@ -205,33 +206,24 @@ export default function PaymentTerminalPage() {
 
       if (!merchantHasChip) {
         setFlowState("error");
-        setStatusMessage(`Merchant chip not registered (${merchantChip.slice(0, 10)}...). Register at /register.`);
-        updateStepStatus(1, "error");
+        setStatusMessage(`Merchant chip not registered. Please register at /register.`);
         return;
       }
 
-      // Store merchant data and move to step 2
       setMerchantAddress(address);
       setMerchantChipAddress(merchantChip);
-      setCurrentStep(2);
+      setCurrentStep("customer");
       setFlowState("idle");
       setStatusMessage("");
-      updateStepStatus(1, "complete");
-      updateStepStatus(2, "active");
 
-      // Check allowance for customer
       await checkAllowance();
     } catch (error) {
       console.error("Merchant tap error:", error);
       setFlowState("error");
       setStatusMessage(error instanceof Error ? error.message : "Failed to detect merchant chip");
-      updateStepStatus(1, "error");
     }
   };
 
-  /**
-   * Step 2: Customer taps chip to authorize payment
-   */
   const handleCustomerTap = async () => {
     if (!address || !publicClient) {
       setStatusMessage("Please connect your wallet first");
@@ -248,13 +240,10 @@ export default function PaymentTerminalPage() {
     try {
       setFlowState("customer-tapping");
       setStatusMessage("Customer: Tap your NFC chip...");
-      updateStepStatus(2, "loading");
 
-      // Detect customer chip
       const customerChipData = await signMessage({ message: "init", format: "text" });
       const customerChip = customerChipData.address as `0x${string}`;
 
-      // Lookup customer wallet address from registry
       const chipOwners = (await publicClient.readContract({
         address: REGISTRY_ADDRESS,
         abi: contracts.TapThatXRegistry.abi,
@@ -264,14 +253,13 @@ export default function PaymentTerminalPage() {
 
       if (!chipOwners || chipOwners.length === 0) {
         setFlowState("error");
-        setStatusMessage(`Customer chip not registered (${customerChip.slice(0, 10)}...). Register at /register.`);
-        updateStepStatus(2, "error");
+        setStatusMessage(`Customer chip not registered. Please register at /register.`);
         return;
       }
 
-      const customerWallet = chipOwners[0]; // Use first owner as payer
+      const customerWallet = chipOwners[0];
+      setCustomerAddress(customerWallet);
 
-      // Validate customer chip ownership
       const customerHasChip = (await publicClient.readContract({
         address: REGISTRY_ADDRESS,
         abi: contracts.TapThatXRegistry.abi,
@@ -282,11 +270,9 @@ export default function PaymentTerminalPage() {
       if (!customerHasChip) {
         setFlowState("error");
         setStatusMessage(`Customer chip not properly registered. Please re-register at /register.`);
-        updateStepStatus(2, "error");
         return;
       }
 
-      // Check customer PYUSD balance
       const customerBalance = (await publicClient.readContract({
         address: PYUSD_ADDRESS,
         abi: ERC20_ABI,
@@ -294,18 +280,16 @@ export default function PaymentTerminalPage() {
         args: [customerWallet],
       })) as bigint;
 
-      const amountWei = parseUnits(amount, 6); // PYUSD has 6 decimals
+      const amountWei = parseUnits(amount, 6);
 
       if (customerBalance < amountWei) {
         setFlowState("error");
         setStatusMessage(
           `Insufficient PYUSD balance. Need ${amount} PYUSD, have ${formatUnits(customerBalance, 6)} PYUSD`,
         );
-        updateStepStatus(2, "error");
         return;
       }
 
-      // Check customer approval
       const customerAllowance = (await publicClient.readContract({
         address: PYUSD_ADDRESS,
         abi: ERC20_ABI,
@@ -316,13 +300,11 @@ export default function PaymentTerminalPage() {
       if (customerAllowance < amountWei) {
         setFlowState("error");
         setStatusMessage("Customer has not approved PYUSD spending. Please approve at /approve.");
-        updateStepStatus(2, "error");
         return;
       }
 
-      // Execute payment via relay
       setFlowState("processing");
-      setStatusMessage("Processing payment on blockchain...");
+      setStatusMessage("Processing payment...");
 
       const result = await executePayment({
         payerAddress: customerWallet,
@@ -333,171 +315,211 @@ export default function PaymentTerminalPage() {
         amount: amountWei,
       });
 
-      // Success!
-      setFlowState("success");
-      setStatusMessage(`Payment successful! ${amount} PYUSD sent to merchant.`);
       setTxHash(result.transactionHash);
-      updateStepStatus(2, "complete");
+      setTxTimestamp(new Date());
+      setFlowState("success");
+      setCurrentStep("complete");
+      setStatusMessage("");
     } catch (error) {
       console.error("Customer tap error:", error);
       setFlowState("error");
       setStatusMessage(error instanceof Error ? error.message : "Payment failed");
-      updateStepStatus(2, "error");
     }
   };
 
   const handleReset = () => {
-    setFlowState("idle");
+    setFlowState("entering-amount");
     setStatusMessage("");
-    setCurrentStep(1);
+    setCurrentStep("amount");
     setAmount("");
     setMerchantAddress("");
     setMerchantChipAddress("");
+    setCustomerAddress("");
     setTxHash("");
-    setSteps([
-      { id: 1, title: "Merchant Setup", description: "Enter amount and tap merchant chip", status: "active" },
-      { id: 2, title: "Customer Payment", description: "Customer taps chip to authorize payment", status: "idle" },
-    ]);
   };
 
-  const getStateIcon = () => {
-    switch (flowState) {
-      case "merchant-tapping":
-      case "customer-tapping":
-      case "processing":
-        return <Loader2 className="h-8 w-8 animate-spin text-primary" />;
-      case "success":
-        return <CheckCircle2 className="h-8 w-8 text-success" />;
-      case "error":
-        return <AlertCircle className="h-8 w-8 text-error" />;
-      default:
-        return <DollarSign className="h-8 w-8 text-primary" />;
+  const handleProceedToMerchant = () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      setStatusMessage("Please enter a valid amount");
+      setTimeout(() => setStatusMessage(""), 2000);
+      return;
     }
+    setCurrentStep("merchant");
+    setFlowState("idle");
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-base-100">
-      <div className="flex-1 flex items-center justify-center p-4 pb-24">
-        <div className="w-full max-w-lg space-y-6">
-          {/* Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold text-base-content">Payment Terminal</h1>
-            <p className="text-base-content/60">Tap-to-pay with PYUSD</p>
-          </div>
+    <div className="gradient-bg min-h-screen flex items-center justify-center p-3 md:p-6 lg:p-8 pb-24">
+      <div className="payment-terminal-housing">
+        <div className="payment-terminal-screen">
+          <TerminalStatusBar />
 
-          {/* Progress Indicator */}
-          <PaymentStepIndicator steps={steps} currentStep={currentStep} />
-
-          {/* Steps Display */}
-          <div className="space-y-3">
-            {steps.map(step => (
-              <PaymentStep key={step.id} step={step} />
-            ))}
-          </div>
-
-          {/* Status Card */}
-          <div className="bg-base-200 rounded-lg p-6 border-2 border-base-300">
-            <div className="flex items-center gap-4">
-              <div className="flex-shrink-0">{getStateIcon()}</div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-base-content/70">Status</p>
-                <p className="text-base text-base-content font-medium mt-1">
-                  {statusMessage || (currentStep === 1 ? "Ready to accept payment" : "Waiting for customer")}
-                </p>
+          {/* Step Progress */}
+          <div className="terminal-steps">
+            <div className={`terminal-step ${currentStep === "amount" ? "terminal-step-active" : ""}`}>
+              <div className="terminal-step-circle">1</div>
+              <div className="terminal-step-label">Amount</div>
+            </div>
+            <div
+              className={`terminal-step-line ${currentStep !== "amount" ? "terminal-step-line-complete" : ""}`}
+            ></div>
+            <div
+              className={`terminal-step ${currentStep === "merchant" ? "terminal-step-active" : ""} ${currentStep === "customer" || currentStep === "complete" ? "terminal-step-complete" : ""}`}
+            >
+              <div className="terminal-step-circle">
+                {currentStep === "customer" || currentStep === "complete" ? (
+                  <Check className="h-3 w-3 md:h-4 md:w-4" />
+                ) : (
+                  "2"
+                )}
               </div>
+              <div className="terminal-step-label">Merchant</div>
+            </div>
+            <div
+              className={`terminal-step-line ${currentStep === "customer" || currentStep === "complete" ? "terminal-step-line-complete" : ""}`}
+            ></div>
+            <div
+              className={`terminal-step ${currentStep === "customer" ? "terminal-step-active" : ""} ${currentStep === "complete" ? "terminal-step-complete" : ""}`}
+            >
+              <div className="terminal-step-circle">
+                {currentStep === "complete" ? <Check className="h-3 w-3 md:h-4 md:w-4" /> : "3"}
+              </div>
+              <div className="terminal-step-label">Customer</div>
             </div>
           </div>
 
-          {/* Merchant Info (Step 1) */}
-          {currentStep === 1 && (
-            <div className="space-y-4">
-              {/* Amount Input */}
-              <div>
-                <label className="block text-sm font-bold text-base-content/70 mb-2">Payment Amount (PYUSD)</label>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-4 py-3 bg-base-100 border-2 border-base-300 rounded-lg text-lg font-mono focus:border-primary focus:outline-none"
-                  disabled={flowState !== "idle"}
-                  min="0"
-                  step="0.01"
+          <TerminalDisplay amount={amount} isActive={parseFloat(amount || "0") > 0} />
+
+          {/* Main Content Area */}
+          <div className="p-4 md:p-6 lg:p-8 space-y-3 md:space-y-4">
+            {/* Error/Status Message */}
+            {statusMessage && (
+              <div
+                className={`flex items-center gap-2 md:gap-3 p-3 md:p-4 rounded-lg md:rounded-xl border transition-all text-sm md:text-base ${
+                  flowState === "error"
+                    ? "bg-error/10 border-error/30 text-error"
+                    : flowState === "success"
+                      ? "bg-success/10 border-success/30 text-success"
+                      : "bg-primary/10 border-primary/30 text-primary"
+                }`}
+              >
+                {flowState === "error" && <AlertCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />}
+                {flowState === "success" && <Check className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />}
+                <span className="font-semibold">{statusMessage}</span>
+              </div>
+            )}
+
+            {/* Amount Entry Step */}
+            {currentStep === "amount" && flowState !== "success" && (
+              <>
+                <NumericKeypad
+                  onNumberClick={handleNumberClick}
+                  onClear={handleClear}
+                  onBackspace={handleBackspace}
+                  disabled={flowState !== "entering-amount"}
                 />
-              </div>
-
-              {/* Merchant Tap Button */}
-              <button
-                onClick={handleMerchantTap}
-                disabled={flowState !== "idle" || !amount || parseFloat(amount) <= 0}
-                className="w-full btn btn-primary btn-lg gap-2"
-              >
-                <Nfc className="h-5 w-5" />
-                {flowState === "merchant-tapping" ? "Tapping..." : "Merchant: Tap Your Chip"}
-              </button>
-            </div>
-          )}
-
-          {/* Customer Info (Step 2) */}
-          {currentStep === 2 && (
-            <div className="space-y-4">
-              {/* Payment Details */}
-              <div className="bg-primary/10 rounded-lg p-4 border-2 border-primary/30">
-                <p className="text-xs font-bold text-primary/70 mb-2">Payment Request</p>
-                <p className="text-3xl font-bold text-primary font-mono">{amount} PYUSD</p>
-              </div>
-
-              {/* Merchant -> Customer Route */}
-              {merchantChipAddress && (
-                <ChipOwnerDisplay chipAddress={merchantChipAddress} ownerAddress={merchantAddress} />
-              )}
-
-              {/* Approval Button (only show if insufficient allowance) */}
-              {address && allowance < parseUnits(amount || "0", 6) && (
                 <button
-                  onClick={handleApprovePYUSD}
-                  disabled={flowState === "approving"}
-                  className="w-full btn btn-secondary btn-sm gap-2"
+                  onClick={handleProceedToMerchant}
+                  disabled={!amount || parseFloat(amount) <= 0}
+                  className="terminal-btn terminal-btn-primary"
                 >
-                  <Shield className="h-4 w-4" />
-                  {flowState === "approving" ? "Approving..." : "Approve PYUSD (Required)"}
+                  Continue to Merchant Tap
                 </button>
-              )}
+              </>
+            )}
 
-              {/* Customer Tap Button */}
-              <button
-                onClick={handleCustomerTap}
-                disabled={flowState !== "idle"}
-                className="w-full btn btn-primary btn-lg gap-2"
-              >
-                <User className="h-5 w-5" />
-                {flowState === "customer-tapping" || flowState === "processing"
-                  ? "Processing..."
-                  : "Customer: Tap to Pay"}
-              </button>
-            </div>
-          )}
+            {/* Merchant Tap Step */}
+            {currentStep === "merchant" && flowState !== "success" && (
+              <>
+                <NfcTapZone
+                  isActive={flowState === "idle"}
+                  isProcessing={flowState === "merchant-tapping"}
+                  label="MERCHANT: TAP YOUR CHIP"
+                  subLabel={`Charge $${amount} PYUSD`}
+                  onClick={handleMerchantTap}
+                  disabled={flowState !== "idle"}
+                />
+                <button
+                  onClick={() => {
+                    setCurrentStep("amount");
+                    setFlowState("entering-amount");
+                  }}
+                  className="terminal-btn terminal-btn-primary"
+                >
+                  ← Back to Amount
+                </button>
+              </>
+            )}
 
-          {/* Success State */}
-          {flowState === "success" && txHash && (
-            <div className="space-y-4">
-              <div className="bg-success/10 rounded-lg p-4 border-2 border-success/30">
-                <p className="text-sm font-bold text-success mb-2">Transaction Hash</p>
-                <p className="text-xs font-mono text-success break-all">{txHash}</p>
+            {/* Customer Payment Step */}
+            {currentStep === "customer" && flowState !== "success" && (
+              <>
+                {/* Approval Check */}
+                {address && allowance < parseUnits(amount || "0", 6) && (
+                  <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-warning/10 border-2 border-warning/30 space-y-2 md:space-y-3">
+                    <p className="text-xs md:text-sm font-semibold text-warning">
+                      Customer needs to approve PYUSD spending first
+                    </p>
+                    <button
+                      onClick={handleApprovePYUSD}
+                      disabled={flowState === "approving"}
+                      className="w-full h-11 md:h-12 rounded-lg md:rounded-xl font-bold text-sm transition-all"
+                      style={{
+                        background: "rgba(251, 191, 36, 0.2)",
+                        border: "2px solid rgba(251, 191, 36, 0.5)",
+                        color: "rgba(251, 191, 36, 1)",
+                      }}
+                    >
+                      {flowState === "approving" ? "Approving..." : "Approve PYUSD"}
+                    </button>
+                  </div>
+                )}
+
+                <NfcTapZone
+                  isActive={flowState === "idle"}
+                  isProcessing={flowState === "customer-tapping" || flowState === "processing"}
+                  label="CUSTOMER: TAP TO PAY"
+                  subLabel={`$${amount} PYUSD`}
+                  onClick={handleCustomerTap}
+                  disabled={flowState !== "idle"}
+                />
+                <button
+                  onClick={() => {
+                    setCurrentStep("merchant");
+                    setFlowState("idle");
+                  }}
+                  disabled={flowState !== "idle"}
+                  className="terminal-btn terminal-btn-primary"
+                >
+                  ← Change Merchant
+                </button>
+              </>
+            )}
+
+            {/* Success/Receipt Step */}
+            {flowState === "success" && txHash && (
+              <div className="space-y-4">
+                <PaymentReceipt
+                  amount={amount}
+                  merchantAddress={merchantAddress}
+                  customerAddress={customerAddress}
+                  txHash={txHash}
+                  timestamp={txTimestamp}
+                  chainId={chainId}
+                />
+                <button onClick={handleReset} className="terminal-btn terminal-btn-success">
+                  NEW PAYMENT
+                </button>
               </div>
+            )}
 
-              <button onClick={handleReset} className="w-full btn btn-primary btn-lg">
-                New Payment
+            {/* Error Reset Button */}
+            {flowState === "error" && currentStep !== "amount" && (
+              <button onClick={handleReset} className="terminal-btn terminal-btn-primary">
+                Reset Terminal
               </button>
-            </div>
-          )}
-
-          {/* Error State Reset Button */}
-          {flowState === "error" && (
-            <button onClick={handleReset} className="w-full btn btn-outline">
-              Reset Terminal
-            </button>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
