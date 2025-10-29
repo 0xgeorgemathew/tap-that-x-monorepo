@@ -114,6 +114,25 @@ export default function PaymentTerminalPage() {
     }
   }, [currentStep, address, checkAllowance]);
 
+  // Auto-trigger customer NFC tap when ready
+  useEffect(() => {
+    if (
+      currentStep === "customer" &&
+      flowState === "idle" &&
+      amount &&
+      parseFloat(amount) > 0 &&
+      allowance >= parseUnits(amount || "0", 6)
+    ) {
+      // Match merchant flow: 300ms delay before triggering NFC scan
+      const timer = setTimeout(() => {
+        handleCustomerTap();
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, flowState, allowance, amount]);
+
   const handleNumberClick = (num: string) => {
     if (flowState !== "entering-amount") return;
 
@@ -137,7 +156,7 @@ export default function PaymentTerminalPage() {
     setAmount("");
   };
 
-  const handleApprovePYUSD = async () => {
+  const handleApproveToken = async () => {
     if (!address || !PAYMENT_TOKEN_ADDRESS || !TERMINAL_ADDRESS) return;
 
     try {
@@ -360,7 +379,11 @@ export default function PaymentTerminalPage() {
     <div className="gradient-bg min-h-screen flex items-center justify-center p-3 md:p-6 lg:p-8 pb-24">
       <div className="payment-terminal-housing">
         <div className="payment-terminal-screen">
-          <TerminalDisplay amount={amount} isActive={parseFloat(amount || "0") > 0} />
+          <TerminalDisplay
+            amount={amount}
+            isActive={parseFloat(amount || "0") > 0}
+            tokenSymbol={PAYMENT_TOKEN_SYMBOL}
+          />
 
           {/* Main Content Area */}
           <div className="p-4 md:p-6 lg:p-8 space-y-3 md:space-y-4">
@@ -433,7 +456,7 @@ export default function PaymentTerminalPage() {
                       Customer needs to approve {PAYMENT_TOKEN_SYMBOL} spending first
                     </p>
                     <button
-                      onClick={handleApprovePYUSD}
+                      onClick={handleApproveToken}
                       disabled={flowState === "approving"}
                       className="w-full h-11 md:h-12 rounded-lg md:rounded-xl font-bold text-sm transition-all"
                       style={{
@@ -452,7 +475,6 @@ export default function PaymentTerminalPage() {
                   isProcessing={flowState === "customer-tapping" || flowState === "processing"}
                   label="CUSTOMER: TAP TO PAY"
                   subLabel={`$${amount} ${PAYMENT_TOKEN_SYMBOL}`}
-                  onClick={handleCustomerTap}
                   disabled={flowState !== "idle"}
                 />
                 <button
@@ -478,6 +500,7 @@ export default function PaymentTerminalPage() {
                   txHash={txHash}
                   timestamp={txTimestamp}
                   chainId={chainId}
+                  tokenSymbol={PAYMENT_TOKEN_SYMBOL}
                 />
                 <button onClick={handleReset} className="terminal-btn terminal-btn-success">
                   NEW PAYMENT

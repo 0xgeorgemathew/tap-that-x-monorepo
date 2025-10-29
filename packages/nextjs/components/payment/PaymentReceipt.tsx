@@ -7,6 +7,7 @@ interface PaymentReceiptProps {
   txHash: string;
   timestamp?: Date;
   chainId?: number;
+  tokenSymbol?: string;
 }
 
 export function PaymentReceipt({
@@ -16,6 +17,7 @@ export function PaymentReceipt({
   txHash,
   timestamp = new Date(),
   chainId,
+  tokenSymbol = "TOKEN",
 }: PaymentReceiptProps) {
   const truncate = (addr: string) => `${addr.slice(0, 8)}...${addr.slice(-6)}`;
 
@@ -43,7 +45,9 @@ export function PaymentReceipt({
       <div className="payment-receipt-body">
         <div className="payment-receipt-amount-section">
           <div className="payment-receipt-label">AMOUNT</div>
-          <div className="payment-receipt-amount">${amount} PYUSD</div>
+          <div className="payment-receipt-amount">
+            ${amount} {tokenSymbol}
+          </div>
         </div>
 
         <div className="payment-receipt-divider"></div>
