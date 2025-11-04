@@ -18,7 +18,7 @@ export const RainbowKitCustomConnectButton = () => {
 
   return (
     <ConnectButton.Custom>
-      {({ account, chain, openConnectModal, mounted }) => {
+      {({ account, chain, openConnectModal, openAccountModal, mounted }) => {
         const connected = mounted && account && chain;
         const blockExplorerAddressLink = account
           ? getBlockExplorerAddressLink(targetNetwork, account.address)
@@ -47,6 +47,7 @@ export const RainbowKitCustomConnectButton = () => {
                     ensAvatar={account.ensAvatar}
                     blockExplorerAddressLink={blockExplorerAddressLink}
                     chainName={chain.name}
+                    openAccountModal={openAccountModal}
                   />
                   <AddressQRCodeModal address={account.address as Address} modalId="qrcode-modal" />
                   <RevealBurnerPKModal />

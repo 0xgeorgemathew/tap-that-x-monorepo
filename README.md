@@ -77,7 +77,7 @@ TapThat X Transaction:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         TapThat X Protocol                               │
+│                         TapThat X Protocol                              │
 └─────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────┐
@@ -111,10 +111,10 @@ TapThat X Transaction:
     ┌──────┴──────────────────────────────┐
     │                                     │
 ┌───▼────────────────────┐   ┌───────────▼──────────────────────┐
-│ TapThatXConfiguration  │   │   TapThatXProtocol                │
-│ (Action Storage)       │   │   (Validation & Execution Engine) │
-│                        │   │                                   │
-│ getConfiguration()     │   │   executeAuthorizedCall()         │
+│ TapThatXConfiguration  │   │   TapThatXProtocol               │
+│ (Action Storage)       │   │   (Validation & Execution Engine)│
+│                        │   │                                  │
+│ getConfiguration()     │   │   executeAuthorizedCall()        │
 │ → ActionConfig {       │   │   ├─ Verify nonce not used       │
 │     target,            │   │   ├─ Recover chip from signature │
 │     callData,          │   │   ├─ Validate timestamp <5 min   │
@@ -139,13 +139,40 @@ TapThat X Transaction:
 
 ---
 
+## 🎨 Alternative: Compact Slide Version
+
+For tighter space constraints:
+
+```
+                        TapThat X Protocol Flow
+
+┌─────────┐   tap    ┌──────────┐   POST   ┌────────────┐   tx    ┌─────────┐
+│ NFC Chip│ ───────> │  Mobile  │ ──────>  │   Relay    │ ──────> │ On-Chain│
+│  (HaLo) │  2-3sec  │  Browser │   API    │  (Gasless) │  write  │ Executor│
+└─────────┘          └──────────┘          └────────────┘         └────┬────┘
+                                                                        │
+      Signs EIP-712      Web NFC API      Validates & Pays Gas         │
+      Private key        @arx-research/    Dynamic gas limits           │
+      never leaves       libhalo                                        │
+                                                                        ▼
+                     ┌──────────────────────────────────────────────────────┐
+                     │          Smart Contract Layer (Hedera)              │
+                     │                                                      │
+                     │  [Executor] → [Protocol] → [Registry] + [Target]    │
+                     │     ↓            ↓            ↓            ↓         │
+                     │  Orchestrate  Validate   Check owner  Execute call  │
+                     │  config       signature  & nonce     (ERC20, swap,  │
+                     │                                       bridge, etc)   │
+                     └──────────────────────────────────────────────────────┘
+
 ## 📜 Smart Contracts
 
 ### Contract Dependency Graph
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Contract Architecture                         │
+│ Contract Architecture │
 └─────────────────────────────────────────────────────────────────┘
 
                     ┌──────────────────────┐
@@ -169,14 +196,16 @@ TapThat X Transaction:
                            │ required by extensions
             ┌──────────────┼──────────────┐
             │              │              │
+
 ┌───────────▼──────┐ ┌─────▼──────┐ ┌────▼─────────────────┐
-│ TapThatXBridge   │ │ TapThatX   │ │ TapThatXAave         │
-│ ETHViaWETH       │ │ Aave       │ │ PositionCloser       │
-│ (Dual L2 bridge) │ │ Rebalancer │ │ (Flash loan close)   │
+│ TapThatXBridge │ │ TapThatX │ │ TapThatXAave │
+│ ETHViaWETH │ │ Aave │ │ PositionCloser │
+│ (Dual L2 bridge) │ │ Rebalancer │ │ (Flash loan close) │
 └──────────────────┘ └────────────┘ └──────────────────────┘
-  Extension           Extension       Extension
-  (Sepolia only)      (Base only)     (Base only)
-```
+Extension Extension Extension
+(Sepolia only) (Base only) (Base only)
+
+````
 
 ---
 
@@ -198,7 +227,7 @@ TapThat X Transaction:
 mapping(address => address[]) private ownerToChips;
 mapping(address => address[]) private chipToOwners;
 mapping(address => mapping(address => bool)) public ownerHasChip;
-```
+````
 
 **Key Functions**:
 

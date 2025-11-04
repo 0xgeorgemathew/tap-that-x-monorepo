@@ -1155,6 +1155,10 @@
     }
   }
 
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
   [data-theme="dark"] .step-indicator-circle-current {
     animation: pulse-glow-dark 2s ease-in-out infinite;
   }
@@ -1544,11 +1548,27 @@
     left: 50%;
     top: 35%;
     border-color: rgba(107, 164, 191, 0.3);
-    animation: nfc-wave-pulse 2s ease-out infinite;
+    opacity: 0;
+    animation: none;
   }
 
   .nfc-tap-zone-active .nfc-wave {
     border-color: rgba(107, 164, 191, 0.5);
+    opacity: 1;
+    animation: nfc-wave-pulse 2s ease-out infinite;
+  }
+
+  /* Hide waves when processing */
+  .nfc-tap-zone-processing .nfc-wave {
+    opacity: 0;
+    animation: none;
+  }
+
+  /* Hide waves when disabled */
+  .nfc-tap-zone:disabled .nfc-wave,
+  .nfc-tap-zone[disabled] .nfc-wave {
+    opacity: 0;
+    animation: none;
   }
 
   [data-theme="dark"] .nfc-wave {

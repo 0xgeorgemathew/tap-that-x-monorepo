@@ -452,10 +452,14 @@ export default function PaymentTerminalPage() {
                   <div className="space-y-4">
                     <div className="flex flex-col items-center justify-center p-8 rounded-xl bg-success/10 border-2 border-success/30">
                       <Check className="h-12 w-12 md:h-16 md:w-16 text-success mb-4" />
-                      <div className="text-2xl md:text-3xl font-bold text-success mb-2">✓ Merchant Confirmed</div>
-                      <div className="text-sm md:text-base text-base-content/70 mb-4">Customer tap in:</div>
-                      <div className="text-6xl md:text-8xl font-bold text-primary">{countdown}</div>
-                      <div className="text-xs md:text-sm text-base-content/50 mt-2">seconds</div>
+                      <div className="text-2xl md:text-3xl font-bold text-success text-center mb-4">
+                        Merchant Confirmed
+                      </div>
+                      <div className="text-sm md:text-base text-base-content/70 text-center mb-2">Customer tap in:</div>
+                      <div className="text-6xl md:text-8xl font-bold text-success text-center animate-pulse-glow">
+                        {countdown}
+                      </div>
+                      <div className="text-xs md:text-sm text-base-content/50 text-center mt-2">seconds</div>
                     </div>
                   </div>
                 ) : (

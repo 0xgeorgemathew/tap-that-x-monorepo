@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { NetworkOptions } from "./NetworkOptions";
-import { ArrowLeftRight, CheckCircle, Copy, ExternalLink, Eye, LogOut, Moon, QrCode, Sun } from "lucide-react";
+import { ArrowLeftRight, CheckCircle, Copy, ExternalLink, Eye, LogOut, Moon, QrCode, Sun, Wallet } from "lucide-react";
 import { useTheme } from "next-themes";
 import { getAddress } from "viem";
 import { Address } from "viem";
@@ -19,6 +19,7 @@ type AddressInfoDropdownProps = {
   displayName: string;
   ensAvatar?: string;
   chainName?: string;
+  openAccountModal: () => void;
 };
 
 export const AddressInfoDropdown = ({
@@ -27,6 +28,7 @@ export const AddressInfoDropdown = ({
   displayName,
   blockExplorerAddressLink,
   chainName,
+  openAccountModal,
 }: AddressInfoDropdownProps) => {
   const { disconnect } = useDisconnect();
   const { connector } = useAccount();
@@ -144,6 +146,19 @@ export const AddressInfoDropdown = ({
                   <span>Dark Mode</span>
                 </>
               )}
+            </button>
+          </li>
+          <li className={selectingNetwork ? "hidden" : ""}>
+            <button
+              className="h-8 btn-sm rounded-xl! flex gap-3 py-3"
+              type="button"
+              onClick={() => {
+                openAccountModal();
+                closeDropdown();
+              }}
+            >
+              <Wallet className="h-6 w-4 ml-2 sm:ml-0" />
+              <span>Switch Wallet</span>
             </button>
           </li>
           <li className={selectingNetwork ? "hidden" : ""}>
