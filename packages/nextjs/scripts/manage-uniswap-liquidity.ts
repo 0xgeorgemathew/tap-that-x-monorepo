@@ -102,6 +102,24 @@ const ROUTER_ABI = [
   },
   {
     inputs: [
+      { name: "tokenA", type: "address" },
+      { name: "tokenB", type: "address" },
+      { name: "liquidity", type: "uint256" },
+      { name: "amountAMin", type: "uint256" },
+      { name: "amountBMin", type: "uint256" },
+      { name: "to", type: "address" },
+      { name: "deadline", type: "uint256" },
+    ],
+    name: "removeLiquidity",
+    outputs: [
+      { name: "amountA", type: "uint256" },
+      { name: "amountB", type: "uint256" },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
       { name: "amountIn", type: "uint256" },
       { name: "amountOutMin", type: "uint256" },
       { name: "path", type: "address[]" },
@@ -350,6 +368,114 @@ async function syncToOracle() {
   await getReservesAndPrice();
 }
 
+// 3. Remove all liquidity
+async function removeAllLiquidity() {
+  console.log("\n=== Removing All Liquidity ===");
+
+  const { client: walletClient, account } = getWalletClient();
+
+  // Get LP token balance
+  const lpBalance = (await publicClient.readContract({
+    address: PAIR_ADDRESS,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [account.address],
+  })) as bigint;
+
+  if (lpBalance === 0n) {
+    console.log("\n✗ No LP tokens to remove");
+    return;
+  }
+
+  console.log(`LP Token Balance: ${formatUnits(lpBalance, 18)} LP`);
+
+  // Get current reserves to estimate output
+  const [reserve0, reserve1] = (await publicClient.readContract({
+    address: PAIR_ADDRESS,
+    abi: PAIR_ABI,
+    functionName: "getReserves",
+  })) as [bigint, bigint, number];
+
+  // Get total supply of LP tokens
+  const totalSupply = (await publicClient.readContract({
+    address: PAIR_ADDRESS,
+    abi: [
+      {
+        inputs: [],
+        name: "totalSupply",
+        outputs: [{ name: "", type: "uint256" }],
+        stateMutability: "view",
+        type: "function",
+      },
+    ],
+    functionName: "totalSupply",
+  })) as bigint;
+
+  // Calculate expected output amounts
+  const expectedUsdt = (lpBalance * reserve0) / totalSupply;
+  const expectedWeth = (lpBalance * reserve1) / totalSupply;
+
+  console.log(`Expected USDT: ${formatUnits(expectedUsdt, 6)} USDT`);
+  console.log(`Expected WETH: ${formatUnits(expectedWeth, 18)} WETH`);
+
+  // Approve LP tokens for router
+  const approveHash = await walletClient.writeContract({
+    address: PAIR_ADDRESS,
+    abi: ERC20_ABI,
+    functionName: "approve",
+    args: [ROUTER_ADDRESS, lpBalance],
+    account,
+    chain: baseSepolia,
+  });
+
+  await publicClient.waitForTransactionReceipt({ hash: approveHash });
+  console.log(`✓ Approved LP tokens: ${approveHash}`);
+
+  // Wait for nonce update
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  // Remove liquidity with 2% slippage tolerance
+  const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200); // 20 minutes
+  const hash = await walletClient.writeContract({
+    address: ROUTER_ADDRESS,
+    abi: ROUTER_ABI,
+    functionName: "removeLiquidity",
+    args: [
+      USDT_ADDRESS,
+      WETH_ADDRESS,
+      lpBalance,
+      (expectedUsdt * 98n) / 100n, // 2% slippage
+      (expectedWeth * 98n) / 100n,
+      account.address,
+      deadline,
+    ],
+    account,
+    chain: baseSepolia,
+  });
+
+  await publicClient.waitForTransactionReceipt({ hash });
+  console.log(`✓ Liquidity removed: ${hash}`);
+
+  // Show final balances
+  const finalUsdt = (await publicClient.readContract({
+    address: USDT_ADDRESS,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [account.address],
+  })) as bigint;
+
+  const finalWeth = (await publicClient.readContract({
+    address: WETH_ADDRESS,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: [account.address],
+  })) as bigint;
+
+  console.log(`\n=== Final Balances ===`);
+  console.log(`USDT: ${formatUnits(finalUsdt, 6)}`);
+  console.log(`WETH: ${formatUnits(finalWeth, 18)}`);
+}
+
 // Main menu
 async function main() {
   const action = process.argv[2];
@@ -369,6 +495,10 @@ async function main() {
       await syncToOracle();
       break;
 
+    case "remove-liquidity":
+      await removeAllLiquidity();
+      break;
+
     default:
       console.log(`
 Usage:
@@ -377,11 +507,13 @@ Usage:
 Actions:
   status              - Show current pool state and oracle price
   add-liquidity [n]   - Add liquidity maintaining oracle price (default: 100 USDT)
+  remove-liquidity    - Remove all your LP tokens from the pool
   sync                - Sync pool price to Chainlink oracle
 
 Examples:
   npx tsx scripts/manage-uniswap-liquidity.ts status
   npx tsx scripts/manage-uniswap-liquidity.ts add-liquidity 500
+  npx tsx scripts/manage-uniswap-liquidity.ts remove-liquidity
   npx tsx scripts/manage-uniswap-liquidity.ts sync
       `);
   }
